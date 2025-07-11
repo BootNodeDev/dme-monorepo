@@ -5,6 +5,7 @@
   "packageManager": "pnpm@10.12.1",
   "scripts": {
     "build": "pnpm -r build",
+    "start": "pnpm -r start",
     "dev": "pnpm -r dev"
   }
 }
