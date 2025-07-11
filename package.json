@@ -1,5 +1,5 @@
 {
-  "name": "dme-monorepo",
+  "name": "dme",
   "version": "1.0.0",
   "private": true,
   "packageManager": "pnpm@10.12.1",
