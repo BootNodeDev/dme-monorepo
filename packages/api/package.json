@@ -1,0 +1,13 @@
+{
+  "name": "@dme-monorepo/api",
+  "version": "1.0.0",
+  "main": "./dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsx --watch ./src/index.ts"
+  },
+  "devDependencies": {
+    "tsx": "^4.20.3",
+    "typescript": "^5.8.3"
+  }
+}
