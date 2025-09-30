@@ -14,9 +14,11 @@
   "devDependencies": {
     "@tsconfig/node22": "^22.0.2",
     "@types/node": "^24.6.0",
+    "prisma": "^6.16.3",
     "typescript": "^5.9.2"
   },
   "dependencies": {
+    "@prisma/client": "6.16.3",
     "grammy": "^1.38.2"
   }
 }

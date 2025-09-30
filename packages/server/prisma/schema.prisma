@@ -1,0 +1,49 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  // The user's telegram Id
+  id        Int            @id
+  createdAt DateTime       @default(now()) @map("created_at")
+  wallets   UsersWallets[]
+
+  @@map("users")
+}
+
+model Wallet {
+  // The wallet address
+  id        String         @id
+  createdAt DateTime       @default(now()) @map("created_at")
+  users     UsersWallets[]
+
+  @@map("wallets")
+}
+
+model UsersWallets {
+  user      User     @relation(fields: [userId], references: [id])
+  userId    Int      @map("user_id")
+  wallet    Wallet   @relation(fields: [walletId], references: [id])
+  walletId  String   @map("wallet_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@id([userId, walletId])
+  @@map("users_wallets")
+}
+
+model Message {
+  id        Int      @id @default(autoincrement())
+  content   String
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("messages")
+}
