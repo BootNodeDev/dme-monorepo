@@ -4,7 +4,7 @@
   "description": "",
   "main": "dist/index.js",
   "scripts": {
-    "start": "tsc && node --env-file .env .",
+    "start": "prisma generate && prisma db push && tsc && node --env-file .env .",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
@@ -19,6 +19,7 @@
   },
   "dependencies": {
     "@prisma/client": "6.16.3",
-    "grammy": "^1.38.2"
+    "grammy": "^1.38.2",
+    "zod": "^4.1.11"
   }
 }

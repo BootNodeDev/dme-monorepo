@@ -1,3 +1,8 @@
+# Compiled output
 dist/
+
+# Environment variables file
 .env
-/src/generated/prisma
+
+# SQLite database file
+prisma/dev.db
