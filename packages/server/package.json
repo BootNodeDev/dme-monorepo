@@ -2,8 +2,9 @@
   "name": "server",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "dist/index.js",
   "scripts": {
+    "start": "tsc && node --env-file .env .",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
@@ -12,6 +13,10 @@
   "packageManager": "pnpm@10.17.1",
   "devDependencies": {
     "@tsconfig/node22": "^22.0.2",
+    "@types/node": "^24.6.0",
     "typescript": "^5.9.2"
+  },
+  "dependencies": {
+    "grammy": "^1.38.2"
   }
 }
