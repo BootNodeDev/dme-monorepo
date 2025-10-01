@@ -23,7 +23,7 @@ export function getListHandler(user: UserService) {
 
       const walletList = wallets.map((wallet, index) => `${index + 1}. ${wallet}`).join("\n");
       ctx.reply(`Your wallets:\n${walletList}`);
-    } catch (error) {
+    } catch {
       ctx.reply(UNEXPECTED_ERROR_MESSAGE);
     }
   };
