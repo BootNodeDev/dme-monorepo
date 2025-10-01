@@ -6,7 +6,10 @@
   "scripts": {
     "start": "prisma generate && prisma db push && tsc && node --env-file .env .",
     "test": "jest --coverage",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier . --check",
+    "format:fix": "prettier . --write"
   },
   "keywords": [],
   "author": "",

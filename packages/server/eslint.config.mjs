@@ -13,7 +13,7 @@ export default defineConfig([
   },
   tseslint.configs.recommended,
   {
-    ignores: ["dist/**", "node_modules/**", "coverage/**", "jest.config.js"],
+    ignores: ["dist/**", "node_modules/**", "coverage/**"],
   },
   eslintConfigPrettier,
 ]);
