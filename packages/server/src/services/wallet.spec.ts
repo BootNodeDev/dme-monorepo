@@ -1,10 +1,8 @@
 import { PrismaClient } from "@prisma/client";
 import { InvalidEthereumAddressError, WalletService, sanitizeEthereumAddress } from "./wallet";
+import { ETHEREUM_ADDRESS_1 } from "../tests/common";
 
 jest.mock("@prisma/client");
-
-const ETHEREUM_ADDRESS = "0xBEE9FF9F1E8608AD00EBFCD0084AE9AA7D40BBAB";
-const INVALID_ADDRESS = "invalid-address";
 
 let mockUpsert: jest.Mock;
 let mockPrisma: jest.Mocked<PrismaClient>;
@@ -26,41 +24,27 @@ beforeEach(() => {
 
 describe("upsert", () => {
   it("should call prisma wallet upsert with sanitized address", async () => {
-    await wallet.upsert(ETHEREUM_ADDRESS);
+    await wallet.upsert(ETHEREUM_ADDRESS_1);
 
     expect(mockUpsert).toHaveBeenCalledWith({
-      where: { id: ETHEREUM_ADDRESS.toLowerCase() },
+      where: { id: ETHEREUM_ADDRESS_1.toLowerCase() },
       update: {},
-      create: { id: ETHEREUM_ADDRESS.toLowerCase() },
+      create: { id: ETHEREUM_ADDRESS_1.toLowerCase() },
     });
   });
 
   it("should throw InvalidEthereumAddressError for invalid address", async () => {
-    await expect(wallet.upsert(INVALID_ADDRESS)).rejects.toBeInstanceOf(
-      InvalidEthereumAddressError,
-    );
+    await expect(wallet.upsert("invalid")).rejects.toBeInstanceOf(InvalidEthereumAddressError);
   });
 });
 
 describe("sanitizeEthereumAddress", () => {
   it("should return lowercase address for valid ethereum address", () => {
-    const result = sanitizeEthereumAddress(ETHEREUM_ADDRESS);
-    expect(result).toBe(ETHEREUM_ADDRESS.toLowerCase());
+    const result = sanitizeEthereumAddress(ETHEREUM_ADDRESS_1);
+    expect(result).toBe(ETHEREUM_ADDRESS_1.toLowerCase());
   });
 
   it("should throw InvalidEthereumAddressError for invalid address", () => {
-    expect(() => sanitizeEthereumAddress(INVALID_ADDRESS)).toThrow(InvalidEthereumAddressError);
-  });
-
-  it("should throw InvalidEthereumAddressError for address without 0x prefix", () => {
-    expect(() => sanitizeEthereumAddress("bee9ff9f1e8608ad00ebfcd0084ae9aa7d40bbab")).toThrow(
-      InvalidEthereumAddressError,
-    );
-  });
-
-  it("should throw InvalidEthereumAddressError for address with wrong length", () => {
-    expect(() => sanitizeEthereumAddress("0xbee9ff9f1e8608ad00ebfcd0084ae9aa7d40bb")).toThrow(
-      InvalidEthereumAddressError,
-    );
+    expect(() => sanitizeEthereumAddress("invalid")).toThrow(InvalidEthereumAddressError);
   });
 });

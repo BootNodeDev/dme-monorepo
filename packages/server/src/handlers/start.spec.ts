@@ -7,13 +7,12 @@ import {
 import { InvalidEthereumAddressError, WalletService } from "../services/wallet";
 import { getStartHandler } from "./start";
 import { UNEXPECTED_ERROR_MESSAGE } from "./common";
+import { ETHEREUM_ADDRESS_1, USER_ID } from "../tests/common";
 
 jest.mock("../services/user");
 jest.mock("../services/wallet");
 
-const USER_ID = 1234567890;
 const START_COMMAND = "/start";
-const ETHEREUM_ADDRESS = "0xBEE9FF9F1E8608AD00EBFCD0084AE9AA7D40BBAB";
 
 let mockUserService: jest.Mocked<UserService>;
 let mockWalletService: jest.Mocked<WalletService>;
@@ -40,7 +39,7 @@ beforeEach(() => {
   ctx = {
     from: { id: USER_ID },
     reply: mockReply,
-    message: { text: START_COMMAND + " " + ETHEREUM_ADDRESS },
+    message: { text: START_COMMAND + " " + ETHEREUM_ADDRESS_1 },
   } as unknown as CommandContext<Context>;
 });
 
@@ -66,7 +65,7 @@ it("should reply with the address of the wallet being subscribed", async () => {
   await start(ctx);
 
   expect(mockReply).toHaveBeenCalledWith(
-    `Welcome!\nYou have successfully subscribed the wallet: ${ETHEREUM_ADDRESS}`,
+    `Welcome!\nYou have successfully subscribed the wallet: ${ETHEREUM_ADDRESS_1}`,
   );
 });
 
@@ -121,13 +120,13 @@ it("should reply with an error when adding wallet to user fails for an unknown r
 });
 
 it("should handle multiple spaces between command and address", async () => {
-  ctx.message!.text = START_COMMAND + "     " + ETHEREUM_ADDRESS + "     ";
+  ctx.message!.text = START_COMMAND + "     " + ETHEREUM_ADDRESS_1 + "     ";
 
   await start(ctx);
 
-  expect(mockWalletService.upsert).toHaveBeenCalledWith(ETHEREUM_ADDRESS);
-  expect(mockUserService.addWallet).toHaveBeenCalledWith(USER_ID, ETHEREUM_ADDRESS);
+  expect(mockWalletService.upsert).toHaveBeenCalledWith(ETHEREUM_ADDRESS_1);
+  expect(mockUserService.addWallet).toHaveBeenCalledWith(USER_ID, ETHEREUM_ADDRESS_1);
   expect(mockReply).toHaveBeenCalledWith(
-    `Welcome!\nYou have successfully subscribed the wallet: ${ETHEREUM_ADDRESS}`,
+    `Welcome!\nYou have successfully subscribed the wallet: ${ETHEREUM_ADDRESS_1}`,
   );
 });

@@ -6,15 +6,12 @@ import {
   UserWalletNotFoundError,
 } from "./user";
 import { InvalidEthereumAddressError } from "./wallet";
+import { ETHEREUM_ADDRESS_1, ETHEREUM_ADDRESS_2, USER_ID } from "../tests/common";
 
 jest.mock("@prisma/client", () => ({
   ...jest.requireActual("@prisma/client"),
   PrismaClient: jest.fn(),
 }));
-
-const USER_ID = 1234567890;
-const ETHEREUM_ADDRESS_1 = "0xBEE9FF9F1E8608AD00EBFCD0084AE9AA7D40BBAB";
-const ETHEREUM_ADDRESS_2 = "0xCF48B6167EE25BB3A91EA9FFCC7931075A6EBD8D";
 
 let mockCreate: jest.Mock;
 let mockFindMany: jest.Mock;

@@ -2,13 +2,11 @@ import { CommandContext, Context } from "grammy";
 import { UserService } from "../services/user";
 import { getListHandler } from "./list";
 import { UNEXPECTED_ERROR_MESSAGE } from "./common";
+import { ETHEREUM_ADDRESS_1, ETHEREUM_ADDRESS_2, USER_ID } from "../tests/common";
 
 jest.mock("../services/user");
 
-const USER_ID = 1234567890;
 const LIST_COMMAND = "/list";
-const ETHEREUM_ADDRESS_1 = "0xBEE9FF9F1E8608AD00EBFCD0084AE9AA7D40BBAB";
-const ETHEREUM_ADDRESS_2 = "0xCF48B6167EE25BB3A91EA9FFCC7931075A6EBD8D";
 
 let mockUserService: jest.Mocked<UserService>;
 let mockReply: jest.Mock;
