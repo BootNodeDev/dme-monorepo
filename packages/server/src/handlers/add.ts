@@ -1,8 +1,5 @@
 import { CommandContext, Context } from "grammy";
-import {
-  UserService,
-  UserWalletAlreadyExistsError,
-} from "../services/user";
+import { UserService, UserWalletAlreadyExistsError } from "../services/user";
 import { InvalidEthereumAddressError, WalletService } from "../services/wallet";
 
 const UNEXPECTED_ERROR_MESSAGE = "Something went wrong. Please try again later.";
