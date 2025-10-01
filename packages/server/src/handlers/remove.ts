@@ -1,7 +1,7 @@
 import { CommandContext, Context } from "grammy";
 import { UserService, UserWalletNotFoundError } from "../services/user";
 import { InvalidEthereumAddressError } from "../services/wallet";
-import { UNEXPECTED_ERROR_MESSAGE } from "./common";
+import { UNEXPECTED_ERROR_MESSAGE } from "./misc/constants";
 
 export function getRemoveHandler(user: UserService) {
   return async (ctx: CommandContext<Context>) => {

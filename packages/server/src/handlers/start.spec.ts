@@ -6,7 +6,7 @@ import {
 } from "../services/user";
 import { InvalidEthereumAddressError, WalletService } from "../services/wallet";
 import { getStartHandler } from "./start";
-import { UNEXPECTED_ERROR_MESSAGE } from "./common";
+import { UNEXPECTED_ERROR_MESSAGE } from "./misc/constants";
 import { ETHEREUM_ADDRESS_1, USER_ID } from "../tests/common";
 
 jest.mock("../services/user");

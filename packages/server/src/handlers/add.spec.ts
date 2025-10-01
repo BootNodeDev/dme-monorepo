@@ -2,7 +2,7 @@ import { CommandContext, Context } from "grammy";
 import { UserService, UserWalletAlreadyExistsError } from "../services/user";
 import { InvalidEthereumAddressError, WalletService } from "../services/wallet";
 import { getAddHandler } from "./add";
-import { UNEXPECTED_ERROR_MESSAGE } from "./common";
+import { UNEXPECTED_ERROR_MESSAGE } from "./misc/constants";
 import { ETHEREUM_ADDRESS_1, USER_ID } from "../tests/common";
 
 jest.mock("../services/user");

@@ -1,7 +1,7 @@
 import { CommandContext, Context } from "grammy";
 import { UserService } from "../services/user";
 import { getListHandler } from "./list";
-import { UNEXPECTED_ERROR_MESSAGE } from "./common";
+import { UNEXPECTED_ERROR_MESSAGE } from "./misc/constants";
 import { ETHEREUM_ADDRESS_1, ETHEREUM_ADDRESS_2, USER_ID } from "../tests/common";
 
 jest.mock("../services/user");
