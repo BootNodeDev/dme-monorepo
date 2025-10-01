@@ -1,5 +1,10 @@
 import { Prisma, PrismaClient } from "@prisma/client";
-import { UserAlreadyExistsError, UserService, UserWalletAlreadyExistsError } from "./user";
+import {
+  UserAlreadyExistsError,
+  UserService,
+  UserWalletAlreadyExistsError,
+  UserWalletNotFoundError,
+} from "./user";
 import { InvalidEthereumAddressError } from "./wallet";
 
 jest.mock("@prisma/client", () => ({
@@ -13,6 +18,7 @@ const ETHEREUM_ADDRESS_2 = "0xCF48B6167EE25BB3A91EA9FFCC7931075A6EBD8D";
 
 let mockCreate: jest.Mock;
 let mockFindMany: jest.Mock;
+let mockDelete: jest.Mock;
 let mockPrisma: jest.Mocked<PrismaClient>;
 let user: UserService;
 
@@ -21,6 +27,7 @@ beforeEach(() => {
 
   mockCreate = jest.fn();
   mockFindMany = jest.fn();
+  mockDelete = jest.fn();
 
   mockPrisma = {
     user: {
@@ -29,6 +36,7 @@ beforeEach(() => {
     userWallet: {
       create: mockCreate,
       findMany: mockFindMany,
+      delete: mockDelete,
     },
   } as unknown as jest.Mocked<PrismaClient>;
 
@@ -127,5 +135,49 @@ describe("listWallets", () => {
     mockFindMany.mockRejectedValue(new Error("Database connection failed"));
 
     await expect(user.listWallets(USER_ID)).rejects.toThrow("Database connection failed");
+  });
+});
+
+describe("removeWallet", () => {
+  it("should call prisma userWallet delete with correct parameters", async () => {
+    mockDelete.mockResolvedValue({});
+
+    await user.removeWallet(USER_ID, ETHEREUM_ADDRESS_1);
+
+    expect(mockDelete).toHaveBeenCalledWith({
+      where: { userId_walletId: { userId: USER_ID, walletId: ETHEREUM_ADDRESS_1.toLowerCase() } },
+    });
+  });
+
+  it("should throw UserWalletNotFoundError when wallet is not found (P2025 error)", async () => {
+    mockDelete.mockRejectedValue(
+      new Prisma.PrismaClientKnownRequestError("", {
+        code: "P2025",
+        clientVersion: "",
+      }),
+    );
+
+    await expect(user.removeWallet(USER_ID, ETHEREUM_ADDRESS_1)).rejects.toBeInstanceOf(
+      UserWalletNotFoundError,
+    );
+  });
+
+  it("should bubble up unhandled errors", async () => {
+    mockDelete.mockRejectedValue(
+      new Prisma.PrismaClientKnownRequestError("", {
+        code: "P2002",
+        clientVersion: "",
+      }),
+    );
+
+    await expect(user.removeWallet(USER_ID, ETHEREUM_ADDRESS_1)).rejects.toBeInstanceOf(
+      Prisma.PrismaClientKnownRequestError,
+    );
+  });
+
+  it("should throw when the address is invalid", async () => {
+    await expect(user.removeWallet(USER_ID, "invalid-address")).rejects.toBeInstanceOf(
+      InvalidEthereumAddressError,
+    );
   });
 });

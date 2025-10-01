@@ -3,6 +3,7 @@ import { PrismaClient } from "@prisma/client";
 import { getStartHandler } from "./handlers/start";
 import { getAddHandler } from "./handlers/add";
 import { getListHandler } from "./handlers/list";
+import { getRemoveHandler } from "./handlers/remove";
 import { UserService } from "./services/user";
 import { WalletService } from "./services/wallet";
 
@@ -21,5 +22,6 @@ const bot = new Bot(botToken);
 bot.command("start", getStartHandler(user, wallet));
 bot.command("add", getAddHandler(user, wallet));
 bot.command("list", getListHandler(user));
+bot.command("remove", getRemoveHandler(user));
 
 bot.start();

@@ -5,6 +5,8 @@ export class UserAlreadyExistsError extends Error {}
 
 export class UserWalletAlreadyExistsError extends Error {}
 
+export class UserWalletNotFoundError extends Error {}
+
 export class UserService {
   constructor(private prisma: PrismaClient) {}
 
@@ -42,5 +44,21 @@ export class UserService {
     });
 
     return userWallets.map((userWallet) => userWallet.walletId);
+  }
+
+  async removeWallet(userId: number, address: string) {
+    const walletId = sanitizeEthereumAddress(address);
+
+    try {
+      await this.prisma.userWallet.delete({
+        where: { userId_walletId: { userId, walletId } },
+      });
+    } catch (error) {
+      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2025") {
+        throw new UserWalletNotFoundError();
+      }
+
+      throw error;
+    }
   }
 }
