@@ -12,10 +12,7 @@ export class UserService {
     try {
       await this.prisma.user.create({ data: { id: userId } });
     } catch (error) {
-      if (
-        error instanceof Prisma.PrismaClientKnownRequestError &&
-        error.code === "P2002"
-      ) {
+      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
         throw new UserAlreadyExistsError();
       }
 
@@ -29,10 +26,7 @@ export class UserService {
     try {
       await this.prisma.userWallet.create({ data: { userId, walletId } });
     } catch (error) {
-      if (
-        error instanceof Prisma.PrismaClientKnownRequestError &&
-        error.code === "P2002"
-      ) {
+      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
         throw new UserWalletAlreadyExistsError();
       }
 

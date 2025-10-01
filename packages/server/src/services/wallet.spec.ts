@@ -1,9 +1,5 @@
 import { PrismaClient } from "@prisma/client";
-import {
-  InvalidEthereumAddressError,
-  WalletService,
-  sanitizeEthereumAddress,
-} from "./wallet";
+import { InvalidEthereumAddressError, WalletService, sanitizeEthereumAddress } from "./wallet";
 
 jest.mock("@prisma/client");
 
@@ -41,7 +37,7 @@ describe("upsert", () => {
 
   it("should throw InvalidEthereumAddressError for invalid address", async () => {
     await expect(wallet.upsert(INVALID_ADDRESS)).rejects.toBeInstanceOf(
-      InvalidEthereumAddressError
+      InvalidEthereumAddressError,
     );
   });
 });
@@ -53,20 +49,18 @@ describe("sanitizeEthereumAddress", () => {
   });
 
   it("should throw InvalidEthereumAddressError for invalid address", () => {
-    expect(() => sanitizeEthereumAddress(INVALID_ADDRESS)).toThrow(
-      InvalidEthereumAddressError
-    );
+    expect(() => sanitizeEthereumAddress(INVALID_ADDRESS)).toThrow(InvalidEthereumAddressError);
   });
 
   it("should throw InvalidEthereumAddressError for address without 0x prefix", () => {
-    expect(() =>
-      sanitizeEthereumAddress("bee9ff9f1e8608ad00ebfcd0084ae9aa7d40bbab")
-    ).toThrow(InvalidEthereumAddressError);
+    expect(() => sanitizeEthereumAddress("bee9ff9f1e8608ad00ebfcd0084ae9aa7d40bbab")).toThrow(
+      InvalidEthereumAddressError,
+    );
   });
 
   it("should throw InvalidEthereumAddressError for address with wrong length", () => {
-    expect(() =>
-      sanitizeEthereumAddress("0xbee9ff9f1e8608ad00ebfcd0084ae9aa7d40bb")
-    ).toThrow(InvalidEthereumAddressError);
+    expect(() => sanitizeEthereumAddress("0xbee9ff9f1e8608ad00ebfcd0084ae9aa7d40bb")).toThrow(
+      InvalidEthereumAddressError,
+    );
   });
 });

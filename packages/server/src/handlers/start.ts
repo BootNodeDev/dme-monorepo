@@ -6,8 +6,7 @@ import {
 } from "../services/user";
 import { InvalidEthereumAddressError, WalletService } from "../services/wallet";
 
-const UNEXPECTED_ERROR_MESSAGE =
-  "Something went wrong. Please try again later.";
+const UNEXPECTED_ERROR_MESSAGE = "Something went wrong. Please try again later.";
 
 export function getStartHandler(user: UserService, wallet: WalletService) {
   return async (ctx: CommandContext<Context>) => {

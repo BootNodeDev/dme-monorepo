@@ -1,9 +1,5 @@
 import { Prisma, PrismaClient } from "@prisma/client";
-import {
-  UserAlreadyExistsError,
-  UserService,
-  UserWalletAlreadyExistsError,
-} from "./user";
+import { UserAlreadyExistsError, UserService, UserWalletAlreadyExistsError } from "./user";
 import { InvalidEthereumAddressError } from "./wallet";
 
 jest.mock("@prisma/client", () => ({
@@ -47,21 +43,19 @@ describe("create", () => {
       new Prisma.PrismaClientKnownRequestError("", {
         code: "P2002",
         clientVersion: "",
-      })
+      }),
     );
 
-    await expect(user.create(USER_ID)).rejects.toBeInstanceOf(
-      UserAlreadyExistsError
-    );
+    await expect(user.create(USER_ID)).rejects.toBeInstanceOf(UserAlreadyExistsError);
   });
 
   it("should bubble up any unhandled error", async () => {
     mockCreate.mockRejectedValue(
-      new Prisma.PrismaClientUnknownRequestError("", { clientVersion: "" })
+      new Prisma.PrismaClientUnknownRequestError("", { clientVersion: "" }),
     );
 
     await expect(user.create(USER_ID)).rejects.toBeInstanceOf(
-      Prisma.PrismaClientUnknownRequestError
+      Prisma.PrismaClientUnknownRequestError,
     );
   });
 });
@@ -80,27 +74,27 @@ describe("addWallet", () => {
       new Prisma.PrismaClientKnownRequestError("", {
         code: "P2002",
         clientVersion: "",
-      })
+      }),
     );
 
-    await expect(
-      user.addWallet(USER_ID, ETHEREUM_ADDRESS)
-    ).rejects.toBeInstanceOf(UserWalletAlreadyExistsError);
+    await expect(user.addWallet(USER_ID, ETHEREUM_ADDRESS)).rejects.toBeInstanceOf(
+      UserWalletAlreadyExistsError,
+    );
   });
 
   it("should bubble up any unhandled error", async () => {
     mockCreate.mockRejectedValue(
-      new Prisma.PrismaClientUnknownRequestError("", { clientVersion: "" })
+      new Prisma.PrismaClientUnknownRequestError("", { clientVersion: "" }),
     );
 
-    await expect(
-      user.addWallet(USER_ID, ETHEREUM_ADDRESS)
-    ).rejects.toBeInstanceOf(Prisma.PrismaClientUnknownRequestError);
+    await expect(user.addWallet(USER_ID, ETHEREUM_ADDRESS)).rejects.toBeInstanceOf(
+      Prisma.PrismaClientUnknownRequestError,
+    );
   });
 
   it("should throw when the address is invalid", async () => {
-    await expect(
-      user.addWallet(USER_ID, "invalid-address")
-    ).rejects.toBeInstanceOf(InvalidEthereumAddressError);
+    await expect(user.addWallet(USER_ID, "invalid-address")).rejects.toBeInstanceOf(
+      InvalidEthereumAddressError,
+    );
   });
 });
