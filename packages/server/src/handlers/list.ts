@@ -1,7 +1,6 @@
 import { CommandContext, Context } from "grammy";
 import { UserService } from "../services/user";
-
-const UNEXPECTED_ERROR_MESSAGE = "Something went wrong. Please try again later.";
+import { UNEXPECTED_ERROR_MESSAGE } from "./common";
 
 export function getListHandler(user: UserService) {
   return async (ctx: CommandContext<Context>) => {

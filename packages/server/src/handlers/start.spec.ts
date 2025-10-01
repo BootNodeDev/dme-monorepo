@@ -6,6 +6,7 @@ import {
 } from "../services/user";
 import { InvalidEthereumAddressError, WalletService } from "../services/wallet";
 import { getStartHandler } from "./start";
+import { UNEXPECTED_ERROR_MESSAGE } from "./common";
 
 jest.mock("../services/user");
 jest.mock("../services/wallet");
@@ -90,7 +91,7 @@ it("should reply with an error when wallet upsert fails for an unknown reason", 
 
   await start(ctx);
 
-  expect(mockReply).toHaveBeenCalledWith("Something went wrong. Please try again later.");
+  expect(mockReply).toHaveBeenCalledWith(UNEXPECTED_ERROR_MESSAGE);
 });
 
 it("should reply with an error when the user id is not found in context", async () => {
@@ -100,7 +101,7 @@ it("should reply with an error when the user id is not found in context", async 
 
   await start(ctx);
 
-  expect(mockReply).toHaveBeenCalledWith("Something went wrong. Please try again later.");
+  expect(mockReply).toHaveBeenCalledWith(UNEXPECTED_ERROR_MESSAGE);
 });
 
 it("should reply with an error when user create fails for an unknown reason", async () => {
@@ -108,7 +109,7 @@ it("should reply with an error when user create fails for an unknown reason", as
 
   await start(ctx);
 
-  expect(mockReply).toHaveBeenCalledWith("Something went wrong. Please try again later.");
+  expect(mockReply).toHaveBeenCalledWith(UNEXPECTED_ERROR_MESSAGE);
 });
 
 it("should reply with an error when adding wallet to user fails for an unknown reason", async () => {
@@ -116,7 +117,7 @@ it("should reply with an error when adding wallet to user fails for an unknown r
 
   await start(ctx);
 
-  expect(mockReply).toHaveBeenCalledWith("Something went wrong. Please try again later.");
+  expect(mockReply).toHaveBeenCalledWith(UNEXPECTED_ERROR_MESSAGE);
 });
 
 it("should handle multiple spaces between command and address", async () => {

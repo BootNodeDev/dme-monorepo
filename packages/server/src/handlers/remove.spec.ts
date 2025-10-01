@@ -2,6 +2,7 @@ import { CommandContext, Context } from "grammy";
 import { UserService, UserWalletNotFoundError } from "../services/user";
 import { InvalidEthereumAddressError } from "../services/wallet";
 import { getRemoveHandler } from "./remove";
+import { UNEXPECTED_ERROR_MESSAGE } from "./common";
 
 jest.mock("../services/user");
 
@@ -56,7 +57,7 @@ it("should reply with error when user ID is not found in context", async () => {
   await removeWallet(ctx);
 
   expect(mockUserService.removeWallet).not.toHaveBeenCalled();
-  expect(mockReply).toHaveBeenCalledWith("Something went wrong. Please try again later.");
+  expect(mockReply).toHaveBeenCalledWith(UNEXPECTED_ERROR_MESSAGE);
 });
 
 it("should reply with error when wallet address is invalid", async () => {
@@ -85,7 +86,7 @@ it("should reply with generic error when removing wallet fails for unknown reaso
   await removeWallet(ctx);
 
   expect(mockUserService.removeWallet).toHaveBeenCalledWith(USER_ID, ETHEREUM_ADDRESS);
-  expect(mockReply).toHaveBeenCalledWith("Something went wrong. Please try again later.");
+  expect(mockReply).toHaveBeenCalledWith(UNEXPECTED_ERROR_MESSAGE);
 });
 
 it("should handle empty string address as missing address", async () => {

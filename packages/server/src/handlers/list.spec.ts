@@ -1,6 +1,7 @@
 import { CommandContext, Context } from "grammy";
 import { UserService } from "../services/user";
 import { getListHandler } from "./list";
+import { UNEXPECTED_ERROR_MESSAGE } from "./common";
 
 jest.mock("../services/user");
 
@@ -65,7 +66,7 @@ it("should reply with error when user ID is not found in context", async () => {
   await listWallets(ctx);
 
   expect(mockUserService.listWallets).not.toHaveBeenCalled();
-  expect(mockReply).toHaveBeenCalledWith("Something went wrong. Please try again later.");
+  expect(mockReply).toHaveBeenCalledWith(UNEXPECTED_ERROR_MESSAGE);
 });
 
 it("should reply with error when listing wallets fails", async () => {
@@ -74,5 +75,5 @@ it("should reply with error when listing wallets fails", async () => {
   await listWallets(ctx);
 
   expect(mockUserService.listWallets).toHaveBeenCalledWith(USER_ID);
-  expect(mockReply).toHaveBeenCalledWith("Something went wrong. Please try again later.");
+  expect(mockReply).toHaveBeenCalledWith(UNEXPECTED_ERROR_MESSAGE);
 });

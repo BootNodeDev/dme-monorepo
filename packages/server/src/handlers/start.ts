@@ -5,8 +5,7 @@ import {
   UserWalletAlreadyExistsError,
 } from "../services/user";
 import { InvalidEthereumAddressError, WalletService } from "../services/wallet";
-
-const UNEXPECTED_ERROR_MESSAGE = "Something went wrong. Please try again later.";
+import { UNEXPECTED_ERROR_MESSAGE } from "./common";
 
 export function getStartHandler(user: UserService, wallet: WalletService) {
   return async (ctx: CommandContext<Context>) => {
@@ -14,7 +13,7 @@ export function getStartHandler(user: UserService, wallet: WalletService) {
 
     if (!userId) {
       console.error("No user ID found in context");
-      ctx.reply("Something went wrong. Please try again later.");
+      ctx.reply(UNEXPECTED_ERROR_MESSAGE);
       return;
     }
 

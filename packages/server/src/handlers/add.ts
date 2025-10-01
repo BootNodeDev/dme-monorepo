@@ -1,8 +1,7 @@
 import { CommandContext, Context } from "grammy";
 import { UserService, UserWalletAlreadyExistsError } from "../services/user";
 import { InvalidEthereumAddressError, WalletService } from "../services/wallet";
-
-const UNEXPECTED_ERROR_MESSAGE = "Something went wrong. Please try again later.";
+import { UNEXPECTED_ERROR_MESSAGE } from "./common";
 
 export function getAddHandler(user: UserService, wallet: WalletService) {
   return async (ctx: CommandContext<Context>) => {

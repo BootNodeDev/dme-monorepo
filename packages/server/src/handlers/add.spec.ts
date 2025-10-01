@@ -2,6 +2,7 @@ import { CommandContext, Context } from "grammy";
 import { UserService, UserWalletAlreadyExistsError } from "../services/user";
 import { InvalidEthereumAddressError, WalletService } from "../services/wallet";
 import { getAddHandler } from "./add";
+import { UNEXPECTED_ERROR_MESSAGE } from "./common";
 
 jest.mock("../services/user");
 jest.mock("../services/wallet");
@@ -66,7 +67,7 @@ it("should reply with error when user ID is not found in context", async () => {
 
   expect(mockWalletService.upsert).not.toHaveBeenCalled();
   expect(mockUserService.addWallet).not.toHaveBeenCalled();
-  expect(mockReply).toHaveBeenCalledWith("Something went wrong. Please try again later.");
+  expect(mockReply).toHaveBeenCalledWith(UNEXPECTED_ERROR_MESSAGE);
 });
 
 it("should reply with error when wallet address is invalid", async () => {
@@ -86,7 +87,7 @@ it("should reply with generic error when wallet upsert fails for unknown reason"
 
   expect(mockWalletService.upsert).toHaveBeenCalledWith(ETHEREUM_ADDRESS);
   expect(mockUserService.addWallet).not.toHaveBeenCalled();
-  expect(mockReply).toHaveBeenCalledWith("Something went wrong. Please try again later.");
+  expect(mockReply).toHaveBeenCalledWith(UNEXPECTED_ERROR_MESSAGE);
 });
 
 it("should reply with specific message when wallet is already associated with user", async () => {
@@ -108,7 +109,7 @@ it("should reply with generic error when adding wallet to user fails for unknown
 
   expect(mockWalletService.upsert).toHaveBeenCalledWith(ETHEREUM_ADDRESS);
   expect(mockUserService.addWallet).toHaveBeenCalledWith(USER_ID, ETHEREUM_ADDRESS);
-  expect(mockReply).toHaveBeenCalledWith("Something went wrong. Please try again later.");
+  expect(mockReply).toHaveBeenCalledWith(UNEXPECTED_ERROR_MESSAGE);
 });
 
 it("should handle empty string address as missing address", async () => {
