@@ -14,7 +14,7 @@ model User {
   // The user's telegram Id
   id        Int            @id
   createdAt DateTime       @default(now()) @map("created_at")
-  wallets   UsersWallets[]
+  wallets   UserWallet[]
 
   @@map("users")
 }
@@ -23,12 +23,12 @@ model Wallet {
   // The wallet address
   id        String         @id
   createdAt DateTime       @default(now()) @map("created_at")
-  users     UsersWallets[]
+  users     UserWallet[]
 
   @@map("wallets")
 }
 
-model UsersWallets {
+model UserWallet {
   user      User     @relation(fields: [userId], references: [id])
   userId    Int      @map("user_id")
   wallet    Wallet   @relation(fields: [walletId], references: [id])

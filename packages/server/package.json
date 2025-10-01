@@ -5,7 +5,7 @@
   "main": "dist/index.js",
   "scripts": {
     "start": "prisma generate && prisma db push && tsc && node --env-file .env .",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "jest --coverage"
   },
   "keywords": [],
   "author": "",
@@ -13,8 +13,11 @@
   "packageManager": "pnpm@10.17.1",
   "devDependencies": {
     "@tsconfig/node22": "^22.0.2",
+    "@types/jest": "^30.0.0",
     "@types/node": "^24.6.0",
+    "jest": "^30.2.0",
     "prisma": "^6.16.3",
+    "ts-jest": "^29.4.4",
     "typescript": "^5.9.2"
   },
   "dependencies": {

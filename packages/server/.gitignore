@@ -6,3 +6,6 @@ dist/
 
 # SQLite database file
 prisma/dev.db
+
+# Jest coverage output
+coverage/
