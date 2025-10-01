@@ -33,4 +33,14 @@ export class UserService {
       throw error;
     }
   }
+
+  async listWallets(userId: number): Promise<string[]> {
+    const userWallets = await this.prisma.userWallet.findMany({
+      where: { userId },
+      include: { wallet: true },
+      orderBy: { createdAt: "asc" },
+    });
+
+    return userWallets.map((userWallet) => userWallet.walletId);
+  }
 }
