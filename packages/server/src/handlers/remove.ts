@@ -8,7 +8,6 @@ export function getRemoveHandler(user: UserService) {
     const userId = ctx.from?.id;
 
     if (!userId) {
-      console.error("No user ID found in context");
       ctx.reply(UNEXPECTED_ERROR_MESSAGE);
       return;
     }
@@ -29,7 +28,6 @@ export function getRemoveHandler(user: UserService) {
       } else if (error instanceof UserWalletNotFoundError) {
         ctx.reply(`Wallet ${address} is not associated with your account.`);
       } else {
-        console.error("Error removing wallet:", error);
         ctx.reply(UNEXPECTED_ERROR_MESSAGE);
       }
     }

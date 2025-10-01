@@ -7,7 +7,6 @@ export function getListHandler(user: UserService) {
     const userId = ctx.from?.id;
 
     if (!userId) {
-      console.error("No user ID found in context");
       ctx.reply(UNEXPECTED_ERROR_MESSAGE);
       return;
     }
@@ -25,7 +24,6 @@ export function getListHandler(user: UserService) {
       const walletList = wallets.map((wallet, index) => `${index + 1}. ${wallet}`).join("\n");
       ctx.reply(`Your wallets:\n${walletList}`);
     } catch (error) {
-      console.error("Error listing wallets:", error);
       ctx.reply(UNEXPECTED_ERROR_MESSAGE);
     }
   };

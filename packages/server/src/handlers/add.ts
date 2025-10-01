@@ -8,7 +8,6 @@ export function getAddHandler(user: UserService, wallet: WalletService) {
     const userId = ctx.from?.id;
 
     if (!userId) {
-      console.error("No user ID found in context");
       ctx.reply(UNEXPECTED_ERROR_MESSAGE);
       return;
     }
@@ -26,7 +25,6 @@ export function getAddHandler(user: UserService, wallet: WalletService) {
       if (error instanceof InvalidEthereumAddressError) {
         ctx.reply("Please provide a valid Ethereum address.");
       } else {
-        console.error("Error upserting wallet:", error);
         ctx.reply(UNEXPECTED_ERROR_MESSAGE);
       }
       return;
@@ -39,7 +37,6 @@ export function getAddHandler(user: UserService, wallet: WalletService) {
       if (error instanceof UserWalletAlreadyExistsError) {
         ctx.reply(`Wallet ${address} is already associated with your account.`);
       } else {
-        console.error("Error adding wallet to user:", error);
         ctx.reply(UNEXPECTED_ERROR_MESSAGE);
       }
     }
