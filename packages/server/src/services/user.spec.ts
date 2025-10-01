@@ -6,7 +6,7 @@ import {
   UserWalletNotFoundError,
 } from "./user";
 import { InvalidEthereumAddressError } from "./wallet";
-import { ETHEREUM_ADDRESS_1, ETHEREUM_ADDRESS_2, USER_ID } from "../tests/common";
+import { ETHEREUM_ADDRESS_1, ETHEREUM_ADDRESS_2, USER_ID } from "../tests/constants";
 
 jest.mock("@prisma/client", () => ({
   ...jest.requireActual("@prisma/client"),

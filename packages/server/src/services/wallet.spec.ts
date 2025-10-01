@@ -1,6 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 import { InvalidEthereumAddressError, WalletService, sanitizeEthereumAddress } from "./wallet";
-import { ETHEREUM_ADDRESS_1 } from "../tests/common";
+import { ETHEREUM_ADDRESS_1 } from "../tests/constants";
 
 jest.mock("@prisma/client");
 

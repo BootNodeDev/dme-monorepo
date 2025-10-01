@@ -3,7 +3,7 @@ import { UserService, UserWalletNotFoundError } from "../services/user";
 import { InvalidEthereumAddressError } from "../services/wallet";
 import { getRemoveHandler } from "./remove";
 import { UNEXPECTED_ERROR_MESSAGE } from "./misc/constants";
-import { ETHEREUM_ADDRESS_1, USER_ID } from "../tests/common";
+import { ETHEREUM_ADDRESS_1, USER_ID } from "../tests/constants";
 
 jest.mock("../services/user");
 

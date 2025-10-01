@@ -3,7 +3,7 @@ import { UserService, UserWalletAlreadyExistsError } from "../services/user";
 import { InvalidEthereumAddressError, WalletService } from "../services/wallet";
 import { getAddHandler } from "./add";
 import { UNEXPECTED_ERROR_MESSAGE } from "./misc/constants";
-import { ETHEREUM_ADDRESS_1, USER_ID } from "../tests/common";
+import { ETHEREUM_ADDRESS_1, USER_ID } from "../tests/constants";
 
 jest.mock("../services/user");
 jest.mock("../services/wallet");
