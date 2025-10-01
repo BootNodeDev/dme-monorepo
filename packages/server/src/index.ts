@@ -1,5 +1,5 @@
 import { Bot } from "grammy";
-import { PrismaClient, Prisma } from "@prisma/client";
+import { PrismaClient } from "@prisma/client";
 import { getStartHandler } from "./handlers/start";
 import { UserService } from "./services/user";
 import { WalletService } from "./services/wallet";

@@ -44,7 +44,10 @@ describe("create", () => {
 
   it("should throw if prisma fails with a P2002 error", async () => {
     mockCreate.mockRejectedValue(
-      new Prisma.PrismaClientKnownRequestError("", { code: "P2002" } as any)
+      new Prisma.PrismaClientKnownRequestError("", {
+        code: "P2002",
+        clientVersion: "",
+      })
     );
 
     await expect(user.create(USER_ID)).rejects.toBeInstanceOf(
@@ -54,7 +57,7 @@ describe("create", () => {
 
   it("should bubble up any unhandled error", async () => {
     mockCreate.mockRejectedValue(
-      new Prisma.PrismaClientUnknownRequestError("", {} as any)
+      new Prisma.PrismaClientUnknownRequestError("", { clientVersion: "" })
     );
 
     await expect(user.create(USER_ID)).rejects.toBeInstanceOf(
@@ -74,7 +77,10 @@ describe("addWallet", () => {
 
   it("should throw if prisma fails with a P2002 error", async () => {
     mockCreate.mockRejectedValue(
-      new Prisma.PrismaClientKnownRequestError("", { code: "P2002" } as any)
+      new Prisma.PrismaClientKnownRequestError("", {
+        code: "P2002",
+        clientVersion: "",
+      })
     );
 
     await expect(
@@ -84,7 +90,7 @@ describe("addWallet", () => {
 
   it("should bubble up any unhandled error", async () => {
     mockCreate.mockRejectedValue(
-      new Prisma.PrismaClientUnknownRequestError("", {} as any)
+      new Prisma.PrismaClientUnknownRequestError("", { clientVersion: "" })
     );
 
     await expect(
