@@ -32,7 +32,7 @@ export function getStartHandler(user: UserService, wallet: WalletService) {
       }
     }
 
-    const address = ctx.message?.text.split(" ")[1];
+    const address = ctx.message?.text.split(/\s+/)[1];
 
     let walletAlreadySubscribed = false;
 

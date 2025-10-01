@@ -1,6 +1,7 @@
 import { Bot } from "grammy";
 import { PrismaClient } from "@prisma/client";
 import { getStartHandler } from "./handlers/start";
+import { getAddHandler } from "./handlers/add";
 import { UserService } from "./services/user";
 import { WalletService } from "./services/wallet";
 
@@ -17,5 +18,6 @@ const wallet = new WalletService(prisma);
 const bot = new Bot(botToken);
 
 bot.command("start", getStartHandler(user, wallet));
+bot.command("add", getAddHandler(user, wallet));
 
 bot.start();

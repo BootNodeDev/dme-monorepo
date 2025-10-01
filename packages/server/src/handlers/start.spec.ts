@@ -118,3 +118,15 @@ it("should reply with an error when adding wallet to user fails for an unknown r
 
   expect(mockReply).toHaveBeenCalledWith("Something went wrong. Please try again later.");
 });
+
+it("should handle multiple spaces between command and address", async () => {
+  ctx.message!.text = START_COMMAND + "     " + ETHEREUM_ADDRESS + "     ";
+
+  await start(ctx);
+
+  expect(mockWalletService.upsert).toHaveBeenCalledWith(ETHEREUM_ADDRESS);
+  expect(mockUserService.addWallet).toHaveBeenCalledWith(USER_ID, ETHEREUM_ADDRESS);
+  expect(mockReply).toHaveBeenCalledWith(
+    `Welcome!\nYou have successfully subscribed the wallet: ${ETHEREUM_ADDRESS}`,
+  );
+});
