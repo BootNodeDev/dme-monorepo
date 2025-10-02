@@ -3,7 +3,7 @@ import { UserService, UserWalletNotFoundError } from "../services/user";
 import { InvalidEthereumAddressError } from "../services/wallet";
 import { getRemoveHandler } from "./remove";
 import { UNEXPECTED_ERROR_MESSAGE } from "./misc/constants";
-import { ETHEREUM_ADDRESS_1, USER_ID } from "../tests/constants";
+import { ETHEREUM_ADDRESS_1, USER_ID_1 } from "../tests/constants";
 
 jest.mock("../services/user");
 
@@ -15,8 +15,6 @@ let removeWallet: ReturnType<typeof getRemoveHandler>;
 let ctx: CommandContext<Context>;
 
 beforeEach(() => {
-  jest.clearAllMocks();
-
   mockUserService = {
     removeWallet: jest.fn(),
   } as unknown as jest.Mocked<UserService>;
@@ -26,7 +24,7 @@ beforeEach(() => {
   removeWallet = getRemoveHandler(mockUserService);
 
   ctx = {
-    from: { id: USER_ID },
+    from: { id: USER_ID_1 },
     reply: mockReply,
     message: { text: REMOVE_COMMAND + " " + ETHEREUM_ADDRESS_1 },
   } as unknown as CommandContext<Context>;
@@ -35,7 +33,7 @@ beforeEach(() => {
 it("should successfully remove a wallet and reply with success message", async () => {
   await removeWallet(ctx);
 
-  expect(mockUserService.removeWallet).toHaveBeenCalledWith(USER_ID, ETHEREUM_ADDRESS_1);
+  expect(mockUserService.removeWallet).toHaveBeenCalledWith(USER_ID_1, ETHEREUM_ADDRESS_1);
   expect(mockReply).toHaveBeenCalledWith(`Successfully removed wallet: ${ETHEREUM_ADDRESS_1}`);
 });
 
@@ -64,7 +62,7 @@ it("should reply with error when wallet address is invalid", async () => {
 
   await removeWallet(ctx);
 
-  expect(mockUserService.removeWallet).toHaveBeenCalledWith(USER_ID, ETHEREUM_ADDRESS_1);
+  expect(mockUserService.removeWallet).toHaveBeenCalledWith(USER_ID_1, ETHEREUM_ADDRESS_1);
   expect(mockReply).toHaveBeenCalledWith("Please provide a valid Ethereum address.");
 });
 
@@ -73,7 +71,7 @@ it("should reply with specific message when wallet is not associated with user",
 
   await removeWallet(ctx);
 
-  expect(mockUserService.removeWallet).toHaveBeenCalledWith(USER_ID, ETHEREUM_ADDRESS_1);
+  expect(mockUserService.removeWallet).toHaveBeenCalledWith(USER_ID_1, ETHEREUM_ADDRESS_1);
   expect(mockReply).toHaveBeenCalledWith(
     `Wallet ${ETHEREUM_ADDRESS_1} is not associated with your account.`,
   );
@@ -84,7 +82,7 @@ it("should reply with generic error when removing wallet fails for unknown reaso
 
   await removeWallet(ctx);
 
-  expect(mockUserService.removeWallet).toHaveBeenCalledWith(USER_ID, ETHEREUM_ADDRESS_1);
+  expect(mockUserService.removeWallet).toHaveBeenCalledWith(USER_ID_1, ETHEREUM_ADDRESS_1);
   expect(mockReply).toHaveBeenCalledWith(UNEXPECTED_ERROR_MESSAGE);
 });
 
@@ -105,7 +103,7 @@ it("should trim trailing whitespace in wallet address", async () => {
 
   await removeWallet(ctx);
 
-  expect(mockUserService.removeWallet).toHaveBeenCalledWith(USER_ID, ETHEREUM_ADDRESS_1);
+  expect(mockUserService.removeWallet).toHaveBeenCalledWith(USER_ID_1, ETHEREUM_ADDRESS_1);
 });
 
 it("should handle multiple spaces between command and address", async () => {
@@ -113,5 +111,5 @@ it("should handle multiple spaces between command and address", async () => {
 
   await removeWallet(ctx);
 
-  expect(mockUserService.removeWallet).toHaveBeenCalledWith(USER_ID, ETHEREUM_ADDRESS_1);
+  expect(mockUserService.removeWallet).toHaveBeenCalledWith(USER_ID_1, ETHEREUM_ADDRESS_1);
 });

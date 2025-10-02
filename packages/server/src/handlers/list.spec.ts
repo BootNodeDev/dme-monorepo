@@ -2,7 +2,7 @@ import { CommandContext, Context } from "grammy";
 import { UserService } from "../services/user";
 import { getListHandler } from "./list";
 import { UNEXPECTED_ERROR_MESSAGE } from "./misc/constants";
-import { ETHEREUM_ADDRESS_1, ETHEREUM_ADDRESS_2, USER_ID } from "../tests/constants";
+import { ETHEREUM_ADDRESS_1, ETHEREUM_ADDRESS_2, USER_ID_1 } from "../tests/constants";
 
 jest.mock("../services/user");
 
@@ -14,8 +14,6 @@ let listWallets: ReturnType<typeof getListHandler>;
 let ctx: CommandContext<Context>;
 
 beforeEach(() => {
-  jest.clearAllMocks();
-
   mockUserService = {
     create: jest.fn(),
     addWallet: jest.fn(),
@@ -27,7 +25,7 @@ beforeEach(() => {
   listWallets = getListHandler(mockUserService);
 
   ctx = {
-    from: { id: USER_ID },
+    from: { id: USER_ID_1 },
     reply: mockReply,
     message: { text: LIST_COMMAND },
   } as unknown as CommandContext<Context>;
@@ -38,7 +36,7 @@ it("should reply with empty message when user has no wallets", async () => {
 
   await listWallets(ctx);
 
-  expect(mockUserService.listWallets).toHaveBeenCalledWith(USER_ID);
+  expect(mockUserService.listWallets).toHaveBeenCalledWith(USER_ID_1);
   expect(mockReply).toHaveBeenCalledWith(
     "You don't have any wallets associated with your account yet.\nUse /add <wallet_address> to add a wallet.",
   );
@@ -52,7 +50,7 @@ it("should reply with formatted list when user has multiple wallets", async () =
 
   await listWallets(ctx);
 
-  expect(mockUserService.listWallets).toHaveBeenCalledWith(USER_ID);
+  expect(mockUserService.listWallets).toHaveBeenCalledWith(USER_ID_1);
   expect(mockReply).toHaveBeenCalledWith(
     `Your wallets:\n1. ${ETHEREUM_ADDRESS_1.toLowerCase()}\n2. ${ETHEREUM_ADDRESS_2.toLowerCase()}`,
   );
@@ -72,6 +70,6 @@ it("should reply with error when listing wallets fails", async () => {
 
   await listWallets(ctx);
 
-  expect(mockUserService.listWallets).toHaveBeenCalledWith(USER_ID);
+  expect(mockUserService.listWallets).toHaveBeenCalledWith(USER_ID_1);
   expect(mockReply).toHaveBeenCalledWith(UNEXPECTED_ERROR_MESSAGE);
 });

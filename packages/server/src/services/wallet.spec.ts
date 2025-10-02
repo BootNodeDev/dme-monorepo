@@ -9,8 +9,6 @@ let mockPrisma: jest.Mocked<PrismaClient>;
 let wallet: WalletService;
 
 beforeEach(() => {
-  jest.clearAllMocks();
-
   mockUpsert = jest.fn();
 
   mockPrisma = {

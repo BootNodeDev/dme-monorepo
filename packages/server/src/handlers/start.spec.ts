@@ -7,7 +7,7 @@ import {
 import { InvalidEthereumAddressError, WalletService } from "../services/wallet";
 import { getStartHandler } from "./start";
 import { UNEXPECTED_ERROR_MESSAGE } from "./misc/constants";
-import { ETHEREUM_ADDRESS_1, USER_ID } from "../tests/constants";
+import { ETHEREUM_ADDRESS_1, USER_ID_1 } from "../tests/constants";
 
 jest.mock("../services/user");
 jest.mock("../services/wallet");
@@ -21,8 +21,6 @@ let start: ReturnType<typeof getStartHandler>;
 let ctx: CommandContext<Context>;
 
 beforeEach(() => {
-  jest.clearAllMocks();
-
   mockUserService = {
     create: jest.fn(),
     addWallet: jest.fn(),
@@ -37,7 +35,7 @@ beforeEach(() => {
   start = getStartHandler(mockUserService, mockWalletService);
 
   ctx = {
-    from: { id: USER_ID },
+    from: { id: USER_ID_1 },
     reply: mockReply,
     message: { text: START_COMMAND + " " + ETHEREUM_ADDRESS_1 },
   } as unknown as CommandContext<Context>;
@@ -125,7 +123,7 @@ it("should handle multiple spaces between command and address", async () => {
   await start(ctx);
 
   expect(mockWalletService.upsert).toHaveBeenCalledWith(ETHEREUM_ADDRESS_1);
-  expect(mockUserService.addWallet).toHaveBeenCalledWith(USER_ID, ETHEREUM_ADDRESS_1);
+  expect(mockUserService.addWallet).toHaveBeenCalledWith(USER_ID_1, ETHEREUM_ADDRESS_1);
   expect(mockReply).toHaveBeenCalledWith(
     `Welcome!\nYou have successfully subscribed the wallet: ${ETHEREUM_ADDRESS_1}`,
   );
