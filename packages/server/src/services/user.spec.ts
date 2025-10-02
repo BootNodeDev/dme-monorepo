@@ -1,65 +1,43 @@
-import { Prisma, PrismaClient } from "@prisma/client";
+import { Prisma } from "@prisma/client";
 import {
   UserAlreadyExistsError,
   UserService,
   UserWalletAlreadyExistsError,
   UserWalletNotFoundError,
 } from "./user";
-import { InvalidEthereumAddressError } from "./wallet";
+import { InvalidEthereumAddressError, WalletService } from "./wallet";
 import { ETHEREUM_ADDRESS_1, ETHEREUM_ADDRESS_2, USER_ID_1 } from "../tests/constants";
+import { prisma } from "../tests/setup";
 
-jest.mock("@prisma/client", () => ({
-  ...jest.requireActual("@prisma/client"),
-  PrismaClient: jest.fn(),
-}));
-
-let mockCreate: jest.Mock;
-let mockFindMany: jest.Mock;
-let mockDelete: jest.Mock;
-let mockPrisma: jest.Mocked<PrismaClient>;
 let user: UserService;
+let wallet: WalletService;
 
 beforeEach(() => {
-  mockCreate = jest.fn();
-  mockFindMany = jest.fn();
-  mockDelete = jest.fn();
-
-  mockPrisma = {
-    user: {
-      create: mockCreate,
-    },
-    userWallet: {
-      create: mockCreate,
-      findMany: mockFindMany,
-      delete: mockDelete,
-    },
-  } as unknown as jest.Mocked<PrismaClient>;
-
-  user = new UserService(mockPrisma);
+  user = new UserService(prisma);
+  wallet = new WalletService(prisma);
 });
 
 describe("create", () => {
-  it("should call prisma user create", async () => {
+  it("should create a user", async () => {
     await user.create(USER_ID_1);
 
-    expect(mockCreate).toHaveBeenCalledWith({ data: { id: USER_ID_1 } });
+    const result = await prisma.user.findMany({});
+    expect(result).toHaveLength(1);
+    expect(result[0].id).toBe(USER_ID_1);
   });
 
-  it("should throw if prisma fails with a P2002 error", async () => {
-    mockCreate.mockRejectedValue(
-      new Prisma.PrismaClientKnownRequestError("", {
-        code: "P2002",
-        clientVersion: "",
-      }),
-    );
+  it("should throw UserAlreadyExistsError when user already exists", async () => {
+    await user.create(USER_ID_1);
 
     await expect(user.create(USER_ID_1)).rejects.toBeInstanceOf(UserAlreadyExistsError);
   });
 
   it("should bubble up any unhandled error", async () => {
-    mockCreate.mockRejectedValue(
-      new Prisma.PrismaClientUnknownRequestError("", { clientVersion: "" }),
-    );
+    jest
+      .spyOn(prisma.user, "create")
+      .mockRejectedValueOnce(
+        new Prisma.PrismaClientUnknownRequestError("Database error", { clientVersion: "5.0.0" }),
+      );
 
     await expect(user.create(USER_ID_1)).rejects.toBeInstanceOf(
       Prisma.PrismaClientUnknownRequestError,
@@ -68,34 +46,25 @@ describe("create", () => {
 });
 
 describe("addWallet", () => {
-  it("should call prisma userWallet create", async () => {
+  it("should add wallet to user", async () => {
+    await wallet.upsert(ETHEREUM_ADDRESS_1);
+    await user.create(USER_ID_1);
+
     await user.addWallet(USER_ID_1, ETHEREUM_ADDRESS_1);
 
-    expect(mockCreate).toHaveBeenCalledWith({
-      data: { userId: USER_ID_1, walletId: ETHEREUM_ADDRESS_1.toLowerCase() },
-    });
+    const result = await prisma.userWallet.findMany({});
+    expect(result).toHaveLength(1);
+    expect(result[0].userId).toBe(USER_ID_1);
+    expect(result[0].walletId).toBe(ETHEREUM_ADDRESS_1.toLowerCase());
   });
 
-  it("should throw if prisma fails with a P2002 error", async () => {
-    mockCreate.mockRejectedValue(
-      new Prisma.PrismaClientKnownRequestError("", {
-        code: "P2002",
-        clientVersion: "",
-      }),
-    );
+  it("should throw UserWalletAlreadyExistsError when wallet already added", async () => {
+    await wallet.upsert(ETHEREUM_ADDRESS_1);
+    await user.create(USER_ID_1);
+    await user.addWallet(USER_ID_1, ETHEREUM_ADDRESS_1);
 
     await expect(user.addWallet(USER_ID_1, ETHEREUM_ADDRESS_1)).rejects.toBeInstanceOf(
       UserWalletAlreadyExistsError,
-    );
-  });
-
-  it("should bubble up any unhandled error", async () => {
-    mockCreate.mockRejectedValue(
-      new Prisma.PrismaClientUnknownRequestError("", { clientVersion: "" }),
-    );
-
-    await expect(user.addWallet(USER_ID_1, ETHEREUM_ADDRESS_1)).rejects.toBeInstanceOf(
-      Prisma.PrismaClientUnknownRequestError,
     );
   });
 
@@ -104,75 +73,78 @@ describe("addWallet", () => {
       InvalidEthereumAddressError,
     );
   });
+
+  it("should bubble up any unhandled error", async () => {
+    jest
+      .spyOn(prisma.userWallet, "create")
+      .mockRejectedValueOnce(
+        new Prisma.PrismaClientUnknownRequestError("Database error", { clientVersion: "5.0.0" }),
+      );
+
+    await wallet.upsert(ETHEREUM_ADDRESS_1);
+    await user.create(USER_ID_1);
+
+    await expect(user.addWallet(USER_ID_1, ETHEREUM_ADDRESS_1)).rejects.toBeInstanceOf(
+      Prisma.PrismaClientUnknownRequestError,
+    );
+  });
 });
 
 describe("listWallets", () => {
   it("should return array of wallet addresses when user has wallets", async () => {
-    const mockUserWallets = [
-      { walletId: ETHEREUM_ADDRESS_1.toLowerCase() },
-      { walletId: ETHEREUM_ADDRESS_2.toLowerCase() },
-    ];
-
-    mockFindMany.mockResolvedValue(mockUserWallets);
+    await wallet.upsert(ETHEREUM_ADDRESS_1);
+    await wallet.upsert(ETHEREUM_ADDRESS_2);
+    await user.create(USER_ID_1);
+    await user.addWallet(USER_ID_1, ETHEREUM_ADDRESS_1);
+    await user.addWallet(USER_ID_1, ETHEREUM_ADDRESS_2);
 
     const result = await user.listWallets(USER_ID_1);
-
-    expect(mockFindMany).toHaveBeenCalledWith({
-      where: { userId: USER_ID_1 },
-      include: { wallet: true },
-      orderBy: { createdAt: "asc" },
-    });
 
     expect(result).toEqual([ETHEREUM_ADDRESS_1.toLowerCase(), ETHEREUM_ADDRESS_2.toLowerCase()]);
   });
 
-  it("should bubble up any database error", async () => {
-    mockFindMany.mockRejectedValue(new Error("Database connection failed"));
+  it("should return empty array when user has no wallets", async () => {
+    await user.create(USER_ID_1);
 
-    await expect(user.listWallets(USER_ID_1)).rejects.toThrow("Database connection failed");
+    const result = await user.listWallets(USER_ID_1);
+
+    expect(result).toEqual([]);
   });
 });
 
 describe("removeWallet", () => {
-  it("should call prisma userWallet delete with correct parameters", async () => {
-    mockDelete.mockResolvedValue({});
+  it("should remove wallet from user", async () => {
+    await wallet.upsert(ETHEREUM_ADDRESS_1);
+    await user.create(USER_ID_1);
+    await user.addWallet(USER_ID_1, ETHEREUM_ADDRESS_1);
 
     await user.removeWallet(USER_ID_1, ETHEREUM_ADDRESS_1);
 
-    expect(mockDelete).toHaveBeenCalledWith({
-      where: { userId_walletId: { userId: USER_ID_1, walletId: ETHEREUM_ADDRESS_1.toLowerCase() } },
-    });
+    const result = await prisma.userWallet.findMany({});
+    expect(result).toHaveLength(0);
   });
 
-  it("should throw UserWalletNotFoundError when wallet is not found (P2025 error)", async () => {
-    mockDelete.mockRejectedValue(
-      new Prisma.PrismaClientKnownRequestError("", {
-        code: "P2025",
-        clientVersion: "",
-      }),
-    );
-
+  it("should throw UserWalletNotFoundError when wallet is not found", async () => {
     await expect(user.removeWallet(USER_ID_1, ETHEREUM_ADDRESS_1)).rejects.toBeInstanceOf(
       UserWalletNotFoundError,
-    );
-  });
-
-  it("should bubble up unhandled errors", async () => {
-    mockDelete.mockRejectedValue(
-      new Prisma.PrismaClientKnownRequestError("", {
-        code: "P2002",
-        clientVersion: "",
-      }),
-    );
-
-    await expect(user.removeWallet(USER_ID_1, ETHEREUM_ADDRESS_1)).rejects.toBeInstanceOf(
-      Prisma.PrismaClientKnownRequestError,
     );
   });
 
   it("should throw when the address is invalid", async () => {
     await expect(user.removeWallet(USER_ID_1, "invalid-address")).rejects.toBeInstanceOf(
       InvalidEthereumAddressError,
+    );
+  });
+
+  it("should bubble up any unhandled error", async () => {
+    jest
+      .spyOn(prisma.userWallet, "delete")
+      .mockRejectedValueOnce(
+        new Prisma.PrismaClientUnknownRequestError("Database error", { clientVersion: "5.0.0" }),
+      );
+
+    await expect(user.removeWallet(USER_ID_1, ETHEREUM_ADDRESS_1)).rejects.toBeInstanceOf(
+      Prisma.PrismaClientUnknownRequestError,
     );
   });
 });

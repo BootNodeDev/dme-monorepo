@@ -1,34 +1,29 @@
-import { PrismaClient } from "@prisma/client";
 import { InvalidEthereumAddressError, WalletService, sanitizeEthereumAddress } from "./wallet";
 import { ETHEREUM_ADDRESS_1 } from "../tests/constants";
+import { prisma } from "../tests/setup";
 
-jest.mock("@prisma/client");
-
-let mockUpsert: jest.Mock;
-let mockPrisma: jest.Mocked<PrismaClient>;
 let wallet: WalletService;
 
 beforeEach(() => {
-  mockUpsert = jest.fn();
-
-  mockPrisma = {
-    wallet: {
-      upsert: mockUpsert,
-    },
-  } as unknown as jest.Mocked<PrismaClient>;
-
-  wallet = new WalletService(mockPrisma);
+  wallet = new WalletService(prisma);
 });
 
 describe("upsert", () => {
-  it("should call prisma wallet upsert with sanitized address", async () => {
+  it("should create wallet with sanitized address", async () => {
     await wallet.upsert(ETHEREUM_ADDRESS_1);
 
-    expect(mockUpsert).toHaveBeenCalledWith({
-      where: { id: ETHEREUM_ADDRESS_1.toLowerCase() },
-      update: {},
-      create: { id: ETHEREUM_ADDRESS_1.toLowerCase() },
-    });
+    const result = await prisma.wallet.findMany({});
+    expect(result.length).toBe(1);
+    expect(result[0].id).toBe(ETHEREUM_ADDRESS_1.toLowerCase());
+  });
+
+  it("should not fail when upserting existing wallet", async () => {
+    await wallet.upsert(ETHEREUM_ADDRESS_1);
+    await wallet.upsert(ETHEREUM_ADDRESS_1);
+
+    const result = await prisma.wallet.findMany({});
+    expect(result.length).toBe(1);
+    expect(result[0].id).toBe(ETHEREUM_ADDRESS_1.toLowerCase());
   });
 
   it("should throw InvalidEthereumAddressError for invalid address", async () => {
