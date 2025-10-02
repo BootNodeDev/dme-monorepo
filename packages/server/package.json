@@ -5,7 +5,7 @@
   "main": "dist/index.js",
   "scripts": {
     "start": "prisma generate && prisma db push && tsc && node --env-file .env .",
-    "test": "jest --coverage",
+    "test": "scripts/test.sh",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "format": "prettier . --check",

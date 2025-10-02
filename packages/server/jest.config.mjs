@@ -8,5 +8,6 @@ export default {
   transform: {
     ...tsJestTransformCfg,
   },
+  setupFilesAfterEnv: ['./src/tests/setup.ts'],
   testPathIgnorePatterns: ["/node_modules/", "/dist/"],
 };
