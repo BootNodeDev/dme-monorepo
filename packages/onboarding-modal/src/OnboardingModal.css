@@ -1,0 +1,173 @@
+.onboarding-modal {
+
+}
+
+.button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  background-color: #0088cc;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: all 0.2s ease;
+  transform: scale(1);
+}
+
+.button:hover {
+  background-color: #0077b3;
+  transform: scale(1.05);
+  box-shadow: 0 4px 8px rgba(0, 136, 204, 0.3);
+}
+
+.button:active {
+  transform: scale(0.95);
+  box-shadow: 0 2px 4px rgba(0, 136, 204, 0.3);
+}
+
+.telegram-logo {
+  width: 20px;
+  height: 20px;
+  transition: transform 0.2s ease;
+}
+
+.button:hover .telegram-logo {
+  transform: rotate(10deg);
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal {
+  background-color: #f5f7fa;
+  border-radius: 16px;
+  padding: 32px;
+  max-width: 600px;
+  width: 90%;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+  position: relative;
+}
+
+.modal h2 {
+  margin: 0 0 24px 0;
+  color: #1a1a1a;
+  font-size: 24px;
+  font-weight: 600;
+}
+
+.modal h3 {
+  margin: 0 0 16px 0;
+  color: #4a4a4a;
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.close-button {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  background: transparent;
+  border: none;
+  font-size: 32px;
+  color: #999;
+  cursor: pointer;
+  padding: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.2s ease;
+}
+
+.close-button:hover {
+  color: #333;
+}
+
+.modal-content {
+  display: flex;
+  gap: 32px;
+  align-items: flex-start;
+}
+
+.modal-left {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.modal-right {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.modal-divider {
+  width: 1px;
+  background-color: #d0d0d0;
+  align-self: stretch;
+}
+
+.telegram-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 16px 24px;
+  background-color: #0088cc;
+  color: white;
+  text-decoration: none;
+  border-radius: 12px;
+  font-weight: 500;
+  font-size: 16px;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(0, 136, 204, 0.2);
+}
+
+.telegram-button:hover {
+  background-color: #0077b3;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 136, 204, 0.3);
+}
+
+.telegram-button-icon {
+  width: 24px;
+  height: 24px;
+}
+
+.qr-code-wrapper {
+  display: inline-block;
+  padding: 16px;
+  background-color: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+@media (max-width: 640px) {
+  .modal-content {
+    flex-direction: column;
+    gap: 24px;
+  }
+
+  .modal-divider {
+    display: none;
+  }
+
+  .modal-right {
+    width: 100%;
+  }
+}
