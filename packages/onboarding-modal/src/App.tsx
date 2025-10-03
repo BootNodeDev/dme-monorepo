@@ -4,8 +4,8 @@ function App() {
   return (
     <>
       <OnboardingModal 
-        botUsername={import.meta.env.VITE_TELEGRAM_BOT_USERNAME}
-        walletAddress={import.meta.env.VITE_WALLET_ADDRESS}
+        bot={import.meta.env.VITE_TELEGRAM_BOT_USERNAME}
+        address={import.meta.env.VITE_WALLET_ADDRESS}
       />
     </>
   );

@@ -1,55 +1,51 @@
 import { useState } from "react";
-import "./OnboardingModal.css";
-import telegramLogo from "./assets/telegramLogo.svg";
 import QRCode from "react-qr-code";
 
-interface OnboardingModalProps {
-  botUsername: string;
-  walletAddress: string;
-}
+type OnboardingModalProps = {
+  bot: string;
+  address: string;
+};
 
-export function OnboardingModal({ botUsername, walletAddress }: OnboardingModalProps) {
+export function OnboardingModal({ bot, address }: OnboardingModalProps) {
   const [isOpen, setIsOpen] = useState(false);
 
-  const telegramUrl = `https://t.me/${botUsername}?start=${walletAddress}`;
+  const telegramUrl = `https://t.me/${bot}?start=${address}`;
 
   return (
-    <div className="onboarding-modal container">
-      <button className="button" onClick={() => setIsOpen(true)}>
-        <img src={telegramLogo} alt="Telegram Logo" className="telegram-logo" />
-        DMe
-      </button>
+    <div>
+      <button onClick={() => setIsOpen(true)}>Open Modal</button>
       {isOpen && (
-        <div className="modal-overlay" onClick={() => setIsOpen(false)}>
-          <div className="modal" onClick={(e) => e.stopPropagation()}>
-            <button className="close-button" onClick={() => setIsOpen(false)}>
-              ×
-            </button>
+        <div
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: "rgba(0, 0, 0, 0.5)",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+          onClick={() => setIsOpen(false)}
+        >
+          <div
+            style={{
+              backgroundColor: "white",
+              padding: "20px",
+              borderRadius: "8px",
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button onClick={() => setIsOpen(false)}>Close</button>
             <h2>Connect to DMe</h2>
-            <div className="modal-content">
-              <div className="modal-left">
-                <h3>Connect a Wallet</h3>
-                <a
-                  href={telegramUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="telegram-button"
-                >
-                  <img src={telegramLogo} alt="Telegram" className="telegram-button-icon" />
-                  Open Telegram Bot
-                </a>
-              </div>
-              <div className="modal-divider"></div>
-              <div className="modal-right">
-                <h3>Scan with your phone</h3>
-                <div className="qr-code-wrapper">
-                  <QRCode
-                    value={telegramUrl}
-                    size={200}
-                    style={{ height: "auto", maxWidth: "100%", width: "100%" }}
-                  />
-                </div>
-              </div>
+            <div>
+              <a href={telegramUrl} target="_blank" rel="noopener noreferrer">
+                Open Telegram Bot
+              </a>
+            </div>
+            <div>
+              <QRCode value={telegramUrl} size={150} />
             </div>
           </div>
         </div>
