@@ -50,12 +50,27 @@ model UserWallet {
 }
 
 model UserMessage {
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId    Int      @map("user_id")
-  message   Message  @relation(fields: [messageId], references: [id], onDelete: Cascade)
-  messageId String   @map("message_id")
-  createdAt DateTime @default(now()) @map("created_at")
+  user      User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    Int                  @map("user_id")
+  message   Message              @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  messageId String               @map("message_id")
+  createdAt DateTime             @default(now()) @map("created_at")
+  attempts  UserMessageAttempt[]
 
   @@id([userId, messageId])
   @@map("users_messages")
+}
+
+model UserMessageAttempt {
+  attempt       Int
+  userId        Int
+  messageId     String
+  userMessage   UserMessage @relation(fields: [userId, messageId], references: [userId, messageId], onDelete: Cascade)
+  sentAt        DateTime    @default(now()) @map("sent_at")
+  deliveredAt   DateTime?   @map("delivered_at")
+  error         String?
+  nextAttemptAt DateTime?   @map("next_attempt_at")
+
+  @@id([userId, messageId, attempt])
+  @@map("users_messages_attempts")
 }

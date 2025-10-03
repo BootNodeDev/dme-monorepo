@@ -9,4 +9,4 @@ export DATABASE_URL="file:./test.db"
 pnpm prisma db push --force-reset
 
 # Run tests, and exit with the test results
-pnpm jest --coverage --runInBand --verbose
+pnpm jest --coverage --runInBand --verbose "$@"
