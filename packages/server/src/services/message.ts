@@ -115,7 +115,7 @@ export class MessageService {
   }
 
   async markAsFailed({ userId, messageId, attempt }: UserMessageAttempt, error: string) {
-    const delay = Math.min(Math.pow(2, attempt - 1) * ms('1m'), ms('1h'));
+    const delay = Math.min(Math.pow(2, attempt - 1) * ms("1m"), ms("1h"));
     const nextAttemptAt = new Date(Date.now() + delay);
 
     await this.prisma.userMessageAttempt.update({
@@ -128,7 +128,7 @@ export class MessageService {
       },
       data: {
         error,
-        nextAttemptAt
+        nextAttemptAt,
       },
     });
   }

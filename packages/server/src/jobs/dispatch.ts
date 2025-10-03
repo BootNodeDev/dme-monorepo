@@ -15,7 +15,7 @@ export class DispatchJob {
   ) {
     this.queue = new PQueue({
       intervalCap: 30,
-      interval: ms('1s'),
+      interval: ms("1s"),
       carryoverIntervalCount: false,
     });
 
@@ -66,7 +66,7 @@ export class DispatchJob {
         userId,
         new PQueue({
           intervalCap: 1,
-          interval: ms('1s'),
+          interval: ms("1s"),
           carryoverIntervalCount: false,
         }),
       );

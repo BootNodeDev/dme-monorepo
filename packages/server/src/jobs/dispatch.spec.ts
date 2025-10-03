@@ -128,7 +128,7 @@ describe("execute", () => {
 
   it("should not execute if already executing", async () => {
     mockMessageService.listSendable.mockImplementation(
-      () => new Promise((resolve) => setTimeout(() => resolve([]), 10))
+      () => new Promise((resolve) => setTimeout(() => resolve([]), 10)),
     );
 
     const promise1 = dispatch.execute();
