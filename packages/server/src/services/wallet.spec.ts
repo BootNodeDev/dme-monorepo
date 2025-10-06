@@ -1,5 +1,5 @@
 import { InvalidEthereumAddressError, WalletService, sanitizeEthereumAddress } from "./wallet";
-import { ETHEREUM_ADDRESS_1 } from "../tests/constants";
+import { ETHEREUM_ADDRESS_1, USER_ID_1, USER_ID_2 } from "../tests/constants";
 import { prisma } from "../tests/setup";
 
 let wallet: WalletService;
@@ -28,6 +28,47 @@ describe("upsert", () => {
 
   it("should throw InvalidEthereumAddressError for invalid address", async () => {
     await expect(wallet.upsert("invalid")).rejects.toBeInstanceOf(InvalidEthereumAddressError);
+  });
+});
+
+describe("listAll", () => {
+  it("should return a list of addresses", async () => {
+    await prisma.user.create({ data: { id: USER_ID_1 } });
+    await prisma.wallet.create({ data: { id: ETHEREUM_ADDRESS_1.toLowerCase() } });
+    await prisma.userWallet.create({
+      data: { userId: USER_ID_1, walletId: ETHEREUM_ADDRESS_1.toLowerCase() },
+    });
+
+    expect(await wallet.listAll()).toEqual([ETHEREUM_ADDRESS_1.toLowerCase()]);
+  });
+
+  it("should return unique wallets with no repeated values", async () => {
+    await prisma.user.createMany({
+      data: [{ id: USER_ID_1 }, { id: USER_ID_2 }],
+    });
+
+    await prisma.wallet.create({
+      data: { id: ETHEREUM_ADDRESS_1.toLowerCase() },
+    });
+
+    await prisma.userWallet.createMany({
+      data: [
+        { userId: USER_ID_1, walletId: ETHEREUM_ADDRESS_1.toLowerCase() },
+        { userId: USER_ID_2, walletId: ETHEREUM_ADDRESS_1.toLowerCase() },
+      ],
+    });
+
+    expect(await wallet.listAll()).toEqual([ETHEREUM_ADDRESS_1.toLowerCase()]);
+  });
+
+  it("should ignore wallets that are not associated with any user", async () => {
+    await prisma.wallet.create({
+      data: { id: ETHEREUM_ADDRESS_1.toLowerCase() },
+    });
+
+    const result = await wallet.listAll();
+
+    expect(result).toHaveLength(0);
   });
 });
 

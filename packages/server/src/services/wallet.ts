@@ -17,6 +17,12 @@ export class WalletService {
       create: { id },
     });
   }
+
+  async listAll() {
+    return (await this.prisma.userWallet.findMany({ distinct: "walletId" })).map(
+      (uw) => uw.walletId,
+    );
+  }
 }
 
 export function sanitizeEthereumAddress(address: string): string {
