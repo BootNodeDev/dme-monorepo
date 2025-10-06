@@ -1,20 +1,23 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import dts from "vite-plugin-dts";
-import { libInjectCss } from "vite-plugin-lib-inject-css";
 import { resolve } from "path";
+import { copyFileSync } from "fs";
 
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [
     react(),
-    libInjectCss(),
-    dts({ 
-      include: "lib", 
+    dts({
+      include: "lib",
       insertTypesEntry: true,
       tsconfigPath: "./tsconfig.lib.json",
-      rollupTypes: true
+      rollupTypes: true,
     }),
+    {
+      name: "copy-css",
+      closeBundle: () => copyFileSync("lib/index.css", "dist/index.css"),
+    },
   ],
   build: {
     lib: {
