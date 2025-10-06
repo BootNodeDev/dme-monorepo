@@ -7,17 +7,28 @@ export type ModalProps = {
   title?: string;
   description?: string;
   cta?: string;
+  onClose?: () => void;
 };
 
-export function Modal({ bot, address, title, description, cta }: ModalProps) {
+export function Modal({
+  bot,
+  address,
+  title,
+  description,
+  cta,
+  onClose,
+}: ModalProps) {
   const link = `https://t.me/${bot}?start=${address}`;
 
   return (
-    <div className="dme-modal__overlay">
-      <div className="dme-modal__content">
+    <div className="dme-modal__overlay" onClick={onClose}>
+      <div className="dme-modal__content" onClick={(e) => e.stopPropagation()}>
         <div className="dme-modal__header">
           <h2 className="dme-modal__title">{title || "DMe"}</h2>
-          <button className="dme-modal__button--reset dme-modal__close">
+          <button
+            className="dme-modal__button--reset dme-modal__close"
+            onClick={onClose}
+          >
             &times;
           </button>
         </div>
