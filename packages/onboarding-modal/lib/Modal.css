@@ -21,6 +21,7 @@
   max-height: 80vh;
   overflow-y: auto;
   font-family: Manrope Variable, sans-serif;
+  color: black;
 }
 
 .dme-modal__header {
