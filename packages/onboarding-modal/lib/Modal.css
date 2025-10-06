@@ -1,3 +1,5 @@
+@import './index.css';
+
 .dme-modal__overlay {
   position: fixed;
   top: 0;
@@ -35,29 +37,6 @@
   margin: 0px;
 }
 
-.dme-modal__button--reset {
-  background: none;
-  border: none;
-  padding: 0;
-  margin: 0;
-  font: inherit;
-  color: inherit;
-  cursor: pointer;
-  outline: none;
-  text-decoration: none;
-  appearance: none;
-  -webkit-appearance: none;
-  -moz-appearance: none;
-}
-
-.dme-modal__button--reset:focus {
-  outline: 2px solid #0066cc;
-  outline-offset: 2px;
-}
-
-.dme-modal__close {
-}
-
 .dme-modal__body {
   display: flex;
   flex-direction: column;
@@ -72,34 +51,6 @@
 
 .dme-modal__qr {
   margin-top: 2rem;
-}
-
-.dme-modal__a--reset {
-  /* color: inherit; */
-  text-decoration: none;
-  background: transparent;
-  border: none;
-  padding: 0;
-  margin: 0;
-  font: inherit;
-  cursor: pointer;
-  outline: none;
-  appearance: none;
-  -webkit-appearance: none;
-  -moz-appearance: none;
-}
-
-.dme-modal__a--reset:link,
-.dme-modal__a--reset:visited,
-.dme-modal__a--reset:hover,
-.dme-modal__a--reset:active {
-  /* color: inherit; */
-  text-decoration: none;
-}
-
-.dme-modal__a--reset:focus {
-  outline: 2px solid #0066cc;
-  outline-offset: 2px;
 }
 
 .dme-modal__cta {
