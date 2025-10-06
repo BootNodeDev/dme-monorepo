@@ -106,8 +106,14 @@ describe("execute", () => {
 
     expect(mockMessageService.newAttempt).toHaveBeenCalledWith(MESSAGE_ID, USER_ID_1);
     expect(mockMessageService.newAttempt).toHaveBeenCalledWith(MESSAGE_ID, USER_ID_2);
-    expect(mockSend).toHaveBeenCalledWith(USER_ID_1, MESSAGE_CONTENT);
-    expect(mockSend).toHaveBeenCalledWith(USER_ID_2, MESSAGE_CONTENT);
+    expect(mockSend).toHaveBeenCalledWith(USER_ID_1, MESSAGE_CONTENT, {
+      link_preview_options: { is_disabled: true },
+      parse_mode: "MarkdownV2",
+    });
+    expect(mockSend).toHaveBeenCalledWith(USER_ID_2, MESSAGE_CONTENT, {
+      link_preview_options: { is_disabled: true },
+      parse_mode: "MarkdownV2",
+    });
     expect(mockMessageService.markAsDelivered).toHaveBeenCalledWith(attempt1);
     expect(mockMessageService.markAsDelivered).toHaveBeenCalledWith(attempt2);
   });
@@ -120,8 +126,14 @@ describe("execute", () => {
 
     expect(mockMessageService.newAttempt).toHaveBeenCalledWith(MESSAGE_ID, USER_ID_1);
     expect(mockMessageService.newAttempt).toHaveBeenCalledWith(MESSAGE_ID, USER_ID_2);
-    expect(mockSend).toHaveBeenCalledWith(USER_ID_1, MESSAGE_CONTENT);
-    expect(mockSend).toHaveBeenCalledWith(USER_ID_2, MESSAGE_CONTENT);
+    expect(mockSend).toHaveBeenCalledWith(USER_ID_1, MESSAGE_CONTENT, {
+      link_preview_options: { is_disabled: true },
+      parse_mode: "MarkdownV2",
+    });
+    expect(mockSend).toHaveBeenCalledWith(USER_ID_2, MESSAGE_CONTENT, {
+      link_preview_options: { is_disabled: true },
+      parse_mode: "MarkdownV2",
+    });
     expect(mockMessageService.markAsFailed).toHaveBeenCalledWith(attempt1, errorMessage);
     expect(mockMessageService.markAsFailed).toHaveBeenCalledWith(attempt2, errorMessage);
   });

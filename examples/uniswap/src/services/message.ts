@@ -1,5 +1,6 @@
 import { Prisma, PrismaClient, UserMessageAttempt } from "@prisma/client";
 import ms from "ms";
+import telegramify from "telegramify-markdown";
 import { sanitizeEthereumAddress } from "./wallet";
 
 export class UsersForAddressNotFoundError extends Error {}
@@ -25,7 +26,7 @@ export class MessageService {
     await this.prisma.$transaction(async (prisma) => {
       const { id: messageId } = await prisma.message.create({
         data: {
-          content,
+          content: telegramify(content, "remove"),
         },
       });
 

@@ -1,6 +1,5 @@
 import { Bot } from "grammy";
 import { PrismaClient } from "@prisma/client";
-import telegramify from "telegramify-markdown";
 import { getStartHandler } from "./handlers/start";
 import { getAddHandler } from "./handlers/add";
 import { getListHandler } from "./handlers/list";
@@ -36,19 +35,13 @@ bot.start();
 
 new DispatchJob(
   message,
-  "*/5 * * * * *", // Every 30 seconds
-  (userId, content) =>
-    bot.api.sendMessage(userId, telegramify(content, "remove"), {
-      parse_mode: "MarkdownV2",
-      link_preview_options: {
-        is_disabled: true,
-      },
-    }),
+  "*/30 * * * * *", // Every 30 seconds
+  bot.api.sendMessage.bind(bot.api),
 ).start();
 
 new OutOfRangeJob(
   message,
-  "*/5 * * * * *", // Every 30 seconds
+  "*/30 * * * * *", // Every 30 seconds
   wallet,
   position,
 ).start();
