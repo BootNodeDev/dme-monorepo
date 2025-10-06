@@ -1,0 +1,11 @@
+# Compiled output
+dist/
+
+# Environment variables file
+.env
+
+# SQLite database files
+prisma/*.db
+
+# Jest coverage output
+coverage/
