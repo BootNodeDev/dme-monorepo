@@ -47,6 +47,7 @@ export class OutOfRangeJob {
 
       for (const pos of oorPositions) {
         const isAbove = Number(pos.poolPrice) > Number(pos.priceUpper);
+        const url = `https://app.uniswap.org/positions/v3/${pos.network}/${pos.nftId}`;
 
         let percentage: number;
 
@@ -59,7 +60,7 @@ export class OutOfRangeJob {
         }
 
         content.push(
-          `- ${pos.tokens.map((t) => t.symbol).join(", ")} (${formatChainName(pos.network)}) ${isAbove ? "🔺" : "🔻"}${percentage.toFixed(2)}%`,
+          `[${pos.tokens.map((t) => t.symbol).join(", ")} (${formatChainName(pos.network)})](${url}) ${isAbove ? "🔺" : "🔻"}${percentage.toFixed(2)}%`,
         );
       }
 

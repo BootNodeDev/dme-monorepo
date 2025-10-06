@@ -9,6 +9,7 @@ type RevertPosition = {
   price_lower: string;
   price_upper: string;
   tokens: { [address: string]: { symbol: string } };
+  nft_id: number;
 };
 
 export class PositionService {
@@ -27,6 +28,7 @@ export class PositionService {
         tokens: Object.values(p.tokens).map((t) => ({
           symbol: t.symbol,
         })),
+        nftId: p.nft_id,
       };
     });
   }
