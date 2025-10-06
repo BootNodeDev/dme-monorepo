@@ -1,9 +1,16 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
-import { Modal } from "../lib/Modal.tsx";
+import { Button } from "../lib";
+import "../lib/index.css";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <Modal bot="some-bot" address="some-address" />
+    <Button
+      text="DMe"
+      modal={{
+        bot: "some-bot",
+        address: "some-address",
+      }}
+    />
   </StrictMode>
 );

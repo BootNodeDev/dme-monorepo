@@ -1,5 +1,4 @@
 import QRCode from "react-qr-code";
-import "./Modal.css";
 
 export type ModalProps = {
   bot: string;
