@@ -5,6 +5,7 @@
   "main": "dist/index.js",
   "scripts": {
     "start": "prisma generate && prisma db push && tsc && node --env-file .env .",
+    "build": "prisma generate && tsc",
     "test": "scripts/test.sh",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
