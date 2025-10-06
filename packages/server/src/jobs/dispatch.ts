@@ -1,7 +1,8 @@
 import cron from "node-cron";
 import PQueue from "p-queue";
-import { MessageService } from "../services/message";
+import { Api, Bot, Context, RawApi } from "grammy";
 import ms from "ms";
+import { MessageService } from "../services/message";
 
 export class DispatchJob {
   private queue: PQueue;
@@ -11,7 +12,7 @@ export class DispatchJob {
   constructor(
     private message: MessageService,
     private schedule: string,
-    private send: (userId: number, content: string) => Promise<unknown>,
+    private send: Bot<Context, Api<RawApi>>["api"]["sendMessage"],
   ) {
     this.queue = new PQueue({
       intervalCap: 30,
@@ -43,7 +44,12 @@ export class DispatchJob {
           this.queue.add(async () => {
             return this.getUserQueue(recipient.userId).add(async () => {
               try {
-                await this.send(recipient.userId, msg.content);
+                await this.send(recipient.userId, msg.content, {
+                  parse_mode: "MarkdownV2",
+                  link_preview_options: {
+                    is_disabled: true,
+                  },
+                });
                 await this.message.markAsDelivered(attempt);
               } catch (error) {
                 await this.message.markAsFailed(attempt, (error as Error).message);

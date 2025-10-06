@@ -6,6 +6,6 @@ export const ETHEREUM_ADDRESS_2 = "0xCF48B6167EE25BB3A91EA9FFCC7931075A6EBD8D";
 
 export const MESSAGE_ID = "msgId";
 
-export const MESSAGE_CONTENT = "Hello, this is a test message.";
+export const MESSAGE_CONTENT = "Hello, this is a test message\n";
 
 export const CRON_SCHEDULE = "* * * * *";
