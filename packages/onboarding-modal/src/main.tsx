@@ -4,6 +4,6 @@ import { Modal } from "../lib/Modal.tsx";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <Modal />
+    <Modal bot="some-bot" address="some-address" />
   </StrictMode>
 );
