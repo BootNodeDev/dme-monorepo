@@ -3,6 +3,7 @@ import PQueue from "p-queue";
 import { Api, Bot, Context, RawApi } from "grammy";
 import ms from "ms";
 import { MessageService } from "../services/message";
+import { Logger } from "pino";
 
 export class DispatchJob {
   private queue: PQueue;
@@ -10,6 +11,7 @@ export class DispatchJob {
   private isExecuting: boolean = false;
 
   constructor(
+    private logger: Logger,
     private message: MessageService,
     private schedule: string,
     private send: Bot<Context, Api<RawApi>>["api"]["sendMessage"],
@@ -25,10 +27,13 @@ export class DispatchJob {
 
   start() {
     cron.schedule(this.schedule, this.execute.bind(this));
+
+    this.logger.info({ schedule: this.schedule }, "Dispatch job started");
   }
 
   async execute() {
     if (this.isExecuting) {
+      this.logger.warn("Previous execution still in progress, skipping this run");
       return;
     }
 
@@ -61,6 +66,8 @@ export class DispatchJob {
 
       await this.queue.onIdle();
       this.cleanupUserQueues();
+    } catch (error) {
+      this.logger.error({ error }, "Error occurred while executing dispatch job");
     } finally {
       this.isExecuting = false;
     }

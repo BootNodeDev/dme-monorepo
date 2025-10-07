@@ -1,5 +1,6 @@
 import { PrismaClient, UserMessageAttempt } from "@prisma/client";
 import cron from "node-cron";
+import { Logger } from "pino";
 import { MessageService } from "../services/message";
 import {
   CRON_SCHEDULE,
@@ -24,10 +25,17 @@ jest.mock("p-queue", () =>
 const mockCron = cron as jest.Mocked<typeof cron>;
 
 let dispatch: DispatchJob;
+let mockLogger: jest.Mocked<Logger>;
 let mockMessageService: jest.Mocked<MessageService>;
 let mockSend: jest.Mock;
 
 beforeEach(() => {
+  mockLogger = {
+    error: jest.fn(),
+    info: jest.fn(),
+    warn: jest.fn(),
+  } as unknown as jest.Mocked<Logger>;
+
   mockMessageService = new MessageService(
     null as unknown as PrismaClient,
   ) as jest.Mocked<MessageService>;
@@ -39,7 +47,7 @@ beforeEach(() => {
 
   mockSend = jest.fn();
 
-  dispatch = new DispatchJob(mockMessageService, CRON_SCHEDULE, mockSend);
+  dispatch = new DispatchJob(mockLogger, mockMessageService, CRON_SCHEDULE, mockSend);
 });
 
 describe("start", () => {
@@ -171,5 +179,14 @@ describe("execute", () => {
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     expect((dispatch as any).userQueues.has(USER_ID_1)).toBe(true);
+  });
+
+  it("should log error when listSendable throws an error", async () => {
+    const error = new Error("Database connection failed");
+    mockMessageService.listSendable.mockRejectedValue(error);
+
+    await dispatch.execute();
+
+    expect(mockLogger.error).toHaveBeenCalledWith({ error }, "Error occurred while executing dispatch job");
   });
 });

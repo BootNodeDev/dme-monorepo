@@ -35,6 +35,7 @@ logger.info("Bot started");
 /* Jobs */
 
 new DispatchJob(
+  logger.child({ job: "dispatch" }),
   message,
   "*/30 * * * * *", // Every 30 seconds
   bot.api.sendMessage.bind(bot.api),
