@@ -1,7 +1,7 @@
 import { CommandContext, Context } from "grammy";
 import { Logger } from "pino";
 import { UserService } from "../services/user";
-import { UNEXPECTED_ERROR_MESSAGE } from "./misc/constants";
+import { UNEXPECTED_ERROR_MESSAGE } from "./misc/utils";
 
 export function getListHandler(logger: Logger, user: UserService) {
   return async (ctx: CommandContext<Context>) => {

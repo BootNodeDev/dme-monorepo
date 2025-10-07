@@ -2,7 +2,7 @@ import { CommandContext, Context } from "grammy";
 import { Logger } from "pino";
 import { UserService } from "../services/user";
 import { getListHandler } from "./list";
-import { UNEXPECTED_ERROR_MESSAGE } from "./misc/constants";
+import { UNEXPECTED_ERROR_MESSAGE } from "./misc/utils";
 import { ETHEREUM_ADDRESS_1, ETHEREUM_ADDRESS_2, USER_ID_1 } from "../tests/constants";
 
 jest.mock("../services/user");

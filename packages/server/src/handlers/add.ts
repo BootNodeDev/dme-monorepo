@@ -2,7 +2,7 @@ import { CommandContext, Context } from "grammy";
 import { Logger } from "pino";
 import { UserService, UserWalletAlreadyExistsError } from "../services/user";
 import { InvalidEthereumAddressError, WalletService } from "../services/wallet";
-import { UNEXPECTED_ERROR_MESSAGE } from "./misc/constants";
+import { UNEXPECTED_ERROR_MESSAGE } from "./misc/utils";
 
 export function getAddHandler(logger: Logger, user: UserService, wallet: WalletService) {
   return async (ctx: CommandContext<Context>) => {

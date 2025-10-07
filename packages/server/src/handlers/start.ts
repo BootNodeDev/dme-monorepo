@@ -6,7 +6,7 @@ import {
   UserWalletAlreadyExistsError,
 } from "../services/user";
 import { InvalidEthereumAddressError, WalletService } from "../services/wallet";
-import { UNEXPECTED_ERROR_MESSAGE } from "./misc/constants";
+import { UNEXPECTED_ERROR_MESSAGE } from "./misc/utils";
 
 export function getStartHandler(logger: Logger, user: UserService, wallet: WalletService) {
   return async (ctx: CommandContext<Context>) => {
