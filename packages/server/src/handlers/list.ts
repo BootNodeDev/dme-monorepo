@@ -1,7 +1,7 @@
 import { CommandContext, Context } from "grammy";
 import { Logger } from "pino";
 import { UserService } from "../services/user";
-import { UNEXPECTED_ERROR_MESSAGE } from "./misc/utils";
+import { formatAddress, UNEXPECTED_ERROR_MESSAGE } from "./misc/utils";
 
 export function getListHandler(logger: Logger, user: UserService) {
   return async (ctx: CommandContext<Context>) => {
@@ -20,13 +20,15 @@ export function getListHandler(logger: Logger, user: UserService) {
 
       if (wallets.length === 0) {
         ctx.reply(
-          "You don't have any wallets associated with your account yet.\nUse /add <wallet_address> to add a wallet.",
+          "You don't have any wallets associated with your account yet.\n\nUse /add <wallet_address> to add one.",
         );
         return;
       }
 
-      const walletList = wallets.map((wallet, index) => `${index + 1}. ${wallet}`).join("\n");
-      ctx.reply(`Your wallets:\n${walletList}`);
+      const walletList = wallets
+        .map((wallet, index) => `${index + 1}. ${formatAddress(wallet)}`)
+        .join("\n");
+      ctx.reply(`Your wallets:\n\n${walletList}`);
     } catch {
       logger.error({ userId }, "Error listing wallets for user");
       ctx.reply(UNEXPECTED_ERROR_MESSAGE);
