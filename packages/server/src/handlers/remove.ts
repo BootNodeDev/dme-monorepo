@@ -1,13 +1,15 @@
 import { CommandContext, Context } from "grammy";
+import { Logger } from "pino";
 import { UserService, UserWalletNotFoundError } from "../services/user";
 import { InvalidEthereumAddressError } from "../services/wallet";
 import { UNEXPECTED_ERROR_MESSAGE } from "./misc/constants";
 
-export function getRemoveHandler(user: UserService) {
+export function getRemoveHandler(logger: Logger, user: UserService) {
   return async (ctx: CommandContext<Context>) => {
     const userId = ctx.from?.id;
 
     if (!userId) {
+      logger.error("No user ID found in the context");
       ctx.reply(UNEXPECTED_ERROR_MESSAGE);
       return;
     }
@@ -28,6 +30,7 @@ export function getRemoveHandler(user: UserService) {
       } else if (error instanceof UserWalletNotFoundError) {
         ctx.reply(`Wallet ${address} is not associated with your account.`);
       } else {
+        logger.error({ error, userId, address }, "Error removing wallet");
         ctx.reply(UNEXPECTED_ERROR_MESSAGE);
       }
     }
