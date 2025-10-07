@@ -12,6 +12,8 @@ import { DispatchJob } from "./jobs/dispatch";
 import { MessageService } from "./services/message";
 import { getEnv } from "./env";
 import { Limiter } from "./limiter";
+import { PositionService } from "./services/position";
+import { OutOfRangeJob } from "./jobs/outOfRange";
 
 const env = getEnv();
 const prisma = new PrismaClient({ datasourceUrl: env.DATABASE_URL });
@@ -29,6 +31,7 @@ const limiter = new Limiter(
 const user = new UserService(prisma);
 const wallet = new WalletService(prisma);
 const message = new MessageService(prisma);
+const position = new PositionService();
 
 /* Handlers */
 
@@ -62,3 +65,12 @@ logger.info("Bot started");
 /* Jobs */
 
 new DispatchJob(logger.child({ job: "dispatch" }), message, env.DISPATCH_CRON, limiter).start();
+
+new OutOfRangeJob(
+  logger.child({ job: "outOfRange" }),
+  message,
+  env.OUT_OF_RANGE_CRON,
+  limiter,
+  wallet,
+  position,
+).start();
