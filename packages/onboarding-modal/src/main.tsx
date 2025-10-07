@@ -2,6 +2,7 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { Button } from "../lib";
 import "../lib/index.css";
+import "./main.css";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
@@ -10,8 +11,6 @@ createRoot(document.getElementById("root")!).render(
         bot: "some-bot",
         address: "some-address",
       }}
-    >
-      DMe
-    </Button>
+    />
   </StrictMode>,
 );
