@@ -1,4 +1,5 @@
 import { CommandContext, Context } from "grammy";
+import { Logger } from "pino";
 import { UserService, UserWalletNotFoundError } from "../services/user";
 import { InvalidEthereumAddressError } from "../services/wallet";
 import { getRemoveHandler } from "./remove";
@@ -9,19 +10,25 @@ jest.mock("../services/user");
 
 const REMOVE_COMMAND = "/remove";
 
+let mockLogger: jest.Mocked<Logger>;
 let mockUserService: jest.Mocked<UserService>;
 let mockReply: jest.Mock;
 let removeWallet: ReturnType<typeof getRemoveHandler>;
 let ctx: CommandContext<Context>;
 
 beforeEach(() => {
+  mockLogger = {
+    error: jest.fn(),
+    info: jest.fn(),
+  } as unknown as jest.Mocked<Logger>;
+
   mockUserService = {
     removeWallet: jest.fn(),
   } as unknown as jest.Mocked<UserService>;
 
   mockReply = jest.fn();
 
-  removeWallet = getRemoveHandler(mockUserService);
+  removeWallet = getRemoveHandler(mockLogger, mockUserService);
 
   ctx = {
     from: { id: USER_ID_1 },
