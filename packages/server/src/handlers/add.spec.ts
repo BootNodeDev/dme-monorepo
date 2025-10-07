@@ -49,7 +49,7 @@ it("should successfully add a wallet and reply with success message", async () =
 
   expect(mockWalletService.upsert).toHaveBeenCalledWith(ETHEREUM_ADDRESS_1);
   expect(mockUserService.addWallet).toHaveBeenCalledWith(USER_ID_1, ETHEREUM_ADDRESS_1);
-  expect(mockReply).toHaveBeenCalledWith(`Successfully added wallet: ${ETHEREUM_ADDRESS_1}`);
+  expect(mockReply).toHaveBeenCalledWith("Successfully added 0xBEE9...BBAB.");
 });
 
 it("should reply with usage message when no wallet address is provided", async () => {
@@ -60,7 +60,7 @@ it("should reply with usage message when no wallet address is provided", async (
   expect(mockWalletService.upsert).not.toHaveBeenCalled();
   expect(mockUserService.addWallet).not.toHaveBeenCalled();
   expect(mockReply).toHaveBeenCalledWith(
-    "Please provide a wallet address. Usage: /add <wallet_address>",
+    "Please provide a wallet address.\n\nUsage: /add <wallet_address>",
   );
 });
 
@@ -101,9 +101,7 @@ it("should reply with specific message when wallet is already associated with us
 
   expect(mockWalletService.upsert).toHaveBeenCalledWith(ETHEREUM_ADDRESS_1);
   expect(mockUserService.addWallet).toHaveBeenCalledWith(USER_ID_1, ETHEREUM_ADDRESS_1);
-  expect(mockReply).toHaveBeenCalledWith(
-    `Wallet ${ETHEREUM_ADDRESS_1} is already associated with your account.`,
-  );
+  expect(mockReply).toHaveBeenCalledWith("0xBEE9...BBAB is already associated with your account.");
 });
 
 it("should reply with generic error when adding wallet to user fails for unknown reason", async () => {
@@ -124,7 +122,7 @@ it("should handle empty string address as missing address", async () => {
   expect(mockWalletService.upsert).not.toHaveBeenCalled();
   expect(mockUserService.addWallet).not.toHaveBeenCalled();
   expect(mockReply).toHaveBeenCalledWith(
-    "Please provide a wallet address. Usage: /add <wallet_address>",
+    "Please provide a wallet address.\n\nUsage: /add <wallet_address>",
   );
 });
 
@@ -145,5 +143,5 @@ it("should handle multiple spaces between command and address", async () => {
 
   expect(mockWalletService.upsert).toHaveBeenCalledWith(ETHEREUM_ADDRESS_1);
   expect(mockUserService.addWallet).toHaveBeenCalledWith(USER_ID_1, ETHEREUM_ADDRESS_1);
-  expect(mockReply).toHaveBeenCalledWith(`Successfully added wallet: ${ETHEREUM_ADDRESS_1}`);
+  expect(mockReply).toHaveBeenCalledWith("Successfully added 0xBEE9...BBAB.");
 });

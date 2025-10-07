@@ -1,10 +1,9 @@
 import { CommandContext, Context } from "grammy";
 import { Logger } from "pino";
-import { UserService, UserWalletNotFoundError } from "../services/user";
-import { InvalidEthereumAddressError } from "../services/wallet";
+import { InvalidWalletIndexError, UserService } from "../services/user";
 import { getRemoveHandler } from "./remove";
 import { UNEXPECTED_ERROR_MESSAGE } from "./misc/utils";
-import { ETHEREUM_ADDRESS_1, USER_ID_1 } from "../tests/constants";
+import { ETHEREUM_ADDRESS_1, USER_ID_1, WALLET_INDEX } from "../tests/constants";
 
 jest.mock("../services/user");
 
@@ -23,7 +22,7 @@ beforeEach(() => {
   } as unknown as jest.Mocked<Logger>;
 
   mockUserService = {
-    removeWallet: jest.fn(),
+    removeWallet: jest.fn().mockResolvedValue(ETHEREUM_ADDRESS_1),
   } as unknown as jest.Mocked<UserService>;
 
   mockReply = jest.fn();
@@ -33,25 +32,25 @@ beforeEach(() => {
   ctx = {
     from: { id: USER_ID_1 },
     reply: mockReply,
-    message: { text: REMOVE_COMMAND + " " + ETHEREUM_ADDRESS_1 },
+    message: { text: REMOVE_COMMAND + " " + WALLET_INDEX },
   } as unknown as CommandContext<Context>;
 });
 
 it("should successfully remove a wallet and reply with success message", async () => {
   await removeWallet(ctx);
 
-  expect(mockUserService.removeWallet).toHaveBeenCalledWith(USER_ID_1, ETHEREUM_ADDRESS_1);
-  expect(mockReply).toHaveBeenCalledWith(`Successfully removed wallet: ${ETHEREUM_ADDRESS_1}`);
+  expect(mockUserService.removeWallet).toHaveBeenCalledWith(USER_ID_1, WALLET_INDEX);
+  expect(mockReply).toHaveBeenCalledWith(`Successfully removed 0xBEE9...BBAB`);
 });
 
-it("should reply with usage message when no wallet address is provided", async () => {
+it("should reply with usage message when no wallet index is provided", async () => {
   ctx.message!.text = REMOVE_COMMAND;
 
   await removeWallet(ctx);
 
   expect(mockUserService.removeWallet).not.toHaveBeenCalled();
   expect(mockReply).toHaveBeenCalledWith(
-    "Please provide a wallet address. Usage: /remove <wallet_address>",
+    "Please provide a valid wallet index.\n\nUsage: /remove <wallet_index>\n\nThe index is the number left to the address shown by the /list command.",
   );
 });
 
@@ -64,23 +63,25 @@ it("should reply with error when user ID is not found in context", async () => {
   expect(mockReply).toHaveBeenCalledWith(UNEXPECTED_ERROR_MESSAGE);
 });
 
-it("should reply with error when wallet address is invalid", async () => {
-  mockUserService.removeWallet.mockRejectedValue(new InvalidEthereumAddressError());
+it("should reply with error when wallet index is invalid", async () => {
+  ctx.message!.text = REMOVE_COMMAND + " abc";
 
   await removeWallet(ctx);
 
-  expect(mockUserService.removeWallet).toHaveBeenCalledWith(USER_ID_1, ETHEREUM_ADDRESS_1);
-  expect(mockReply).toHaveBeenCalledWith("Please provide a valid Ethereum address.");
+  expect(mockUserService.removeWallet).not.toHaveBeenCalled();
+  expect(mockReply).toHaveBeenCalledWith(
+    "Please provide a valid wallet index.\n\nUsage: /remove <wallet_index>\n\nThe index is the number left to the address shown by the /list command.",
+  );
 });
 
-it("should reply with specific message when wallet is not associated with user", async () => {
-  mockUserService.removeWallet.mockRejectedValue(new UserWalletNotFoundError());
+it("should reply with error message when wallet index is out of bounds", async () => {
+  mockUserService.removeWallet.mockRejectedValue(new InvalidWalletIndexError());
 
   await removeWallet(ctx);
 
-  expect(mockUserService.removeWallet).toHaveBeenCalledWith(USER_ID_1, ETHEREUM_ADDRESS_1);
+  expect(mockUserService.removeWallet).toHaveBeenCalledWith(USER_ID_1, WALLET_INDEX);
   expect(mockReply).toHaveBeenCalledWith(
-    `Wallet ${ETHEREUM_ADDRESS_1} is not associated with your account.`,
+    "The wallet index is out of bounds.\n\nUsage: /remove <wallet_index>\n\nThe index is the number left to the address shown by the /list command.",
   );
 });
 
@@ -89,34 +90,45 @@ it("should reply with generic error when removing wallet fails for unknown reaso
 
   await removeWallet(ctx);
 
-  expect(mockUserService.removeWallet).toHaveBeenCalledWith(USER_ID_1, ETHEREUM_ADDRESS_1);
+  expect(mockUserService.removeWallet).toHaveBeenCalledWith(USER_ID_1, WALLET_INDEX);
   expect(mockReply).toHaveBeenCalledWith(UNEXPECTED_ERROR_MESSAGE);
 });
 
-it("should handle empty string address as missing address", async () => {
+it("should handle empty string as missing index", async () => {
   ctx.message!.text = REMOVE_COMMAND + " ";
 
   await removeWallet(ctx);
 
   expect(mockUserService.removeWallet).not.toHaveBeenCalled();
   expect(mockReply).toHaveBeenCalledWith(
-    "Please provide a wallet address. Usage: /remove <wallet_address>",
+    "Please provide a valid wallet index.\n\nUsage: /remove <wallet_index>\n\nThe index is the number left to the address shown by the /list command.",
   );
 });
 
-it("should trim trailing whitespace in wallet address", async () => {
-  const addressWithTrailingSpaces = ETHEREUM_ADDRESS_1 + "  ";
-  ctx.message!.text = REMOVE_COMMAND + " " + addressWithTrailingSpaces;
+it("should trim trailing whitespace in wallet index", async () => {
+  const indexWithTrailingSpaces = WALLET_INDEX + "  ";
+  ctx.message!.text = REMOVE_COMMAND + " " + indexWithTrailingSpaces;
 
   await removeWallet(ctx);
 
-  expect(mockUserService.removeWallet).toHaveBeenCalledWith(USER_ID_1, ETHEREUM_ADDRESS_1);
+  expect(mockUserService.removeWallet).toHaveBeenCalledWith(USER_ID_1, WALLET_INDEX);
 });
 
-it("should handle multiple spaces between command and address", async () => {
-  ctx.message!.text = REMOVE_COMMAND + "     " + ETHEREUM_ADDRESS_1 + "     ";
+it("should handle multiple spaces between command and index", async () => {
+  ctx.message!.text = REMOVE_COMMAND + "     " + WALLET_INDEX + "     ";
 
   await removeWallet(ctx);
 
-  expect(mockUserService.removeWallet).toHaveBeenCalledWith(USER_ID_1, ETHEREUM_ADDRESS_1);
+  expect(mockUserService.removeWallet).toHaveBeenCalledWith(USER_ID_1, WALLET_INDEX);
+});
+
+it("should reject index 0 as invalid", async () => {
+  ctx.message!.text = REMOVE_COMMAND + " 0";
+
+  await removeWallet(ctx);
+
+  expect(mockUserService.removeWallet).not.toHaveBeenCalled();
+  expect(mockReply).toHaveBeenCalledWith(
+    "Please provide a valid wallet index.\n\nUsage: /remove <wallet_index>\n\nThe index is the number left to the address shown by the /list command.",
+  );
 });

@@ -5,7 +5,7 @@ export class UserAlreadyExistsError extends Error {}
 
 export class UserWalletAlreadyExistsError extends Error {}
 
-export class UserWalletNotFoundError extends Error {}
+export class InvalidWalletIndexError extends Error {}
 
 export class UserService {
   constructor(private prisma: PrismaClient) {}
@@ -46,19 +46,19 @@ export class UserService {
     return userWallets.map((userWallet) => userWallet.walletId);
   }
 
-  async removeWallet(userId: number, address: string) {
-    const walletId = sanitizeEthereumAddress(address);
+  async removeWallet(userId: number, index: number): Promise<string> {
+    const wallets = await this.listWallets(userId);
 
-    try {
-      await this.prisma.userWallet.delete({
-        where: { userId_walletId: { userId, walletId } },
-      });
-    } catch (error) {
-      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2025") {
-        throw new UserWalletNotFoundError();
-      }
+    const walletId = wallets[index - 1];
 
-      throw error;
+    if (!walletId) {
+      throw new InvalidWalletIndexError();
     }
+
+    const { walletId: deletedWalletId } = await this.prisma.userWallet.delete({
+      where: { userId_walletId: { userId, walletId } },
+    });
+
+    return deletedWalletId;
   }
 }

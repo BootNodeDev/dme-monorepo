@@ -1,12 +1,17 @@
 import { Prisma } from "@prisma/client";
 import {
+  InvalidWalletIndexError,
   UserAlreadyExistsError,
   UserService,
   UserWalletAlreadyExistsError,
-  UserWalletNotFoundError,
 } from "./user";
 import { InvalidEthereumAddressError, WalletService } from "./wallet";
-import { ETHEREUM_ADDRESS_1, ETHEREUM_ADDRESS_2, USER_ID_1 } from "../tests/constants";
+import {
+  ETHEREUM_ADDRESS_1,
+  ETHEREUM_ADDRESS_2,
+  USER_ID_1,
+  WALLET_INDEX,
+} from "../tests/constants";
 import { prisma } from "../tests/setup";
 
 let user: UserService;
@@ -118,32 +123,31 @@ describe("removeWallet", () => {
     await user.create(USER_ID_1);
     await user.addWallet(USER_ID_1, ETHEREUM_ADDRESS_1);
 
-    await user.removeWallet(USER_ID_1, ETHEREUM_ADDRESS_1);
+    const deletedWalletId = await user.removeWallet(USER_ID_1, WALLET_INDEX);
+    expect(deletedWalletId).toBe(ETHEREUM_ADDRESS_1.toLowerCase());
 
     const result = await prisma.userWallet.findMany({});
     expect(result).toHaveLength(0);
   });
 
-  it("should throw UserWalletNotFoundError when wallet is not found", async () => {
-    await expect(user.removeWallet(USER_ID_1, ETHEREUM_ADDRESS_1)).rejects.toBeInstanceOf(
-      UserWalletNotFoundError,
-    );
-  });
-
-  it("should throw when the address is invalid", async () => {
-    await expect(user.removeWallet(USER_ID_1, "invalid-address")).rejects.toBeInstanceOf(
-      InvalidEthereumAddressError,
+  it("should throw InvalidWalletIndexError when the provided index is not found", async () => {
+    await expect(user.removeWallet(USER_ID_1, WALLET_INDEX)).rejects.toBeInstanceOf(
+      InvalidWalletIndexError,
     );
   });
 
   it("should bubble up any unhandled error", async () => {
+    await wallet.upsert(ETHEREUM_ADDRESS_1);
+    await user.create(USER_ID_1);
+    await user.addWallet(USER_ID_1, ETHEREUM_ADDRESS_1);
+
     jest
       .spyOn(prisma.userWallet, "delete")
       .mockRejectedValueOnce(
         new Prisma.PrismaClientUnknownRequestError("Database error", { clientVersion: "5.0.0" }),
       );
 
-    await expect(user.removeWallet(USER_ID_1, ETHEREUM_ADDRESS_1)).rejects.toBeInstanceOf(
+    await expect(user.removeWallet(USER_ID_1, WALLET_INDEX)).rejects.toBeInstanceOf(
       Prisma.PrismaClientUnknownRequestError,
     );
   });

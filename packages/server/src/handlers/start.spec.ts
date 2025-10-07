@@ -9,6 +9,7 @@ import { InvalidEthereumAddressError, WalletService } from "../services/wallet";
 import { getStartHandler } from "./start";
 import { UNEXPECTED_ERROR_MESSAGE } from "./misc/utils";
 import { ETHEREUM_ADDRESS_1, USER_ID_1 } from "../tests/constants";
+import { FALLBACK_MESSAGE } from "./fallback";
 
 jest.mock("../services/user");
 jest.mock("../services/wallet");
@@ -53,7 +54,7 @@ it("should reply with a welcome message if the user is new", async () => {
 
   await start(ctx);
 
-  expect(mockReply).toHaveBeenCalledWith("Welcome!");
+  expect(mockReply).toHaveBeenCalledWith(`Welcome!\n\n${FALLBACK_MESSAGE}`);
 });
 
 it("should reply with a welcome back message if the user already exists", async () => {
@@ -63,14 +64,14 @@ it("should reply with a welcome back message if the user already exists", async 
 
   await start(ctx);
 
-  expect(mockReply).toHaveBeenCalledWith("Welcome back!");
+  expect(mockReply).toHaveBeenCalledWith(`Welcome back!\n\n${FALLBACK_MESSAGE}`);
 });
 
 it("should reply with the address of the wallet being subscribed", async () => {
   await start(ctx);
 
   expect(mockReply).toHaveBeenCalledWith(
-    `Welcome!\nYou have successfully subscribed the wallet: ${ETHEREUM_ADDRESS_1}`,
+    `Welcome!\n\nYou have successfully subscribed 0xBEE9...BBAB\n\n${FALLBACK_MESSAGE}`,
   );
 });
 
@@ -79,7 +80,7 @@ it("should reply only with welcome if the wallet was already added", async () =>
 
   await start(ctx);
 
-  expect(mockReply).toHaveBeenCalledWith("Welcome!");
+  expect(mockReply).toHaveBeenCalledWith(`Welcome!\n\n${FALLBACK_MESSAGE}`);
 });
 
 it("should reply with an error when wallet upsert fails due to invalid address", async () => {
@@ -132,6 +133,6 @@ it("should handle multiple spaces between command and address", async () => {
   expect(mockWalletService.upsert).toHaveBeenCalledWith(ETHEREUM_ADDRESS_1);
   expect(mockUserService.addWallet).toHaveBeenCalledWith(USER_ID_1, ETHEREUM_ADDRESS_1);
   expect(mockReply).toHaveBeenCalledWith(
-    `Welcome!\nYou have successfully subscribed the wallet: ${ETHEREUM_ADDRESS_1}`,
+    `Welcome!\n\nYou have successfully subscribed 0xBEE9...BBAB\n\n${FALLBACK_MESSAGE}`,
   );
 });

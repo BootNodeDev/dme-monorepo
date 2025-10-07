@@ -6,7 +6,8 @@ import {
   UserWalletAlreadyExistsError,
 } from "../services/user";
 import { InvalidEthereumAddressError, WalletService } from "../services/wallet";
-import { UNEXPECTED_ERROR_MESSAGE } from "./misc/utils";
+import { formatAddress, UNEXPECTED_ERROR_MESSAGE } from "./misc/utils";
+import { FALLBACK_MESSAGE } from "./fallback";
 
 export function getStartHandler(logger: Logger, user: UserService, wallet: WalletService) {
   return async (ctx: CommandContext<Context>) => {
@@ -69,9 +70,11 @@ export function getStartHandler(logger: Logger, user: UserService, wallet: Walle
     reply.push(alreadyExists ? "Welcome back!" : "Welcome!");
 
     if (address && !walletAlreadySubscribed) {
-      reply.push(`You have successfully subscribed the wallet: ${address}`);
+      reply.push(`You have successfully subscribed ${formatAddress(address)}`);
     }
 
-    ctx.reply(reply.join("\n"));
+    reply.push(`${FALLBACK_MESSAGE}`);
+
+    ctx.reply(reply.join("\n\n"));
   };
 }

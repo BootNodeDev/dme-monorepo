@@ -45,7 +45,7 @@ it("should reply with empty message when user has no wallets", async () => {
 
   expect(mockUserService.listWallets).toHaveBeenCalledWith(USER_ID_1);
   expect(mockReply).toHaveBeenCalledWith(
-    "You don't have any wallets associated with your account yet.\nUse /add <wallet_address> to add a wallet.",
+    "You don't have any wallets associated with your account yet.\n\nUse /add <wallet_address> to add one.",
   );
 });
 
@@ -59,7 +59,7 @@ it("should reply with formatted list when user has multiple wallets", async () =
 
   expect(mockUserService.listWallets).toHaveBeenCalledWith(USER_ID_1);
   expect(mockReply).toHaveBeenCalledWith(
-    `Your wallets:\n1. ${ETHEREUM_ADDRESS_1.toLowerCase()}\n2. ${ETHEREUM_ADDRESS_2.toLowerCase()}`,
+    "Your wallets:\n\n1. 0xbee9...bbab\n2. 0xcf48...bd8d",
   );
 });
 
