@@ -11,12 +11,13 @@ export function Button({ text, modal }: MyButtonProps) {
 
   return (
     <>
-      <button className="dme-modal__button--reset dme-modal__trigger" onClick={() => setIsModalOpen(true)}>
+      <button
+        className="dme-modal__button--reset dme-modal__trigger"
+        onClick={() => setIsModalOpen(true)}
+      >
         {text}
       </button>
-      {isModalOpen && (
-        <Modal {...modal} onClose={() => setIsModalOpen(false)} />
-      )}
+      {isModalOpen && <Modal {...modal} onClose={() => setIsModalOpen(false)} />}
     </>
   );
 }

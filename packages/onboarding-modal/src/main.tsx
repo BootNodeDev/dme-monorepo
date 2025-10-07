@@ -12,5 +12,5 @@ createRoot(document.getElementById("root")!).render(
         address: "some-address",
       }}
     />
-  </StrictMode>
+  </StrictMode>,
 );

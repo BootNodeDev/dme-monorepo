@@ -38,6 +38,9 @@ importers:
       eslint:
         specifier: ^9.36.0
         version: 9.36.0(jiti@2.6.0)
+      eslint-config-prettier:
+        specifier: ^10.1.8
+        version: 10.1.8(eslint@9.36.0(jiti@2.6.0))
       eslint-plugin-react-hooks:
         specifier: ^5.2.0
         version: 5.2.0(eslint@9.36.0(jiti@2.6.0))
@@ -47,6 +50,9 @@ importers:
       globals:
         specifier: ^16.4.0
         version: 16.4.0
+      prettier:
+        specifier: ^3.6.2
+        version: 3.6.2
       typescript:
         specifier: ~5.9.3
         version: 5.9.3

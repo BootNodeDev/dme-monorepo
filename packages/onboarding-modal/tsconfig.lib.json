@@ -3,7 +3,7 @@
   "compilerOptions": {
     "allowImportingTsExtensions": false,
     "noEmit": false,
-    "outDir": "./dist",
+    "outDir": "./dist"
   },
   "include": ["lib"]
 }
