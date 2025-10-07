@@ -5,6 +5,7 @@ import { getStartHandler } from "./handlers/start";
 import { getAddHandler } from "./handlers/add";
 import { getListHandler } from "./handlers/list";
 import { getRemoveHandler } from "./handlers/remove";
+import { getFallbackHandler } from "./handlers/fallback";
 import { UserService } from "./services/user";
 import { WalletService } from "./services/wallet";
 import { DispatchJob } from "./jobs/dispatch";
@@ -24,10 +25,11 @@ const message = new MessageService(prisma);
 /* Telegram Bot */
 
 const bot = new Bot(env.BOT_TOKEN);
-bot.command("start", getStartHandler(logger.child({ command: "start" }), user, wallet));
-bot.command("add", getAddHandler(logger.child({ command: "add" }), user, wallet));
-bot.command("list", getListHandler(logger.child({ command: "list" }), user));
-bot.command("remove", getRemoveHandler(logger.child({ command: "remove" }), user));
+bot.command("start", getStartHandler(logger.child({ handler: "start" }), user, wallet));
+bot.command("add", getAddHandler(logger.child({ handler: "add" }), user, wallet));
+bot.command("list", getListHandler(logger.child({ handler: "list" }), user));
+bot.command("remove", getRemoveHandler(logger.child({ handler: "remove" }), user));
+bot.on("message", getFallbackHandler(logger.child({ handler: "fallback" })));
 bot.start().catch((error) => logger.error({ error }, "Unhandled bot error"));
 
 logger.info("Bot started");
