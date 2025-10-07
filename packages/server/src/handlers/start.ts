@@ -34,6 +34,8 @@ export function getStartHandler(logger: Logger, user: UserService, wallet: Walle
 
     const address = ctx.message?.text.split(/\s+/)[1];
 
+    logger.info({ userId, address }, "Start command executed");
+
     let walletAlreadySubscribed = false;
 
     if (address) {

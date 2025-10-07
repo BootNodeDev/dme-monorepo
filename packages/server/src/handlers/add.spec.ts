@@ -1,4 +1,5 @@
 import { CommandContext, Context } from "grammy";
+import { Logger } from "pino";
 import { UserService, UserWalletAlreadyExistsError } from "../services/user";
 import { InvalidEthereumAddressError, WalletService } from "../services/wallet";
 import { getAddHandler } from "./add";
@@ -10,6 +11,7 @@ jest.mock("../services/wallet");
 
 const ADD_COMMAND = "/add";
 
+let mockLogger: jest.Mocked<Logger>;
 let mockUserService: jest.Mocked<UserService>;
 let mockWalletService: jest.Mocked<WalletService>;
 let mockReply: jest.Mock;
@@ -17,6 +19,11 @@ let addWallet: ReturnType<typeof getAddHandler>;
 let ctx: CommandContext<Context>;
 
 beforeEach(() => {
+  mockLogger = {
+    error: jest.fn(),
+    info: jest.fn(),
+  } as unknown as jest.Mocked<Logger>;
+
   mockUserService = {
     create: jest.fn(),
     addWallet: jest.fn(),
@@ -28,7 +35,7 @@ beforeEach(() => {
 
   mockReply = jest.fn();
 
-  addWallet = getAddHandler(mockUserService, mockWalletService);
+  addWallet = getAddHandler(mockLogger, mockUserService, mockWalletService);
 
   ctx = {
     from: { id: USER_ID_1 },

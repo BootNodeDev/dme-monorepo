@@ -21,6 +21,8 @@ export function getAddHandler(logger: Logger, user: UserService, wallet: WalletS
       return;
     }
 
+    logger.info({ userId, address }, "Add command executed");
+
     try {
       await wallet.upsert(address);
     } catch (error) {

@@ -13,6 +13,8 @@ export function getListHandler(logger: Logger, user: UserService) {
       return;
     }
 
+    logger.info({ userId }, "List command executed");
+
     try {
       const wallets = await user.listWallets(userId);
 

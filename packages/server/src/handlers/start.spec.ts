@@ -1,4 +1,5 @@
 import { CommandContext, Context } from "grammy";
+import { Logger } from "pino";
 import {
   UserAlreadyExistsError,
   UserService,
@@ -14,6 +15,7 @@ jest.mock("../services/wallet");
 
 const START_COMMAND = "/start";
 
+let mockLogger: jest.Mocked<Logger>;
 let mockUserService: jest.Mocked<UserService>;
 let mockWalletService: jest.Mocked<WalletService>;
 let mockReply: jest.Mock;
@@ -21,6 +23,11 @@ let start: ReturnType<typeof getStartHandler>;
 let ctx: CommandContext<Context>;
 
 beforeEach(() => {
+  mockLogger = {
+    error: jest.fn(),
+    info: jest.fn(),
+  } as unknown as jest.Mocked<Logger>;
+
   mockUserService = {
     create: jest.fn(),
     addWallet: jest.fn(),
@@ -32,7 +39,7 @@ beforeEach(() => {
 
   mockReply = jest.fn();
 
-  start = getStartHandler(mockUserService, mockWalletService);
+  start = getStartHandler(mockLogger, mockUserService, mockWalletService);
 
   ctx = {
     from: { id: USER_ID_1 },

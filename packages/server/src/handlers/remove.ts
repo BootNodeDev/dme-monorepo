@@ -21,6 +21,8 @@ export function getRemoveHandler(logger: Logger, user: UserService) {
       return;
     }
 
+    logger.info({ userId, address }, "Remove command executed");
+
     try {
       await user.removeWallet(userId, address);
       ctx.reply(`Successfully removed wallet: ${address}`);

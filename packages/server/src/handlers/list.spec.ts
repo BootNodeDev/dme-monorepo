@@ -1,4 +1,5 @@
 import { CommandContext, Context } from "grammy";
+import { Logger } from "pino";
 import { UserService } from "../services/user";
 import { getListHandler } from "./list";
 import { UNEXPECTED_ERROR_MESSAGE } from "./misc/constants";
@@ -8,12 +9,18 @@ jest.mock("../services/user");
 
 const LIST_COMMAND = "/list";
 
+let mockLogger: jest.Mocked<Logger>;
 let mockUserService: jest.Mocked<UserService>;
 let mockReply: jest.Mock;
 let listWallets: ReturnType<typeof getListHandler>;
 let ctx: CommandContext<Context>;
 
 beforeEach(() => {
+  mockLogger = {
+    error: jest.fn(),
+    info: jest.fn(),
+  } as unknown as jest.Mocked<Logger>;
+
   mockUserService = {
     create: jest.fn(),
     addWallet: jest.fn(),
@@ -22,7 +29,7 @@ beforeEach(() => {
 
   mockReply = jest.fn();
 
-  listWallets = getListHandler(mockUserService);
+  listWallets = getListHandler(mockLogger, mockUserService);
 
   ctx = {
     from: { id: USER_ID_1 },
