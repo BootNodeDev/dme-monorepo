@@ -2,7 +2,7 @@ import { CommandContext, Context } from "grammy";
 import { Logger } from "pino";
 import { UserService, UserWalletAlreadyExistsError } from "../services/user";
 import { InvalidEthereumAddressError, WalletService } from "../services/wallet";
-import { UNEXPECTED_ERROR_MESSAGE } from "./misc/utils";
+import { formatAddress, UNEXPECTED_ERROR_MESSAGE } from "./misc/utils";
 
 export function getAddHandler(logger: Logger, user: UserService, wallet: WalletService) {
   return async (ctx: CommandContext<Context>) => {
@@ -17,7 +17,7 @@ export function getAddHandler(logger: Logger, user: UserService, wallet: WalletS
     const address = ctx.message?.text.split(/\s+/)[1];
 
     if (!address) {
-      ctx.reply("Please provide a wallet address. Usage: /add <wallet_address>");
+      ctx.reply("Please provide a wallet address.\n\nUsage: /add <wallet_address>");
       return;
     }
 
@@ -37,10 +37,10 @@ export function getAddHandler(logger: Logger, user: UserService, wallet: WalletS
 
     try {
       await user.addWallet(userId, address);
-      ctx.reply(`Successfully added wallet: ${address}`);
+      ctx.reply(`Successfully added ${formatAddress(address)}.`);
     } catch (error) {
       if (error instanceof UserWalletAlreadyExistsError) {
-        ctx.reply(`Wallet ${address} is already associated with your account.`);
+        ctx.reply(`${formatAddress(address)} is already associated with your account.`);
       } else {
         logger.error({ error, userId, address }, "Error adding wallet to user");
         ctx.reply(UNEXPECTED_ERROR_MESSAGE);
