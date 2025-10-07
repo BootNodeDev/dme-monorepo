@@ -16,9 +16,7 @@ export const FALLBACK_MESSAGE = `Available commands:
   - Remove a wallet from your account
 
 /help 
-  - Show this help message
-
-Please use one of the commands above.`;
+  - Show this help message`;
 
 export function getFallbackHandler(logger: Logger) {
   return async (ctx: Context) => {
