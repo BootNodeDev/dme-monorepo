@@ -6,7 +6,10 @@
   "scripts": {
     "test": "pnpm -r test",
     "build": "pnpm -r build",
-    "lint": "pnpm -r lint"
+    "lint": "pnpm -r lint",
+    "lint:fix": "pnpm -r lint:fix",
+    "format": "pnpm -r format",
+    "format:fix": "pnpm -r format:fix"
   },
   "keywords": [],
   "author": "",

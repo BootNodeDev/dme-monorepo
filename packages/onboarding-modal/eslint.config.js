@@ -20,6 +20,6 @@ export default defineConfig([
       ecmaVersion: 2020,
       globals: globals.browser,
     },
-    eslintConfigPrettier,
   },
+  eslintConfigPrettier,
 ]);

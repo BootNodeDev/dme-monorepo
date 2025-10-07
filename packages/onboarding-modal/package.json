@@ -19,8 +19,9 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -p tsconfig.lib.json && vite build",
-    "lint": "eslint .",
     "preview": "vite preview",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
     "format": "prettier . --check",
     "format:fix": "prettier . --write"
   },

@@ -187,6 +187,9 @@ describe("execute", () => {
 
     await dispatch.execute();
 
-    expect(mockLogger.error).toHaveBeenCalledWith({ error }, "Error occurred while executing dispatch job");
+    expect(mockLogger.error).toHaveBeenCalledWith(
+      { error },
+      "Error occurred while executing dispatch job",
+    );
   });
 });

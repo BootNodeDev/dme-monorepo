@@ -45,10 +45,7 @@ export function getStartHandler(logger: Logger, user: UserService, wallet: Walle
         if (error instanceof InvalidEthereumAddressError) {
           ctx.reply("Please provide a valid Ethereum address.");
         } else {
-          logger.error(
-            { error, userId, address },
-            "Error upserting wallet",
-          );
+          logger.error({ error, userId, address }, "Error upserting wallet");
           ctx.reply(UNEXPECTED_ERROR_MESSAGE);
         }
         return;
@@ -60,10 +57,7 @@ export function getStartHandler(logger: Logger, user: UserService, wallet: Walle
         if (error instanceof UserWalletAlreadyExistsError) {
           walletAlreadySubscribed = true;
         } else {
-          logger.error(
-            { error, userId, address },
-            "Error adding wallet to user",
-          );
+          logger.error({ error, userId, address }, "Error adding wallet to user");
           ctx.reply(UNEXPECTED_ERROR_MESSAGE);
           return;
         }
