@@ -8,27 +8,27 @@ import { UserService } from "./services/user";
 import { WalletService } from "./services/wallet";
 import { DispatchJob } from "./jobs/dispatch";
 import { MessageService } from "./services/message";
+import { getEnv } from "./config/env";
 
-const prisma = new PrismaClient();
+const env = getEnv();
+const prisma = new PrismaClient({ datasourceUrl: env.DATABASE_URL });
 
-const botToken = process.env.BOT_TOKEN;
-
-if (!botToken) {
-  throw new Error("BOT_TOKEN environment variable is not set");
-}
+/* Services */
 
 const user = new UserService(prisma);
 const wallet = new WalletService(prisma);
 const message = new MessageService(prisma);
 
-const bot = new Bot(botToken);
+/* Telegram Bot */
 
+const bot = new Bot(env.BOT_TOKEN);
 bot.command("start", getStartHandler(user, wallet));
 bot.command("add", getAddHandler(user, wallet));
 bot.command("list", getListHandler(user));
 bot.command("remove", getRemoveHandler(user));
-
 bot.start();
+
+/* Jobs */
 
 new DispatchJob(
   message,
