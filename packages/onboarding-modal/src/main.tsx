@@ -6,11 +6,12 @@ import "../lib/index.css";
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <Button
-      text="DMe"
       modal={{
         bot: "some-bot",
         address: "some-address",
       }}
-    />
+    >
+      DMe
+    </Button>
   </StrictMode>,
 );
