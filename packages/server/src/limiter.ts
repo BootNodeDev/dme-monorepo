@@ -4,6 +4,9 @@ import PQueue from "p-queue";
 import { Logger } from "pino";
 import telegramify from "telegramify-markdown";
 
+export const TOP_PRIORITY = 999;
+export const LOW_PRIORITY = 1;
+
 export class Limiter {
   private queue: PQueue;
 
@@ -26,11 +29,11 @@ export class Limiter {
   }
 
   reply(ctx: Context, msg: string) {
-    this.add(() => ctx.reply(telegramify(msg, "remove"), this.BASE_MESSAGE_OPTIONS));
+    this.add(TOP_PRIORITY, () => ctx.reply(telegramify(msg, "remove"), this.BASE_MESSAGE_OPTIONS));
   }
 
   sendMessage(chatId: number, msg: string, onSuccess: () => void, onError: (error: Error) => void) {
-    this.add(() =>
+    this.add(LOW_PRIORITY, () =>
       this.bot.api
         .sendMessage(chatId, telegramify(msg, "remove"), this.BASE_MESSAGE_OPTIONS)
         .then(onSuccess)
@@ -38,8 +41,8 @@ export class Limiter {
     );
   }
 
-  protected add<T>(fn: () => Promise<T>) {
-    this.queue.add(fn);
+  protected add<T>(priority: number, fn: () => Promise<T>): void {
+    this.queue.add(fn, { priority });
 
     this.logger.info(
       { queue: { size: this.queue.size, pending: this.queue.pending } },

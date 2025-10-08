@@ -1,5 +1,5 @@
 import PQueue from "p-queue";
-import { Limiter } from "./limiter";
+import { Limiter, LOW_PRIORITY, TOP_PRIORITY } from "./limiter";
 import { Bot, Context } from "grammy";
 import { MESSAGE_CONTENT, USER_ID_1 } from "./tests/constants";
 import { Logger } from "pino";
@@ -17,8 +17,8 @@ let mockLogger: jest.Mocked<Logger>;
 let mockBot: jest.Mocked<Bot>;
 
 class LimiterHarness extends Limiter {
-  add<T>(fn: () => Promise<T>): void {
-    super.add(fn);
+  add<T>(priority: number, fn: () => Promise<T>): void {
+    super.add(priority, fn);
   }
 }
 
@@ -57,7 +57,7 @@ describe("Limiter", () => {
 
       limiter.reply(ctx, MESSAGE_CONTENT);
 
-      expect(addSpy).toHaveBeenCalledWith(expect.any(Function));
+      expect(addSpy).toHaveBeenCalledWith(TOP_PRIORITY, expect.any(Function));
     });
   });
 
@@ -69,7 +69,7 @@ describe("Limiter", () => {
 
       limiter.sendMessage(USER_ID_1, MESSAGE_CONTENT, jest.fn(), jest.fn());
 
-      expect(addSpy).toHaveBeenCalledWith(expect.any(Function));
+      expect(addSpy).toHaveBeenCalledWith(LOW_PRIORITY, expect.any(Function));
     });
   });
 });
