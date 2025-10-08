@@ -7,6 +7,7 @@ const EnvSchema = z.object({
   LIMITER_INTERVAL: z.coerce.number().int().positive().default(ms("1s")),
   LIMITER_INTERVAL_CAP: z.coerce.number().int().positive().default(30),
   DISPATCH_CRON: z.string().default("*/30 * * * * *"),
+  OUT_OF_RANGE_CRON: z.string().default("0 * * * *"),
 });
 
 export function getEnv() {

@@ -70,7 +70,6 @@ new OutOfRangeJob(
   logger.child({ job: "outOfRange" }),
   message,
   env.OUT_OF_RANGE_CRON,
-  limiter,
   wallet,
   position,
 ).start();

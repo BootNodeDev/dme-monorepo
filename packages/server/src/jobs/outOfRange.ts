@@ -1,12 +1,9 @@
 import cron from "node-cron";
+import { Logger } from "pino";
 import { MessageService } from "../services/message";
 import { PositionService } from "../services/position";
 import { WalletService } from "../services/wallet";
-import { Logger } from "pino";
-
-function formatAddress(address: string) {
-  return `${address.slice(0, 6)}...${address.slice(-4)}`;
-}
+import { formatAddress } from "../handlers/misc/utils";
 
 function formatChainName(name: string) {
   return name.charAt(0).toUpperCase() + name.slice(1);
@@ -72,7 +69,10 @@ export class OutOfRangeJob {
 
       await this.message.create(content.join("\n"), address);
 
-      this.logger.info({ address, oorPositions: oorPositions.length }, "Created out of range message");
+      this.logger.info(
+        { address, oorPositions: oorPositions.length },
+        "Created out of range message",
+      );
     }
   }
 }
