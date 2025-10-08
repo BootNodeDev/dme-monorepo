@@ -9,6 +9,7 @@ beforeEach(() => {
     DATABASE_URL: "postgresql://user:password@localhost:5432/dbname",
     LIMITER_INTERVAL: "2000",
     LIMITER_INTERVAL_CAP: "50",
+    DISPATCH_CRON: "*/20 * * * * *",
   };
 });
 
@@ -27,6 +28,7 @@ describe("getEnv", () => {
       DATABASE_URL: "postgresql://user:password@localhost:5432/dbname",
       LIMITER_INTERVAL: 2000,
       LIMITER_INTERVAL_CAP: 50,
+      DISPATCH_CRON: "*/20 * * * * *",
     });
   });
 
@@ -85,12 +87,10 @@ describe("getEnv", () => {
     delete process.env.LIMITER_INTERVAL;
     delete process.env.LIMITER_INTERVAL_CAP;
 
-    expect(getEnv()).toEqual({
-      BOT_TOKEN: "test-bot-token",
-      DATABASE_URL: "postgresql://user:password@localhost:5432/dbname",
-      LIMITER_INTERVAL: ms("1s"),
-      LIMITER_INTERVAL_CAP: 30,
-    });
+    const env = getEnv();
+
+    expect(env.LIMITER_INTERVAL).toEqual(ms("1s"));
+    expect(env.LIMITER_INTERVAL_CAP).toEqual(30);
   });
 
   it("should fail if limiter interval and are not numbers", () => {
@@ -149,5 +149,11 @@ describe("getEnv", () => {
         }
       ]"
     `);
+  });
+
+  it("should use default value for dispatch cron if not provided", () => {
+    delete process.env.DISPATCH_CRON;
+
+    expect(getEnv().DISPATCH_CRON).toEqual("*/30 * * * * *");
   });
 });
