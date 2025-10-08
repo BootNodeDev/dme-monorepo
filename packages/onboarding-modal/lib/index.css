@@ -159,9 +159,6 @@
   cursor: pointer;
   opacity: 1;
   transition: opacity 0.2s ease;
-}
-
-.dme-modal__trigger > span {
   font-family:
     Basel,
     -apple-system,
@@ -174,8 +171,28 @@
     sans-serif;
   font-size: 14px;
   font-weight: 535;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .dme-modal__trigger:hover {
   opacity: 0.8;
+}
+
+.dme-modal__trigger:hover .dme-modal__bell-icon {
+  animation: dme-modal__bell-ring 0.5s ease-in-out;
+}
+
+@keyframes dme-modal__bell-ring {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  25% {
+    transform: rotate(-15deg);
+  }
+  75% {
+    transform: rotate(15deg);
+  }
 }
