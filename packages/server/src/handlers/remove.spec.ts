@@ -32,7 +32,6 @@ beforeEach(() => {
 
   ctx = {
     from: { id: USER_ID_1 },
-    reply: mockReply,
     message: { text: REMOVE_COMMAND + " " + WALLET_INDEX },
   } as unknown as CommandContext<Context>;
 });
