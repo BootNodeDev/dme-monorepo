@@ -51,25 +51,4 @@ logger.info("Bot started");
 
 /* Jobs */
 
-new DispatchJob(
-  logger.child({ job: "dispatch" }),
-  message,
-  "*/30 * * * * *", // Every 30 seconds
-  limiter,
-).start();
-
-async function main() {
-  const userWallet = await prisma.userWallet.findFirst();
-
-  for (let i = 0; i < 50; i++) {
-    await message.create("hola 1" + i, userWallet!.walletId);
-  }
-
-  await new Promise((resolve) => setTimeout(resolve, 40000));
-
-  for (let i = 0; i < 50; i++) {
-    await message.create("hola 2" + i, userWallet!.walletId);
-  }
-}
-
-main();
+new DispatchJob(logger.child({ job: "dispatch" }), message, env.DISPATCH_CRON, limiter).start();
