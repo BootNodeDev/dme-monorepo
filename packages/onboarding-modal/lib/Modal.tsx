@@ -36,6 +36,17 @@ export function Modal({ bot, address, title, description, cta, onClose }: ModalP
             {cta || "Open Telegram"}
           </a>
         </div>
+        <div className="dme-modal__footer">
+          Powered by{" "}
+          <a
+            className="dme-modal__a--reset"
+            href="https://github.com/BootNodeDev/dme-monorepo"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            BootNode
+          </a>
+        </div>
       </div>
     </div>
   );
