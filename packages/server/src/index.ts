@@ -1,5 +1,5 @@
-import { Bot } from "grammy";
-import { run } from "@grammyjs/runner";
+import { Bot, Context, session, SessionFlavor } from "grammy";
+import { run, sequentialize } from "@grammyjs/runner";
 import { PrismaClient } from "@prisma/client";
 import pino from "pino";
 import { getStartHandler } from "./handlers/start";
@@ -17,7 +17,7 @@ import { Limiter } from "./limiter";
 const env = getEnv();
 const prisma = new PrismaClient({ datasourceUrl: env.DATABASE_URL });
 const logger = pino();
-const bot = new Bot(env.BOT_TOKEN);
+const bot = new Bot<Context & SessionFlavor<unknown>>(env.BOT_TOKEN);
 const limiter = new Limiter(
   logger.child({ component: "limiter" }),
   env.LIMITER_INTERVAL,
@@ -41,11 +41,23 @@ const fallback = getFallbackHandler(logger.child({ handler: "fallback" }), limit
 
 /* Telegram Bot */
 
+const getSessionKey = (ctx: Context) => ctx.chat?.id.toString();
+bot.use(sequentialize(getSessionKey));
+bot.use(session({ getSessionKey }));
+
 bot.command("start", start);
 bot.command("add", add);
 bot.command("list", list);
 bot.command("remove", remove);
 bot.on("message", fallback);
+
+bot.catch((error) =>
+  logger.error(
+    { error: error.error, userId: error.ctx.from?.id, message: error.ctx.message?.text },
+    "Bot error",
+  ),
+);
+
 run(bot);
 
 logger.info("Bot started");

@@ -1,4 +1,4 @@
-import { Bot, Context } from "grammy";
+import { Bot, Context, SessionFlavor } from "grammy";
 import { ParseMode } from "grammy/types";
 import PQueue from "p-queue";
 import { Logger } from "pino";
@@ -19,7 +19,7 @@ export class Limiter {
     private logger: Logger,
     interval: number,
     intervalCap: number,
-    private bot: Bot,
+    private bot: Bot<Context & SessionFlavor<unknown>>,
   ) {
     this.queue = new PQueue({
       intervalCap,

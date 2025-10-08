@@ -1,6 +1,6 @@
 import PQueue from "p-queue";
 import { Limiter, LOW_PRIORITY, TOP_PRIORITY } from "./limiter";
-import { Bot, Context } from "grammy";
+import { Bot, Context, SessionFlavor } from "grammy";
 import { MESSAGE_CONTENT, USER_ID_1 } from "./tests/constants";
 import { Logger } from "pino";
 
@@ -14,7 +14,7 @@ const interval = 1000;
 const intervalCap = 5;
 
 let mockLogger: jest.Mocked<Logger>;
-let mockBot: jest.Mocked<Bot>;
+let mockBot: jest.Mocked<Bot<Context & SessionFlavor<unknown>>>;
 
 class LimiterHarness extends Limiter {
   add<T>(priority: number, fn: () => Promise<T>): void {
@@ -31,7 +31,7 @@ beforeEach(() => {
     api: {
       sendMessage: jest.fn().mockResolvedValue(null),
     },
-  } as unknown as jest.Mocked<Bot>;
+  } as unknown as jest.Mocked<Bot<Context & SessionFlavor<unknown>>>;
 });
 
 describe("Limiter", () => {
