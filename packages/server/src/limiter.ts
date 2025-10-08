@@ -1,43 +1,49 @@
 import { Bot, Context } from "grammy";
 import { ParseMode } from "grammy/types";
 import PQueue from "p-queue";
+import { Logger } from "pino";
 import telegramify from "telegramify-markdown";
 
-export const BASE_OPTIONS = {
-  parse_mode: "MarkdownV2" as ParseMode,
-  link_preview_options: { is_disabled: true },
-};
+export class Limiter {
+  private queue: PQueue;
 
-export type ReplyFn = (ctx: Context, msg: string) => void;
-
-export type SendMessageFn = (
-  chatId: number,
-  msg: string,
-  onSuccess: () => void,
-  onError: (error: Error) => void,
-) => void;
-
-export function getLimiter(interval: number, intervalCap: number): PQueue {
-  return new PQueue({
-    intervalCap,
-    interval,
-    carryoverIntervalCount: false,
-  });
-}
-
-export function getReplyFn(limiter: PQueue): ReplyFn {
-  return (ctx, msg) => {
-    limiter.add(() => ctx.reply(telegramify(msg, "remove"), BASE_OPTIONS));
+  private BASE_MESSAGE_OPTIONS = {
+    parse_mode: "MarkdownV2" as ParseMode,
+    link_preview_options: { is_disabled: true },
   };
-}
 
-export function getSendMessageFn(limiter: PQueue, bot: Bot): SendMessageFn {
-  return (chatId, msg, onSuccess, onError) => {
-    limiter.add(() =>
-      bot.api
-        .sendMessage(chatId, telegramify(msg, "remove"), BASE_OPTIONS)
+  constructor(
+    private logger: Logger,
+    interval: number,
+    intervalCap: number,
+    private bot: Bot,
+  ) {
+    this.queue = new PQueue({
+      intervalCap,
+      interval,
+      carryoverIntervalCount: false,
+    });
+  }
+
+  reply(ctx: Context, msg: string) {
+    this.add(() => ctx.reply(telegramify(msg, "remove"), this.BASE_MESSAGE_OPTIONS));
+  }
+
+  sendMessage(chatId: number, msg: string, onSuccess: () => void, onError: (error: Error) => void) {
+    this.add(() =>
+      this.bot.api
+        .sendMessage(chatId, telegramify(msg, "remove"), this.BASE_MESSAGE_OPTIONS)
         .then(onSuccess)
         .catch(onError),
     );
-  };
+  }
+
+  protected add<T>(fn: () => Promise<T>) {
+    this.queue.add(fn);
+
+    this.logger.info(
+      { queue: { size: this.queue.size, pending: this.queue.pending } },
+      "Message added to the dispatch queue",
+    );
+  }
 }

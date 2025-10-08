@@ -1,6 +1,6 @@
 import { Context } from "grammy";
 import { Logger } from "pino";
-import { ReplyFn } from "../limiter";
+import { Limiter } from "../limiter";
 
 export const FALLBACK_MESSAGE = `Available commands:
 
@@ -19,13 +19,13 @@ export const FALLBACK_MESSAGE = `Available commands:
 /help 
   - Show this help message`;
 
-export function getFallbackHandler(logger: Logger, reply: ReplyFn) {
+export function getFallbackHandler(logger: Logger, limiter: Limiter) {
   return async (ctx: Context) => {
     const userId = ctx.from?.id;
     const message = ctx.message?.text;
 
     logger.info({ userId, message });
 
-    reply(ctx, FALLBACK_MESSAGE);
+    limiter.reply(ctx, FALLBACK_MESSAGE);
   };
 }

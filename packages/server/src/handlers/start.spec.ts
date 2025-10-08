@@ -10,7 +10,7 @@ import { getStartHandler } from "./start";
 import { UNEXPECTED_ERROR_MESSAGE } from "./misc/utils";
 import { ETHEREUM_ADDRESS_1, USER_ID_1 } from "../tests/constants";
 import { FALLBACK_MESSAGE } from "./fallback";
-import { ReplyFn } from "../limiter";
+import { Limiter } from "../limiter";
 
 jest.mock("../services/user");
 jest.mock("../services/wallet");
@@ -20,7 +20,7 @@ const START_COMMAND = "/start";
 let mockLogger: jest.Mocked<Logger>;
 let mockUserService: jest.Mocked<UserService>;
 let mockWalletService: jest.Mocked<WalletService>;
-let mockReply: jest.Mocked<ReplyFn>;
+let mockLimiter: jest.Mocked<Limiter>;
 let start: ReturnType<typeof getStartHandler>;
 let ctx: CommandContext<Context>;
 
@@ -39,9 +39,11 @@ beforeEach(() => {
     upsert: jest.fn(),
   } as unknown as jest.Mocked<WalletService>;
 
-  mockReply = jest.fn();
+  mockLimiter = {
+    reply: jest.fn(),
+  } as unknown as jest.Mocked<Limiter>;
 
-  start = getStartHandler(mockLogger, mockReply, mockUserService, mockWalletService);
+  start = getStartHandler(mockLogger, mockLimiter, mockUserService, mockWalletService);
 
   ctx = {
     from: { id: USER_ID_1 },
@@ -54,7 +56,7 @@ it("should reply with a welcome message if the user is new", async () => {
 
   await start(ctx);
 
-  expect(mockReply).toHaveBeenCalledWith(ctx, `Welcome!\n\n${FALLBACK_MESSAGE}`);
+  expect(mockLimiter.reply).toHaveBeenCalledWith(ctx, `Welcome!\n\n${FALLBACK_MESSAGE}`);
 });
 
 it("should reply with a welcome back message if the user already exists", async () => {
@@ -64,13 +66,13 @@ it("should reply with a welcome back message if the user already exists", async 
 
   await start(ctx);
 
-  expect(mockReply).toHaveBeenCalledWith(ctx, `Welcome back!\n\n${FALLBACK_MESSAGE}`);
+  expect(mockLimiter.reply).toHaveBeenCalledWith(ctx, `Welcome back!\n\n${FALLBACK_MESSAGE}`);
 });
 
 it("should reply with the address of the wallet being subscribed", async () => {
   await start(ctx);
 
-  expect(mockReply).toHaveBeenCalledWith(
+  expect(mockLimiter.reply).toHaveBeenCalledWith(
     ctx,
     `Welcome!\n\nYou have successfully subscribed 0xBEE9...BBAB\n\n${FALLBACK_MESSAGE}`,
   );
@@ -81,7 +83,7 @@ it("should reply only with welcome if the wallet was already added", async () =>
 
   await start(ctx);
 
-  expect(mockReply).toHaveBeenCalledWith(ctx, `Welcome!\n\n${FALLBACK_MESSAGE}`);
+  expect(mockLimiter.reply).toHaveBeenCalledWith(ctx, `Welcome!\n\n${FALLBACK_MESSAGE}`);
 });
 
 it("should reply with an error when wallet upsert fails due to invalid address", async () => {
@@ -89,7 +91,7 @@ it("should reply with an error when wallet upsert fails due to invalid address",
 
   await start(ctx);
 
-  expect(mockReply).toHaveBeenCalledWith(ctx, "Please provide a valid Ethereum address.");
+  expect(mockLimiter.reply).toHaveBeenCalledWith(ctx, "Please provide a valid Ethereum address.");
 });
 
 it("should reply with an error when wallet upsert fails for an unknown reason", async () => {
@@ -97,7 +99,7 @@ it("should reply with an error when wallet upsert fails for an unknown reason", 
 
   await start(ctx);
 
-  expect(mockReply).toHaveBeenCalledWith(ctx, UNEXPECTED_ERROR_MESSAGE);
+  expect(mockLimiter.reply).toHaveBeenCalledWith(ctx, UNEXPECTED_ERROR_MESSAGE);
 });
 
 it("should reply with an error when the user id is not found in context", async () => {
@@ -107,7 +109,7 @@ it("should reply with an error when the user id is not found in context", async 
 
   await start(ctx);
 
-  expect(mockReply).toHaveBeenCalledWith(ctx, UNEXPECTED_ERROR_MESSAGE);
+  expect(mockLimiter.reply).toHaveBeenCalledWith(ctx, UNEXPECTED_ERROR_MESSAGE);
 });
 
 it("should reply with an error when user create fails for an unknown reason", async () => {
@@ -115,7 +117,7 @@ it("should reply with an error when user create fails for an unknown reason", as
 
   await start(ctx);
 
-  expect(mockReply).toHaveBeenCalledWith(ctx, UNEXPECTED_ERROR_MESSAGE);
+  expect(mockLimiter.reply).toHaveBeenCalledWith(ctx, UNEXPECTED_ERROR_MESSAGE);
 });
 
 it("should reply with an error when adding wallet to user fails for an unknown reason", async () => {
@@ -123,7 +125,7 @@ it("should reply with an error when adding wallet to user fails for an unknown r
 
   await start(ctx);
 
-  expect(mockReply).toHaveBeenCalledWith(ctx, UNEXPECTED_ERROR_MESSAGE);
+  expect(mockLimiter.reply).toHaveBeenCalledWith(ctx, UNEXPECTED_ERROR_MESSAGE);
 });
 
 it("should handle multiple spaces between command and address", async () => {
@@ -133,7 +135,7 @@ it("should handle multiple spaces between command and address", async () => {
 
   expect(mockWalletService.upsert).toHaveBeenCalledWith(ETHEREUM_ADDRESS_1);
   expect(mockUserService.addWallet).toHaveBeenCalledWith(USER_ID_1, ETHEREUM_ADDRESS_1);
-  expect(mockReply).toHaveBeenCalledWith(
+  expect(mockLimiter.reply).toHaveBeenCalledWith(
     ctx,
     `Welcome!\n\nYou have successfully subscribed 0xBEE9...BBAB\n\n${FALLBACK_MESSAGE}`,
   );

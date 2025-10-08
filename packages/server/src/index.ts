@@ -11,15 +11,18 @@ import { WalletService } from "./services/wallet";
 import { DispatchJob } from "./jobs/dispatch";
 import { MessageService } from "./services/message";
 import { getEnv } from "./env";
-import { getLimiter, getReplyFn, getSendMessageFn } from "./limiter";
+import { Limiter } from "./limiter";
 
 const env = getEnv();
 const prisma = new PrismaClient({ datasourceUrl: env.DATABASE_URL });
 const logger = pino();
 const bot = new Bot(env.BOT_TOKEN);
-const limiter = getLimiter(env.LIMITER_INTERVAL, env.LIMITER_INTERVAL_CAP);
-const reply = getReplyFn(limiter);
-const sendMessage = getSendMessageFn(limiter, bot);
+const limiter = new Limiter(
+  logger.child({ component: "limiter" }),
+  env.LIMITER_INTERVAL,
+  env.LIMITER_INTERVAL_CAP,
+  bot,
+);
 
 /* Services */
 
@@ -29,11 +32,11 @@ const message = new MessageService(prisma);
 
 /* Handlers */
 
-const start = getStartHandler(logger.child({ handler: "start" }), reply, user, wallet);
-const add = getAddHandler(logger.child({ handler: "add" }), reply, user, wallet);
-const list = getListHandler(logger.child({ handler: "list" }), reply, user);
-const remove = getRemoveHandler(logger.child({ handler: "remove" }), reply, user);
-const fallback = getFallbackHandler(logger.child({ handler: "fallback" }), reply);
+const start = getStartHandler(logger.child({ handler: "start" }), limiter, user, wallet);
+const add = getAddHandler(logger.child({ handler: "add" }), limiter, user, wallet);
+const list = getListHandler(logger.child({ handler: "list" }), limiter, user);
+const remove = getRemoveHandler(logger.child({ handler: "remove" }), limiter, user);
+const fallback = getFallbackHandler(logger.child({ handler: "fallback" }), limiter);
 
 /* Telegram Bot */
 
@@ -52,5 +55,21 @@ new DispatchJob(
   logger.child({ job: "dispatch" }),
   message,
   "*/30 * * * * *", // Every 30 seconds
-  sendMessage,
+  limiter,
 ).start();
+
+async function main() {
+  const userWallet = await prisma.userWallet.findFirst();
+
+  for (let i = 0; i < 50; i++) {
+    await message.create("hola 1" + i, userWallet!.walletId);
+  }
+
+  await new Promise((resolve) => setTimeout(resolve, 40000));
+
+  for (let i = 0; i < 50; i++) {
+    await message.create("hola 2" + i, userWallet!.walletId);
+  }
+}
+
+main();

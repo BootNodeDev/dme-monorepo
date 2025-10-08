@@ -1,14 +1,14 @@
 import cron from "node-cron";
 import { MessageService } from "../services/message";
 import { Logger } from "pino";
-import { SendMessageFn } from "../limiter";
+import { Limiter } from "../limiter";
 
 export class DispatchJob {
   constructor(
     private logger: Logger,
     private message: MessageService,
     private schedule: string,
-    private sendMessage: SendMessageFn,
+    private limiter: Limiter,
   ) {}
 
   start() {
@@ -27,7 +27,7 @@ export class DispatchJob {
           const onSuccess = () => this.message.markAsDelivered(attempt);
           const onError = (error: Error) => this.message.markAsFailed(attempt, error.message);
 
-          this.sendMessage(recipient.userId, msg.content, onSuccess, onError);
+          this.limiter.sendMessage(recipient.userId, msg.content, onSuccess, onError);
         }
       }
     } catch (error) {

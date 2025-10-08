@@ -2,10 +2,10 @@ import { Context } from "grammy";
 import { Logger } from "pino";
 import { FALLBACK_MESSAGE, getFallbackHandler } from "./fallback";
 import { USER_ID_1 } from "../tests/constants";
-import { ReplyFn } from "../limiter";
+import { Limiter } from "../limiter";
 
 let mockLogger: jest.Mocked<Logger>;
-let mockReply: jest.Mocked<ReplyFn>;
+let mockLimiter: jest.Mocked<Limiter>;
 let fallbackHandler: ReturnType<typeof getFallbackHandler>;
 let ctx: Context;
 
@@ -14,9 +14,11 @@ beforeEach(() => {
     info: jest.fn(),
   } as unknown as jest.Mocked<Logger>;
 
-  mockReply = jest.fn();
+  mockLimiter = {
+    reply: jest.fn(),
+  } as unknown as jest.Mocked<Limiter>;
 
-  fallbackHandler = getFallbackHandler(mockLogger, mockReply);
+  fallbackHandler = getFallbackHandler(mockLogger, mockLimiter);
 
   ctx = {
     from: { id: USER_ID_1 },
@@ -27,6 +29,6 @@ beforeEach(() => {
 it("should reply with usage message when fallback is triggered", async () => {
   await fallbackHandler(ctx);
 
-  expect(mockReply).toHaveBeenCalledWith(ctx, FALLBACK_MESSAGE);
+  expect(mockLimiter.reply).toHaveBeenCalledWith(ctx, FALLBACK_MESSAGE);
   expect(mockLogger.info).toHaveBeenCalledWith({ userId: USER_ID_1, message: "some random text" });
 });

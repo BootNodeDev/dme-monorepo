@@ -8,11 +8,11 @@ import {
 import { InvalidEthereumAddressError, WalletService } from "../services/wallet";
 import { formatAddress, UNEXPECTED_ERROR_MESSAGE } from "./misc/utils";
 import { FALLBACK_MESSAGE } from "./fallback";
-import { ReplyFn } from "../limiter";
+import { Limiter } from "../limiter";
 
 export function getStartHandler(
   logger: Logger,
-  reply: ReplyFn,
+  limiter: Limiter,
   user: UserService,
   wallet: WalletService,
 ) {
@@ -21,7 +21,7 @@ export function getStartHandler(
 
     if (!userId) {
       logger.error("No user ID found in the context");
-      reply(ctx, UNEXPECTED_ERROR_MESSAGE);
+      limiter.reply(ctx, UNEXPECTED_ERROR_MESSAGE);
       return;
     }
 
@@ -34,7 +34,7 @@ export function getStartHandler(
         alreadyExists = true;
       } else {
         logger.error({ error, userId }, "Error creating user");
-        reply(ctx, UNEXPECTED_ERROR_MESSAGE);
+        limiter.reply(ctx, UNEXPECTED_ERROR_MESSAGE);
         return;
       }
     }
@@ -50,10 +50,10 @@ export function getStartHandler(
         await wallet.upsert(address);
       } catch (error) {
         if (error instanceof InvalidEthereumAddressError) {
-          reply(ctx, "Please provide a valid Ethereum address.");
+          limiter.reply(ctx, "Please provide a valid Ethereum address.");
         } else {
           logger.error({ error, userId, address }, "Error upserting wallet");
-          reply(ctx, UNEXPECTED_ERROR_MESSAGE);
+          limiter.reply(ctx, UNEXPECTED_ERROR_MESSAGE);
         }
         return;
       }
@@ -65,7 +65,7 @@ export function getStartHandler(
           walletAlreadySubscribed = true;
         } else {
           logger.error({ error, userId, address }, "Error adding wallet to user");
-          reply(ctx, UNEXPECTED_ERROR_MESSAGE);
+          limiter.reply(ctx, UNEXPECTED_ERROR_MESSAGE);
           return;
         }
       }
@@ -81,6 +81,6 @@ export function getStartHandler(
 
     response.push(`${FALLBACK_MESSAGE}`);
 
-    reply(ctx, response.join("\n\n"));
+    limiter.reply(ctx, response.join("\n\n"));
   };
 }

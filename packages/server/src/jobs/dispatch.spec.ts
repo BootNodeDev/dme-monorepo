@@ -10,6 +10,7 @@ import {
   USER_ID_2,
 } from "../tests/constants";
 import { DispatchJob } from "./dispatch";
+import { Limiter } from "../limiter";
 
 jest.mock("../services/message");
 jest.mock("node-cron");
@@ -27,7 +28,7 @@ const mockCron = cron as jest.Mocked<typeof cron>;
 let dispatch: DispatchJob;
 let mockLogger: jest.Mocked<Logger>;
 let mockMessageService: jest.Mocked<MessageService>;
-let mockSend: jest.Mock;
+let mockLimiter: jest.Mocked<Limiter>;
 
 beforeEach(() => {
   mockLogger = {
@@ -45,9 +46,11 @@ beforeEach(() => {
   mockMessageService.markAsDelivered = jest.fn();
   mockMessageService.markAsFailed = jest.fn();
 
-  mockSend = jest.fn();
+  mockLimiter = {
+    sendMessage: jest.fn(),
+  } as unknown as jest.Mocked<Limiter>;
 
-  dispatch = new DispatchJob(mockLogger, mockMessageService, CRON_SCHEDULE, mockSend);
+  dispatch = new DispatchJob(mockLogger, mockMessageService, CRON_SCHEDULE, mockLimiter);
 });
 
 describe("start", () => {
@@ -114,13 +117,13 @@ describe("execute", () => {
 
     expect(mockMessageService.newAttempt).toHaveBeenCalledWith(MESSAGE_ID, USER_ID_1);
     expect(mockMessageService.newAttempt).toHaveBeenCalledWith(MESSAGE_ID, USER_ID_2);
-    expect(mockSend).toHaveBeenCalledWith(
+    expect(mockLimiter.sendMessage).toHaveBeenCalledWith(
       USER_ID_1,
       MESSAGE_CONTENT,
       expect.any(Function),
       expect.any(Function),
     );
-    expect(mockSend).toHaveBeenCalledWith(
+    expect(mockLimiter.sendMessage).toHaveBeenCalledWith(
       USER_ID_2,
       MESSAGE_CONTENT,
       expect.any(Function),

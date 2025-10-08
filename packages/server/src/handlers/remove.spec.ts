@@ -4,7 +4,7 @@ import { InvalidWalletIndexError, UserService } from "../services/user";
 import { getRemoveHandler } from "./remove";
 import { UNEXPECTED_ERROR_MESSAGE } from "./misc/utils";
 import { ETHEREUM_ADDRESS_1, USER_ID_1, WALLET_INDEX } from "../tests/constants";
-import { ReplyFn } from "../limiter";
+import { Limiter } from "../limiter";
 
 jest.mock("../services/user");
 
@@ -12,7 +12,7 @@ const REMOVE_COMMAND = "/remove";
 
 let mockLogger: jest.Mocked<Logger>;
 let mockUserService: jest.Mocked<UserService>;
-let mockReply: jest.Mocked<ReplyFn>;
+let mockLimiter: jest.Mocked<Limiter>;
 let removeWallet: ReturnType<typeof getRemoveHandler>;
 let ctx: CommandContext<Context>;
 
@@ -26,9 +26,11 @@ beforeEach(() => {
     removeWallet: jest.fn().mockResolvedValue(ETHEREUM_ADDRESS_1),
   } as unknown as jest.Mocked<UserService>;
 
-  mockReply = jest.fn();
+  mockLimiter = {
+    reply: jest.fn(),
+  } as unknown as jest.Mocked<Limiter>;
 
-  removeWallet = getRemoveHandler(mockLogger, mockReply, mockUserService);
+  removeWallet = getRemoveHandler(mockLogger, mockLimiter, mockUserService);
 
   ctx = {
     from: { id: USER_ID_1 },
@@ -40,7 +42,7 @@ it("should successfully remove a wallet and reply with success message", async (
   await removeWallet(ctx);
 
   expect(mockUserService.removeWallet).toHaveBeenCalledWith(USER_ID_1, WALLET_INDEX);
-  expect(mockReply).toHaveBeenCalledWith(ctx, `Successfully removed 0xBEE9...BBAB`);
+  expect(mockLimiter.reply).toHaveBeenCalledWith(ctx, `Successfully removed 0xBEE9...BBAB`);
 });
 
 it("should reply with usage message when no wallet index is provided", async () => {
@@ -49,7 +51,7 @@ it("should reply with usage message when no wallet index is provided", async () 
   await removeWallet(ctx);
 
   expect(mockUserService.removeWallet).not.toHaveBeenCalled();
-  expect(mockReply).toHaveBeenCalledWith(
+  expect(mockLimiter.reply).toHaveBeenCalledWith(
     ctx,
     "Please provide a valid wallet index.\n\nUsage: /remove <wallet_index>\n\nThe index is the number left to the address shown by the /list command.",
   );
@@ -61,7 +63,7 @@ it("should reply with error when user ID is not found in context", async () => {
   await removeWallet(ctx);
 
   expect(mockUserService.removeWallet).not.toHaveBeenCalled();
-  expect(mockReply).toHaveBeenCalledWith(ctx, UNEXPECTED_ERROR_MESSAGE);
+  expect(mockLimiter.reply).toHaveBeenCalledWith(ctx, UNEXPECTED_ERROR_MESSAGE);
 });
 
 it("should reply with error when wallet index is invalid", async () => {
@@ -70,7 +72,7 @@ it("should reply with error when wallet index is invalid", async () => {
   await removeWallet(ctx);
 
   expect(mockUserService.removeWallet).not.toHaveBeenCalled();
-  expect(mockReply).toHaveBeenCalledWith(
+  expect(mockLimiter.reply).toHaveBeenCalledWith(
     ctx,
     "Please provide a valid wallet index.\n\nUsage: /remove <wallet_index>\n\nThe index is the number left to the address shown by the /list command.",
   );
@@ -82,7 +84,7 @@ it("should reply with error message when wallet index is out of bounds", async (
   await removeWallet(ctx);
 
   expect(mockUserService.removeWallet).toHaveBeenCalledWith(USER_ID_1, WALLET_INDEX);
-  expect(mockReply).toHaveBeenCalledWith(
+  expect(mockLimiter.reply).toHaveBeenCalledWith(
     ctx,
     "The wallet index is out of bounds.\n\nUsage: /remove <wallet_index>\n\nThe index is the number left to the address shown by the /list command.",
   );
@@ -94,7 +96,7 @@ it("should reply with generic error when removing wallet fails for unknown reaso
   await removeWallet(ctx);
 
   expect(mockUserService.removeWallet).toHaveBeenCalledWith(USER_ID_1, WALLET_INDEX);
-  expect(mockReply).toHaveBeenCalledWith(ctx, UNEXPECTED_ERROR_MESSAGE);
+  expect(mockLimiter.reply).toHaveBeenCalledWith(ctx, UNEXPECTED_ERROR_MESSAGE);
 });
 
 it("should handle empty string as missing index", async () => {
@@ -103,7 +105,7 @@ it("should handle empty string as missing index", async () => {
   await removeWallet(ctx);
 
   expect(mockUserService.removeWallet).not.toHaveBeenCalled();
-  expect(mockReply).toHaveBeenCalledWith(
+  expect(mockLimiter.reply).toHaveBeenCalledWith(
     ctx,
     "Please provide a valid wallet index.\n\nUsage: /remove <wallet_index>\n\nThe index is the number left to the address shown by the /list command.",
   );
@@ -132,7 +134,7 @@ it("should reject index 0 as invalid", async () => {
   await removeWallet(ctx);
 
   expect(mockUserService.removeWallet).not.toHaveBeenCalled();
-  expect(mockReply).toHaveBeenCalledWith(
+  expect(mockLimiter.reply).toHaveBeenCalledWith(
     ctx,
     "Please provide a valid wallet index.\n\nUsage: /remove <wallet_index>\n\nThe index is the number left to the address shown by the /list command.",
   );

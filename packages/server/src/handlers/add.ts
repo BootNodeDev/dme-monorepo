@@ -3,11 +3,11 @@ import { Logger } from "pino";
 import { UserService, UserWalletAlreadyExistsError } from "../services/user";
 import { InvalidEthereumAddressError, WalletService } from "../services/wallet";
 import { formatAddress, UNEXPECTED_ERROR_MESSAGE } from "./misc/utils";
-import { ReplyFn } from "../limiter";
+import { Limiter } from "../limiter";
 
 export function getAddHandler(
   logger: Logger,
-  reply: ReplyFn,
+  limiter: Limiter,
   user: UserService,
   wallet: WalletService,
 ) {
@@ -16,14 +16,14 @@ export function getAddHandler(
 
     if (!userId) {
       logger.error("No user ID found in the context");
-      reply(ctx, UNEXPECTED_ERROR_MESSAGE);
+      limiter.reply(ctx, UNEXPECTED_ERROR_MESSAGE);
       return;
     }
 
     const address = ctx.message?.text.split(/\s+/)[1];
 
     if (!address) {
-      reply(ctx, "Please provide a wallet address.\n\nUsage: /add <wallet_address>");
+      limiter.reply(ctx, "Please provide a wallet address.\n\nUsage: /add <wallet_address>");
       return;
     }
 
@@ -33,23 +33,23 @@ export function getAddHandler(
       await wallet.upsert(address);
     } catch (error) {
       if (error instanceof InvalidEthereumAddressError) {
-        reply(ctx, "Please provide a valid Ethereum address.");
+        limiter.reply(ctx, "Please provide a valid Ethereum address.");
       } else {
         logger.error({ error, userId, address }, "Error upserting wallet");
-        reply(ctx, UNEXPECTED_ERROR_MESSAGE);
+        limiter.reply(ctx, UNEXPECTED_ERROR_MESSAGE);
       }
       return;
     }
 
     try {
       await user.addWallet(userId, address);
-      reply(ctx, `Successfully added ${formatAddress(address)}.`);
+      limiter.reply(ctx, `Successfully added ${formatAddress(address)}.`);
     } catch (error) {
       if (error instanceof UserWalletAlreadyExistsError) {
-        reply(ctx, `${formatAddress(address)} is already associated with your account.`);
+        limiter.reply(ctx, `${formatAddress(address)} is already associated with your account.`);
       } else {
         logger.error({ error, userId, address }, "Error adding wallet to user");
-        reply(ctx, UNEXPECTED_ERROR_MESSAGE);
+        limiter.reply(ctx, UNEXPECTED_ERROR_MESSAGE);
       }
     }
   };
