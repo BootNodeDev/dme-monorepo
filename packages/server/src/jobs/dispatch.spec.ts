@@ -1,4 +1,4 @@
-import { PrismaClient, UserMessageAttempt } from "@prisma/client";
+import { UserMessageAttempt } from "@prisma/client";
 import cron from "node-cron";
 import { Logger } from "pino";
 import { MessageService } from "../services/message";
@@ -12,7 +12,6 @@ import {
 import { DispatchJob } from "./dispatch";
 import { Limiter } from "../limiter";
 
-jest.mock("../services/message");
 jest.mock("node-cron");
 jest.mock("p-queue", () =>
   jest.fn().mockImplementation(() => ({
@@ -37,14 +36,12 @@ beforeEach(() => {
     warn: jest.fn(),
   } as unknown as jest.Mocked<Logger>;
 
-  mockMessageService = new MessageService(
-    null as unknown as PrismaClient,
-  ) as jest.Mocked<MessageService>;
-
-  mockMessageService.listSendable = jest.fn();
-  mockMessageService.newAttempt = jest.fn();
-  mockMessageService.markAsDelivered = jest.fn();
-  mockMessageService.markAsFailed = jest.fn();
+  mockMessageService = {
+    listSendable: jest.fn(),
+    newAttempt: jest.fn(),
+    markAsDelivered: jest.fn(),
+    markAsFailed: jest.fn(),
+  } as unknown as jest.Mocked<MessageService>;
 
   mockLimiter = {
     sendMessage: jest.fn(),
@@ -112,7 +109,11 @@ describe("execute", () => {
     mockMessageService.newAttempt.mockResolvedValueOnce(attempt2);
   });
 
-  it("should call send and message service methods for each unsent message", async () => {
+  it("should call send and message service methods for each unsent message and call mark as delivered on success", async () => {
+    mockLimiter.sendMessage.mockImplementation((_, __, onSuccess) => {
+      onSuccess();
+    });
+
     await dispatch.execute();
 
     expect(mockMessageService.newAttempt).toHaveBeenCalledWith(MESSAGE_ID, USER_ID_1);
@@ -129,6 +130,19 @@ describe("execute", () => {
       expect.any(Function),
       expect.any(Function),
     );
+    expect(mockMessageService.markAsDelivered).toHaveBeenCalledWith(attempt1);
+    expect(mockMessageService.markAsDelivered).toHaveBeenCalledWith(attempt2);
+  });
+
+  it("should call mark as failed on error", async () => {
+    mockLimiter.sendMessage.mockImplementation((_, __, ___, onError) => {
+      onError(new Error("Some Error"));
+    });
+
+    await dispatch.execute();
+
+    expect(mockMessageService.markAsFailed).toHaveBeenCalledWith(attempt1, "Some Error");
+    expect(mockMessageService.markAsFailed).toHaveBeenCalledWith(attempt2, "Some Error");
   });
 
   it("should log error when listSendable throws an error", async () => {
