@@ -33,6 +33,7 @@
     "typescript-eslint": "^8.45.0"
   },
   "dependencies": {
+    "@grammyjs/runner": "^2.0.3",
     "@prisma/client": "6.16.3",
     "grammy": "^1.38.2",
     "ms": "^2.1.3",

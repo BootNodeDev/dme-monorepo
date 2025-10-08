@@ -1,4 +1,5 @@
 import { Bot } from "grammy";
+import { run } from "@grammyjs/runner";
 import { PrismaClient } from "@prisma/client";
 import pino from "pino";
 import { getStartHandler } from "./handlers/start";
@@ -45,7 +46,7 @@ bot.command("add", add);
 bot.command("list", list);
 bot.command("remove", remove);
 bot.on("message", fallback);
-bot.start().catch((error) => logger.error({ error }, "Unhandled bot error"));
+run(bot);
 
 logger.info("Bot started");
 
