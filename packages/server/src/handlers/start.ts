@@ -7,7 +7,6 @@ import {
 } from "../services/user";
 import { InvalidEthereumAddressError, WalletService } from "../services/wallet";
 import { formatAddress, UNEXPECTED_ERROR_MESSAGE } from "./misc/utils";
-import { FALLBACK_MESSAGE } from "./fallback";
 import { Limiter } from "../limiter";
 
 export function getStartHandler(
@@ -78,8 +77,6 @@ export function getStartHandler(
     if (address && !walletAlreadySubscribed) {
       response.push(`You have successfully subscribed ${formatAddress(address)}`);
     }
-
-    response.push(`${FALLBACK_MESSAGE}`);
 
     limiter.reply(ctx, response.join("\n\n"));
   };

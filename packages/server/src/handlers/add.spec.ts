@@ -63,7 +63,7 @@ it("should reply with usage message when no wallet address is provided", async (
   expect(mockUserService.addWallet).not.toHaveBeenCalled();
   expect(mockLimiter.reply).toHaveBeenCalledWith(
     ctx,
-    "Please provide a wallet address.\n\nUsage: /add <wallet_address>",
+    "Please provide a wallet address.\n\nUsage: /add <address>",
   );
 });
 
@@ -129,7 +129,7 @@ it("should handle empty string address as missing address", async () => {
   expect(mockUserService.addWallet).not.toHaveBeenCalled();
   expect(mockLimiter.reply).toHaveBeenCalledWith(
     ctx,
-    "Please provide a wallet address.\n\nUsage: /add <wallet_address>",
+    "Please provide a wallet address.\n\nUsage: /add <address>",
   );
 });
 

@@ -53,7 +53,7 @@ it("should reply with usage message when no wallet index is provided", async () 
   expect(mockUserService.removeWallet).not.toHaveBeenCalled();
   expect(mockLimiter.reply).toHaveBeenCalledWith(
     ctx,
-    "Please provide a valid wallet index.\n\nUsage: /remove <wallet_index>\n\nThe index is the number left to the address shown by the /list command.",
+    "Please provide a valid wallet index.\n\nUsage: /remove <index>\n\nThe index is the number left to the address shown by the /list command.",
   );
 });
 
@@ -74,7 +74,7 @@ it("should reply with error when wallet index is invalid", async () => {
   expect(mockUserService.removeWallet).not.toHaveBeenCalled();
   expect(mockLimiter.reply).toHaveBeenCalledWith(
     ctx,
-    "Please provide a valid wallet index.\n\nUsage: /remove <wallet_index>\n\nThe index is the number left to the address shown by the /list command.",
+    "Please provide a valid wallet index.\n\nUsage: /remove <index>\n\nThe index is the number left to the address shown by the /list command.",
   );
 });
 
@@ -86,7 +86,7 @@ it("should reply with error message when wallet index is out of bounds", async (
   expect(mockUserService.removeWallet).toHaveBeenCalledWith(USER_ID_1, WALLET_INDEX);
   expect(mockLimiter.reply).toHaveBeenCalledWith(
     ctx,
-    "The wallet index is out of bounds.\n\nUsage: /remove <wallet_index>\n\nThe index is the number left to the address shown by the /list command.",
+    "The wallet index is out of bounds.\n\nUsage: /remove <index>\n\nThe index is the number left to the address shown by the /list command.",
   );
 });
 
@@ -107,7 +107,7 @@ it("should handle empty string as missing index", async () => {
   expect(mockUserService.removeWallet).not.toHaveBeenCalled();
   expect(mockLimiter.reply).toHaveBeenCalledWith(
     ctx,
-    "Please provide a valid wallet index.\n\nUsage: /remove <wallet_index>\n\nThe index is the number left to the address shown by the /list command.",
+    "Please provide a valid wallet index.\n\nUsage: /remove <index>\n\nThe index is the number left to the address shown by the /list command.",
   );
 });
 
@@ -136,6 +136,6 @@ it("should reject index 0 as invalid", async () => {
   expect(mockUserService.removeWallet).not.toHaveBeenCalled();
   expect(mockLimiter.reply).toHaveBeenCalledWith(
     ctx,
-    "Please provide a valid wallet index.\n\nUsage: /remove <wallet_index>\n\nThe index is the number left to the address shown by the /list command.",
+    "Please provide a valid wallet index.\n\nUsage: /remove <index>\n\nThe index is the number left to the address shown by the /list command.",
   );
 });

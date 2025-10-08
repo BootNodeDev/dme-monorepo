@@ -22,7 +22,7 @@ export function getListHandler(logger: Logger, limiter: Limiter, user: UserServi
       if (wallets.length === 0) {
         limiter.reply(
           ctx,
-          "You don't have any wallets associated with your account yet.\n\nUse /add <wallet_address> to add one.",
+          "You don't have any wallets associated with your account yet.\n\nUse /add <address> to add one.",
         );
         return;
       }

@@ -8,7 +8,7 @@ import { Limiter } from "../limiter";
 const IndexSchema = z.coerce.number().int().positive();
 
 const REPEATED_INSTRUCTIONS =
-  "\n\nUsage: /remove <wallet_index>\n\nThe index is the number left to the address shown by the /list command.";
+  "\n\nUsage: /remove <index>\n\nThe index is the number left to the address shown by the /list command.";
 
 export function getRemoveHandler(logger: Logger, limiter: Limiter, user: UserService) {
   return async (ctx: CommandContext<Context>) => {

@@ -48,7 +48,7 @@ it("should reply with empty message when user has no wallets", async () => {
   expect(mockUserService.listWallets).toHaveBeenCalledWith(USER_ID_1);
   expect(mockLimiter.reply).toHaveBeenCalledWith(
     ctx,
-    "You don't have any wallets associated with your account yet.\n\nUse /add <wallet_address> to add one.",
+    "You don't have any wallets associated with your account yet.\n\nUse /add <address> to add one.",
   );
 });
 

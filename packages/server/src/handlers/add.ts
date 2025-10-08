@@ -23,7 +23,7 @@ export function getAddHandler(
     const address = ctx.message?.text.split(/\s+/)[1];
 
     if (!address) {
-      limiter.reply(ctx, "Please provide a wallet address.\n\nUsage: /add <wallet_address>");
+      limiter.reply(ctx, "Please provide a wallet address.\n\nUsage: /add <address>");
       return;
     }
 

@@ -6,7 +6,6 @@ import { getStartHandler } from "./handlers/start";
 import { getAddHandler } from "./handlers/add";
 import { getListHandler } from "./handlers/list";
 import { getRemoveHandler } from "./handlers/remove";
-import { getFallbackHandler } from "./handlers/fallback";
 import { UserService } from "./services/user";
 import { WalletService } from "./services/wallet";
 import { DispatchJob } from "./jobs/dispatch";
@@ -37,7 +36,6 @@ const start = getStartHandler(logger.child({ handler: "start" }), limiter, user,
 const add = getAddHandler(logger.child({ handler: "add" }), limiter, user, wallet);
 const list = getListHandler(logger.child({ handler: "list" }), limiter, user);
 const remove = getRemoveHandler(logger.child({ handler: "remove" }), limiter, user);
-const fallback = getFallbackHandler(logger.child({ handler: "fallback" }), limiter);
 
 /* Telegram Bot */
 
@@ -49,7 +47,6 @@ bot.command("start", start);
 bot.command("add", add);
 bot.command("list", list);
 bot.command("remove", remove);
-bot.on("message", fallback);
 
 bot.catch((error) =>
   logger.error(

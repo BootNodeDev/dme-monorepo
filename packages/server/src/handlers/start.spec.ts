@@ -9,7 +9,6 @@ import { InvalidEthereumAddressError, WalletService } from "../services/wallet";
 import { getStartHandler } from "./start";
 import { UNEXPECTED_ERROR_MESSAGE } from "./misc/utils";
 import { ETHEREUM_ADDRESS_1, USER_ID_1 } from "../tests/constants";
-import { FALLBACK_MESSAGE } from "./fallback";
 import { Limiter } from "../limiter";
 
 jest.mock("../services/user");
@@ -56,7 +55,7 @@ it("should reply with a welcome message if the user is new", async () => {
 
   await start(ctx);
 
-  expect(mockLimiter.reply).toHaveBeenCalledWith(ctx, `Welcome!\n\n${FALLBACK_MESSAGE}`);
+  expect(mockLimiter.reply).toHaveBeenCalledWith(ctx, `Welcome!`);
 });
 
 it("should reply with a welcome back message if the user already exists", async () => {
@@ -66,7 +65,7 @@ it("should reply with a welcome back message if the user already exists", async 
 
   await start(ctx);
 
-  expect(mockLimiter.reply).toHaveBeenCalledWith(ctx, `Welcome back!\n\n${FALLBACK_MESSAGE}`);
+  expect(mockLimiter.reply).toHaveBeenCalledWith(ctx, `Welcome back!`);
 });
 
 it("should reply with the address of the wallet being subscribed", async () => {
@@ -74,7 +73,7 @@ it("should reply with the address of the wallet being subscribed", async () => {
 
   expect(mockLimiter.reply).toHaveBeenCalledWith(
     ctx,
-    `Welcome!\n\nYou have successfully subscribed 0xBEE9...BBAB\n\n${FALLBACK_MESSAGE}`,
+    `Welcome!\n\nYou have successfully subscribed 0xBEE9...BBAB`,
   );
 });
 
@@ -83,7 +82,7 @@ it("should reply only with welcome if the wallet was already added", async () =>
 
   await start(ctx);
 
-  expect(mockLimiter.reply).toHaveBeenCalledWith(ctx, `Welcome!\n\n${FALLBACK_MESSAGE}`);
+  expect(mockLimiter.reply).toHaveBeenCalledWith(ctx, `Welcome!`);
 });
 
 it("should reply with an error when wallet upsert fails due to invalid address", async () => {
@@ -137,6 +136,6 @@ it("should handle multiple spaces between command and address", async () => {
   expect(mockUserService.addWallet).toHaveBeenCalledWith(USER_ID_1, ETHEREUM_ADDRESS_1);
   expect(mockLimiter.reply).toHaveBeenCalledWith(
     ctx,
-    `Welcome!\n\nYou have successfully subscribed 0xBEE9...BBAB\n\n${FALLBACK_MESSAGE}`,
+    `Welcome!\n\nYou have successfully subscribed 0xBEE9...BBAB`,
   );
 });
