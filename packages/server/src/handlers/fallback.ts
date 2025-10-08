@@ -4,20 +4,15 @@ import { Limiter } from "../limiter";
 
 export const FALLBACK_MESSAGE = `Available commands:
 
-/start <wallet_address> 
-  - Start the bot and optionally add your first wallet
+/start <wallet_address> - Start the bot and optionally add your first wallet
 
-/add <wallet_address> 
-  - Add a wallet to your account
+/add <wallet_address> - Add a wallet to your account
 
-/list 
-  - List all your wallets
+/list - List all your wallets
 
-/remove <wallet_address> 
-  - Remove a wallet from your account
+/remove <wallet_address> - Remove a wallet from your account
 
-/help 
-  - Show this help message`;
+/help - Show this help message`;
 
 export function getFallbackHandler(logger: Logger, limiter: Limiter) {
   return async (ctx: Context) => {

@@ -46,7 +46,7 @@ export class Limiter {
 
     this.logger.info(
       { queue: { size: this.queue.size, pending: this.queue.pending } },
-      "Message added to the dispatch queue",
+      "Message added to the limiter queue",
     );
   }
 }
