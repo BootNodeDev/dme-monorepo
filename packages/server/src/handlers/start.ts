@@ -8,14 +8,20 @@ import {
 import { InvalidEthereumAddressError, WalletService } from "../services/wallet";
 import { formatAddress, UNEXPECTED_ERROR_MESSAGE } from "./misc/utils";
 import { FALLBACK_MESSAGE } from "./fallback";
+import { Limiter } from "../limiter";
 
-export function getStartHandler(logger: Logger, user: UserService, wallet: WalletService) {
+export function getStartHandler(
+  logger: Logger,
+  limiter: Limiter,
+  user: UserService,
+  wallet: WalletService,
+) {
   return async (ctx: CommandContext<Context>) => {
     const userId = ctx.from?.id;
 
     if (!userId) {
       logger.error("No user ID found in the context");
-      ctx.reply(UNEXPECTED_ERROR_MESSAGE);
+      limiter.reply(ctx, UNEXPECTED_ERROR_MESSAGE);
       return;
     }
 
@@ -28,7 +34,7 @@ export function getStartHandler(logger: Logger, user: UserService, wallet: Walle
         alreadyExists = true;
       } else {
         logger.error({ error, userId }, "Error creating user");
-        ctx.reply(UNEXPECTED_ERROR_MESSAGE);
+        limiter.reply(ctx, UNEXPECTED_ERROR_MESSAGE);
         return;
       }
     }
@@ -44,10 +50,10 @@ export function getStartHandler(logger: Logger, user: UserService, wallet: Walle
         await wallet.upsert(address);
       } catch (error) {
         if (error instanceof InvalidEthereumAddressError) {
-          ctx.reply("Please provide a valid Ethereum address.");
+          limiter.reply(ctx, "Please provide a valid Ethereum address.");
         } else {
           logger.error({ error, userId, address }, "Error upserting wallet");
-          ctx.reply(UNEXPECTED_ERROR_MESSAGE);
+          limiter.reply(ctx, UNEXPECTED_ERROR_MESSAGE);
         }
         return;
       }
@@ -59,22 +65,22 @@ export function getStartHandler(logger: Logger, user: UserService, wallet: Walle
           walletAlreadySubscribed = true;
         } else {
           logger.error({ error, userId, address }, "Error adding wallet to user");
-          ctx.reply(UNEXPECTED_ERROR_MESSAGE);
+          limiter.reply(ctx, UNEXPECTED_ERROR_MESSAGE);
           return;
         }
       }
     }
 
-    const reply: string[] = [];
+    const response: string[] = [];
 
-    reply.push(alreadyExists ? "Welcome back!" : "Welcome!");
+    response.push(alreadyExists ? "Welcome back!" : "Welcome!");
 
     if (address && !walletAlreadySubscribed) {
-      reply.push(`You have successfully subscribed ${formatAddress(address)}`);
+      response.push(`You have successfully subscribed ${formatAddress(address)}`);
     }
 
-    reply.push(`${FALLBACK_MESSAGE}`);
+    response.push(`${FALLBACK_MESSAGE}`);
 
-    ctx.reply(reply.join("\n\n"));
+    limiter.reply(ctx, response.join("\n\n"));
   };
 }
