@@ -10,7 +10,7 @@ import { UserService } from "./services/user";
 import { WalletService } from "./services/wallet";
 import { DispatchJob } from "./jobs/dispatch";
 import { MessageService } from "./services/message";
-import { getEnv } from "./config/env";
+import { getEnv } from "./env";
 
 const env = getEnv();
 const prisma = new PrismaClient({ datasourceUrl: env.DATABASE_URL });
