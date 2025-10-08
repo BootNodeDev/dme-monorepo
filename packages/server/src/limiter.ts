@@ -10,7 +10,12 @@ export const BASE_OPTIONS = {
 
 export type ReplyFn = (ctx: Context, msg: string) => void;
 
-export type SendMessageFn = (chatId: number, msg: string) => void;
+export type SendMessageFn = (
+  chatId: number,
+  msg: string,
+  onSuccess: () => void,
+  onError: (error: Error) => void,
+) => void;
 
 export function getLimiter(interval: number, intervalCap: number): PQueue {
   return new PQueue({
@@ -21,13 +26,18 @@ export function getLimiter(interval: number, intervalCap: number): PQueue {
 }
 
 export function getReplyFn(limiter: PQueue): ReplyFn {
-  return (ctx: Context, msg: string) => {
+  return (ctx, msg) => {
     limiter.add(() => ctx.reply(telegramify(msg, "remove"), BASE_OPTIONS));
   };
 }
 
 export function getSendMessageFn(limiter: PQueue, bot: Bot): SendMessageFn {
-  return (chatId: number, msg: string) => {
-    limiter.add(() => bot.api.sendMessage(chatId, telegramify(msg, "remove"), BASE_OPTIONS));
+  return (chatId, msg, onSuccess, onError) => {
+    limiter.add(() =>
+      bot.api
+        .sendMessage(chatId, telegramify(msg, "remove"), BASE_OPTIONS)
+        .then(onSuccess)
+        .catch(onError),
+    );
   };
 }

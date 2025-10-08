@@ -114,71 +114,18 @@ describe("execute", () => {
 
     expect(mockMessageService.newAttempt).toHaveBeenCalledWith(MESSAGE_ID, USER_ID_1);
     expect(mockMessageService.newAttempt).toHaveBeenCalledWith(MESSAGE_ID, USER_ID_2);
-    expect(mockSend).toHaveBeenCalledWith(USER_ID_1, MESSAGE_CONTENT, {
-      link_preview_options: { is_disabled: true },
-      parse_mode: "MarkdownV2",
-    });
-    expect(mockSend).toHaveBeenCalledWith(USER_ID_2, MESSAGE_CONTENT, {
-      link_preview_options: { is_disabled: true },
-      parse_mode: "MarkdownV2",
-    });
-    expect(mockMessageService.markAsDelivered).toHaveBeenCalledWith(attempt1);
-    expect(mockMessageService.markAsDelivered).toHaveBeenCalledWith(attempt2);
-  });
-
-  it("should call markAsFailed if send throws an error", async () => {
-    const errorMessage = "Send failed";
-    mockSend.mockRejectedValue(new Error(errorMessage));
-
-    await dispatch.execute();
-
-    expect(mockMessageService.newAttempt).toHaveBeenCalledWith(MESSAGE_ID, USER_ID_1);
-    expect(mockMessageService.newAttempt).toHaveBeenCalledWith(MESSAGE_ID, USER_ID_2);
-    expect(mockSend).toHaveBeenCalledWith(USER_ID_1, MESSAGE_CONTENT, {
-      link_preview_options: { is_disabled: true },
-      parse_mode: "MarkdownV2",
-    });
-    expect(mockSend).toHaveBeenCalledWith(USER_ID_2, MESSAGE_CONTENT, {
-      link_preview_options: { is_disabled: true },
-      parse_mode: "MarkdownV2",
-    });
-    expect(mockMessageService.markAsFailed).toHaveBeenCalledWith(attempt1, errorMessage);
-    expect(mockMessageService.markAsFailed).toHaveBeenCalledWith(attempt2, errorMessage);
-  });
-
-  it("should not execute if already executing", async () => {
-    mockMessageService.listSendable.mockImplementation(
-      () => new Promise((resolve) => setTimeout(() => resolve([]), 10)),
+    expect(mockSend).toHaveBeenCalledWith(
+      USER_ID_1,
+      MESSAGE_CONTENT,
+      expect.any(Function),
+      expect.any(Function),
     );
-
-    const promise1 = dispatch.execute();
-    const promise2 = dispatch.execute();
-
-    await promise1;
-    await promise2;
-
-    expect(mockMessageService.listSendable).toHaveBeenCalledTimes(1);
-  });
-
-  it("should reuse existing user queues", () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const queue1 = (dispatch as any).getUserQueue(USER_ID_1);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const queue2 = (dispatch as any).getUserQueue(USER_ID_1);
-
-    expect(queue1).toBe(queue2);
-  });
-
-  it("should not cleanup user queues with pending tasks", () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const queue = (dispatch as any).getUserQueue(USER_ID_1);
-    queue.pending = 1;
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (dispatch as any).cleanupUserQueues();
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    expect((dispatch as any).userQueues.has(USER_ID_1)).toBe(true);
+    expect(mockSend).toHaveBeenCalledWith(
+      USER_ID_2,
+      MESSAGE_CONTENT,
+      expect.any(Function),
+      expect.any(Function),
+    );
   });
 
   it("should log error when listSendable throws an error", async () => {

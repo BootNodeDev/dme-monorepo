@@ -11,13 +11,15 @@ import { WalletService } from "./services/wallet";
 import { DispatchJob } from "./jobs/dispatch";
 import { MessageService } from "./services/message";
 import { getEnv } from "./env";
-import { getLimiter, getReplyFn } from "./limiter";
+import { getLimiter, getReplyFn, getSendMessageFn } from "./limiter";
 
 const env = getEnv();
 const prisma = new PrismaClient({ datasourceUrl: env.DATABASE_URL });
 const logger = pino();
+const bot = new Bot(env.BOT_TOKEN);
 const limiter = getLimiter(env.LIMITER_INTERVAL, env.LIMITER_INTERVAL_CAP);
 const reply = getReplyFn(limiter);
+const sendMessage = getSendMessageFn(limiter, bot);
 
 /* Services */
 
@@ -35,7 +37,6 @@ const fallback = getFallbackHandler(logger.child({ handler: "fallback" }), reply
 
 /* Telegram Bot */
 
-const bot = new Bot(env.BOT_TOKEN);
 bot.command("start", start);
 bot.command("add", add);
 bot.command("list", list);
@@ -51,5 +52,5 @@ new DispatchJob(
   logger.child({ job: "dispatch" }),
   message,
   "*/30 * * * * *", // Every 30 seconds
-  bot.api.sendMessage.bind(bot.api),
+  sendMessage,
 ).start();

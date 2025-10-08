@@ -45,11 +45,11 @@ describe("getSendMessageFn", () => {
 
     const mockBot = {
       api: {
-        sendMessage: jest.fn(),
+        sendMessage: jest.fn().mockResolvedValue(null),
       },
     } as unknown as jest.Mocked<Bot>;
 
-    getSendMessageFn(limiter, mockBot)(USER_ID_1, MESSAGE_CONTENT);
+    getSendMessageFn(limiter, mockBot)(USER_ID_1, MESSAGE_CONTENT, jest.fn(), jest.fn());
 
     expect(limiter.add).toHaveBeenCalledWith(expect.any(Function));
     expect(mockBot.api.sendMessage).toHaveBeenCalledWith(USER_ID_1, MESSAGE_CONTENT, BASE_OPTIONS);
