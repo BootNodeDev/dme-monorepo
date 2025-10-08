@@ -1,8 +1,11 @@
+import ms from "ms";
 import { z } from "zod";
 
 const EnvSchema = z.object({
   BOT_TOKEN: z.string(),
   DATABASE_URL: z.url(),
+  LIMITER_INTERVAL: z.coerce.number().int().positive().default(ms("1s")),
+  LIMITER_INTERVAL_CAP: z.coerce.number().int().positive().default(30),
 });
 
 export function getEnv() {
