@@ -2,14 +2,15 @@ import { CommandContext, Context } from "grammy";
 import { Logger } from "pino";
 import { UserService } from "../services/user";
 import { formatAddress, UNEXPECTED_ERROR_MESSAGE } from "./misc/utils";
+import { ReplyFn } from "../limiter";
 
-export function getListHandler(logger: Logger, user: UserService) {
+export function getListHandler(logger: Logger, reply: ReplyFn, user: UserService) {
   return async (ctx: CommandContext<Context>) => {
     const userId = ctx.from?.id;
 
     if (!userId) {
       logger.error("No user ID found in the context");
-      ctx.reply(UNEXPECTED_ERROR_MESSAGE);
+      reply(ctx, UNEXPECTED_ERROR_MESSAGE);
       return;
     }
 
@@ -19,7 +20,8 @@ export function getListHandler(logger: Logger, user: UserService) {
       const wallets = await user.listWallets(userId);
 
       if (wallets.length === 0) {
-        ctx.reply(
+        reply(
+          ctx,
           "You don't have any wallets associated with your account yet.\n\nUse /add <wallet_address> to add one.",
         );
         return;
@@ -28,10 +30,10 @@ export function getListHandler(logger: Logger, user: UserService) {
       const walletList = wallets
         .map((wallet, index) => `${index + 1}. ${formatAddress(wallet)}`)
         .join("\n");
-      ctx.reply(`Your wallets:\n\n${walletList}`);
+      reply(ctx, `Your wallets:\n\n${walletList}`);
     } catch {
       logger.error({ userId }, "Error listing wallets for user");
-      ctx.reply(UNEXPECTED_ERROR_MESSAGE);
+      reply(ctx, UNEXPECTED_ERROR_MESSAGE);
     }
   };
 }
