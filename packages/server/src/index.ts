@@ -11,10 +11,13 @@ import { WalletService } from "./services/wallet";
 import { DispatchJob } from "./jobs/dispatch";
 import { MessageService } from "./services/message";
 import { getEnv } from "./env";
+import { getLimiter, getReplyFn } from "./limiter";
 
 const env = getEnv();
 const prisma = new PrismaClient({ datasourceUrl: env.DATABASE_URL });
 const logger = pino();
+const limiter = getLimiter(env.LIMITER_INTERVAL, env.LIMITER_INTERVAL_CAP);
+const reply = getReplyFn(limiter);
 
 /* Services */
 
@@ -25,7 +28,7 @@ const message = new MessageService(prisma);
 /* Telegram Bot */
 
 const bot = new Bot(env.BOT_TOKEN);
-bot.command("start", getStartHandler(logger.child({ handler: "start" }), user, wallet));
+bot.command("start", getStartHandler(logger.child({ handler: "start" }), reply, user, wallet));
 bot.command("add", getAddHandler(logger.child({ handler: "add" }), user, wallet));
 bot.command("list", getListHandler(logger.child({ handler: "list" }), user));
 bot.command("remove", getRemoveHandler(logger.child({ handler: "remove" }), user));
