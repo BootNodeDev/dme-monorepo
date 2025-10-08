@@ -31,7 +31,7 @@ const bot = new Bot(env.BOT_TOKEN);
 bot.command("start", getStartHandler(logger.child({ handler: "start" }), reply, user, wallet));
 bot.command("add", getAddHandler(logger.child({ handler: "add" }), reply, user, wallet));
 bot.command("list", getListHandler(logger.child({ handler: "list" }), reply, user));
-bot.command("remove", getRemoveHandler(logger.child({ handler: "remove" }), user));
+bot.command("remove", getRemoveHandler(logger.child({ handler: "remove" }), reply, user));
 bot.on("message", getFallbackHandler(logger.child({ handler: "fallback" })));
 bot.start().catch((error) => logger.error({ error }, "Unhandled bot error"));
 
