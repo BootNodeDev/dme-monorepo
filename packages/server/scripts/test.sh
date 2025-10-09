@@ -5,6 +5,9 @@ set -e
 # Set the database url environment variable for the tests
 export DATABASE_URL="file:./test.db"
 
+# Check for compilation errors
+pnpm tsc --noEmit
+
 # Setup the database schema
 pnpm prisma db push --force-reset
 
