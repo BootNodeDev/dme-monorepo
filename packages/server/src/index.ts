@@ -28,7 +28,7 @@ const limiter = new Limiter(
 
 const user = new UserService(prisma);
 const wallet = new WalletService(prisma);
-const message = new MessageService(prisma);
+const message = new MessageService(prisma, env.MAX_ATTEMPTS);
 
 /* Handlers */
 
@@ -61,4 +61,10 @@ logger.info("Bot started");
 
 /* Jobs */
 
-new DispatchJob(logger.child({ job: "dispatch" }), message, env.DISPATCH_CRON, limiter).start();
+new DispatchJob(
+  logger.child({ job: "dispatch" }),
+  message,
+  env.DISPATCH_CRON,
+  bot,
+  env.MESSAGES_PER_DISPATCH,
+).start();

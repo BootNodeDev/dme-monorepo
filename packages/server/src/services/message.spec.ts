@@ -1,5 +1,4 @@
-import ms from "ms";
-import { ETHEREUM_ADDRESS_1, MESSAGE_CONTENT, USER_ID_1, USER_ID_2 } from "../tests/constants";
+import { ETHEREUM_ADDRESS_1, MAX_ATTEMPTS, MESSAGE_CONTENT, USER_ID_1, USER_ID_2 } from "../tests/constants";
 import { prisma } from "../tests/setup";
 import { MessageService, UsersForAddressNotFoundError } from "./message";
 import { UserService } from "./user";
@@ -12,7 +11,7 @@ let message: MessageService;
 beforeEach(async () => {
   wallet = new WalletService(prisma);
   user = new UserService(prisma);
-  message = new MessageService(prisma);
+  message = new MessageService(prisma, MAX_ATTEMPTS);
 });
 
 describe("create", () => {
@@ -32,319 +31,307 @@ describe("create", () => {
 
     const result = await prisma.message.findMany({ include: { recipients: true } });
     expect(result).toHaveLength(1);
-    expect(result[0].content).toBe(MESSAGE_CONTENT);
-    expect(result[0].recipients).toHaveLength(2);
-    expect(result[0].recipients[0].userId).toBe(USER_ID_1);
-    expect(result[0].recipients[1].userId).toBe(USER_ID_2);
+    expect(result[0]).toEqual({
+      content: MESSAGE_CONTENT,
+      createdAt: expect.any(Date),
+      id: expect.any(String),
+      priority: 0,
+      recipients: [
+        {
+          attempts: 0,
+          createdAt: expect.any(Date),
+          deliveredAt: null,
+          error: null,
+          maxAttempts: 5,
+          messageId: result[0].id,
+          nextAttemptAt: expect.any(Date),
+          sentAt: null,
+          status: "PENDING",
+          userId: USER_ID_1,
+        },
+        {
+          attempts: 0,
+          createdAt: expect.any(Date),
+          deliveredAt: null,
+          error: null,
+          maxAttempts: 5,
+          messageId: result[0].id,
+          nextAttemptAt: expect.any(Date),
+          sentAt: null,
+          status: "PENDING",
+          userId: USER_ID_2,
+        },
+      ],
+    });
   });
 });
 
 describe("listSendable", () => {
-  it("should return a list of messages that have never been sent yet", async () => {
-    await wallet.upsert(ETHEREUM_ADDRESS_1);
-    await user.upsert(USER_ID_1);
-    await user.upsert(USER_ID_2);
-    await user.upsertWallet(USER_ID_1, ETHEREUM_ADDRESS_1);
-    await user.upsertWallet(USER_ID_2, ETHEREUM_ADDRESS_1);
-    await message.create(MESSAGE_CONTENT, ETHEREUM_ADDRESS_1);
-
-    const result = await message.listSendable();
-    expect(result).toHaveLength(1);
-    expect(result[0].content).toBe(MESSAGE_CONTENT);
-    expect(result[0].recipients).toHaveLength(2);
-    expect(result[0].recipients[0].userId).toBe(USER_ID_1);
-    expect(result[0].recipients[1].userId).toBe(USER_ID_2);
-
-    await prisma.userMessageAttempt.create({
-      data: {
-        attempt: 1,
-        userId: result[0].recipients[0].userId,
-        messageId: result[0].id,
-      },
-    });
-
-    const result2 = await message.listSendable();
-    expect(result2).toHaveLength(1);
-    expect(result2[0].content).toBe(MESSAGE_CONTENT);
-    expect(result2[0].recipients).toHaveLength(1);
-    expect(result2[0].recipients[0].userId).toBe(USER_ID_2);
-  });
-
-  it("should return a list of messages that have failed attempts", async () => {
-    await wallet.upsert(ETHEREUM_ADDRESS_1);
-    await user.upsert(USER_ID_1);
-    await user.upsert(USER_ID_2);
-    await user.upsertWallet(USER_ID_1, ETHEREUM_ADDRESS_1);
-    await user.upsertWallet(USER_ID_2, ETHEREUM_ADDRESS_1);
-    await message.create(MESSAGE_CONTENT, ETHEREUM_ADDRESS_1);
-
-    const result = await message.listSendable();
-    expect(result).toHaveLength(1);
-    expect(result[0].content).toBe(MESSAGE_CONTENT);
-    expect(result[0].recipients).toHaveLength(2);
-    expect(result[0].recipients[0].userId).toBe(USER_ID_1);
-    expect(result[0].recipients[1].userId).toBe(USER_ID_2);
-
-    const nextAttemptAt = new Date();
-
-    await prisma.userMessageAttempt.create({
-      data: {
-        attempt: 1,
-        userId: result[0].recipients[0].userId,
-        messageId: result[0].id,
-        nextAttemptAt,
-      },
-    });
-
-    await prisma.userMessageAttempt.create({
-      data: {
-        attempt: 1,
-        userId: result[0].recipients[1].userId,
-        messageId: result[0].id,
-        deliveredAt: new Date(),
-      },
-    });
-
-    const result2 = await message.listSendable();
-    expect(result2).toHaveLength(1);
-    expect(result2[0].content).toBe(MESSAGE_CONTENT);
-    expect(result2[0].recipients).toHaveLength(1);
-    expect(result2[0].recipients[0].userId).toBe(USER_ID_1);
-  });
-
-  it("should exclude messages that have reached 3 attempts", async () => {
+  it("should list messages that are pending", async () => {
     await wallet.upsert(ETHEREUM_ADDRESS_1);
     await user.upsert(USER_ID_1);
     await user.upsertWallet(USER_ID_1, ETHEREUM_ADDRESS_1);
     await message.create(MESSAGE_CONTENT, ETHEREUM_ADDRESS_1);
-
-    const result = await message.listSendable();
-    expect(result).toHaveLength(1);
-    expect(result[0].recipients).toHaveLength(1);
-
-    const messageId = result[0].id;
-    const userId = result[0].recipients[0].userId;
-    const nextAttemptAt = new Date();
-
-    await prisma.userMessageAttempt.create({
-      data: {
-        attempt: 1,
-        userId,
-        messageId,
-        nextAttemptAt: nextAttemptAt,
-      },
-    });
-
-    await prisma.userMessageAttempt.create({
-      data: {
-        attempt: 2,
-        userId,
-        messageId,
-        nextAttemptAt: nextAttemptAt,
-      },
-    });
-
-    const resultAfter2Attempts = await message.listSendable();
-    expect(resultAfter2Attempts).toHaveLength(1);
-    expect(resultAfter2Attempts[0].recipients).toHaveLength(1);
-
-    await prisma.userMessageAttempt.create({
-      data: {
-        attempt: 3,
-        userId,
-        messageId,
-        nextAttemptAt: nextAttemptAt,
-      },
-    });
-
-    const resultAfter3Attempts = await message.listSendable();
-    expect(resultAfter3Attempts).toHaveLength(0);
-  });
-
-  it("should exclude messages with nextAttemptAt in the future", async () => {
-    await wallet.upsert(ETHEREUM_ADDRESS_1);
-    await user.upsert(USER_ID_1);
-    await user.upsertWallet(USER_ID_1, ETHEREUM_ADDRESS_1);
     await message.create(MESSAGE_CONTENT, ETHEREUM_ADDRESS_1);
 
-    const messages = await prisma.message.findMany({});
-    const messageId = messages[0].id;
+    const [userMessage1, userMessage2] = await prisma.userMessage.findMany({});
 
-    const now = new Date();
-
-    await prisma.userMessageAttempt.create({
-      data: {
-        attempt: 1,
-        userId: USER_ID_1,
-        messageId,
-        nextAttemptAt: now,
-      },
-    });
-
-    const result = await message.listSendable();
-    expect(result).toHaveLength(1);
-
-    const futureDate = new Date(Date.now() + ms("10s"));
-
-    await prisma.userMessageAttempt.update({
+    await prisma.userMessage.update({
       where: {
-        userId_messageId_attempt: {
-          userId: USER_ID_1,
-          messageId,
-          attempt: 1,
+        userId_messageId: {
+          userId: userMessage1.userId,
+          messageId: userMessage1.messageId,
         },
       },
       data: {
-        nextAttemptAt: futureDate,
+        status: "SENT",
       },
     });
 
-    const resultAfter = await message.listSendable();
-    expect(resultAfter).toHaveLength(0);
+    const sendables = await message.listSendable();
+    expect(sendables).toHaveLength(1);
+    expect(sendables[0].messageId).toBe(userMessage2.messageId);
   });
-});
 
-describe("newAttempt", () => {
-  it("should create an attempt with attempt number 1 when there are no previous attempts for the user and message", async () => {
+  it("should list messages that have a lower nextAttemptAt than now", async () => {
     await wallet.upsert(ETHEREUM_ADDRESS_1);
     await user.upsert(USER_ID_1);
     await user.upsertWallet(USER_ID_1, ETHEREUM_ADDRESS_1);
     await message.create(MESSAGE_CONTENT, ETHEREUM_ADDRESS_1);
+    await message.create(MESSAGE_CONTENT, ETHEREUM_ADDRESS_1);
 
-    const messages = await prisma.message.findMany({});
-    const attempts = await prisma.userMessageAttempt.findMany({
-      where: { userId: USER_ID_1, messageId: messages[0].id },
+    const [userMessage1, userMessage2] = await prisma.userMessage.findMany({});
+
+    await prisma.userMessage.update({
+      where: {
+        userId_messageId: {
+          userId: userMessage1.userId,
+          messageId: userMessage1.messageId,
+        },
+      },
+      data: {
+        nextAttemptAt: new Date(Date.now() + 1000 * 60), // 1 minute in the future
+      },
     });
 
-    expect(attempts).toHaveLength(0);
-
-    await message.newAttempt(messages[0].id, USER_ID_1);
-
-    const attemptsAfter = await prisma.userMessageAttempt.findMany({
-      where: { userId: USER_ID_1, messageId: messages[0].id },
-    });
-
-    expect(attemptsAfter).toHaveLength(1);
-    expect(attemptsAfter[0].attempt).toBe(1);
+    const sendables = await message.listSendable();
+    expect(sendables).toHaveLength(1);
+    expect(sendables[0].messageId).toBe(userMessage2.messageId);
   });
 
-  it("should create an attempt with attempt number incremented by 1 when there are previous attempts for the user and message", async () => {
+  it("should order messages by priority", async () => {
     await wallet.upsert(ETHEREUM_ADDRESS_1);
     await user.upsert(USER_ID_1);
     await user.upsertWallet(USER_ID_1, ETHEREUM_ADDRESS_1);
-    await message.create(MESSAGE_CONTENT, ETHEREUM_ADDRESS_1);
+    await message.create(MESSAGE_CONTENT, ETHEREUM_ADDRESS_1, { priority: 1 });
+    await message.create(MESSAGE_CONTENT, ETHEREUM_ADDRESS_1, { priority: 2 });
 
-    const messages = await prisma.message.findMany({});
+    await new Promise((resolve) => setTimeout(resolve, 100));
 
-    await message.newAttempt(messages[0].id, USER_ID_1);
-    await message.newAttempt(messages[0].id, USER_ID_1);
-
-    const attempts = await prisma.userMessageAttempt.findMany({});
-
-    expect(attempts).toHaveLength(2);
-    expect(attempts[0].attempt).toBe(1);
-    expect(attempts[1].attempt).toBe(2);
+    const sendables = await message.listSendable();
+    expect(sendables).toHaveLength(2);
+    expect(sendables[0].message.priority).toBe(2);
+    expect(sendables[1].message.priority).toBe(1);
   });
-});
 
-describe("markAsDelivered", () => {
-  it("should mark an attempt as delivered", async () => {
+  it("should return max of provided take values", async () => {
     await wallet.upsert(ETHEREUM_ADDRESS_1);
     await user.upsert(USER_ID_1);
     await user.upsertWallet(USER_ID_1, ETHEREUM_ADDRESS_1);
-    await message.create(MESSAGE_CONTENT, ETHEREUM_ADDRESS_1);
 
-    const messages = await prisma.message.findMany({});
+    const promises: Promise<void>[] = [];
 
-    await message.newAttempt(messages[0].id, USER_ID_1);
-
-    const attempts = await prisma.userMessageAttempt.findMany({});
-    expect(attempts).toHaveLength(1);
-    expect(attempts[0].deliveredAt).toBeNull();
-
-    await message.markAsDelivered(attempts[0]);
-
-    const attemptsAfter = await prisma.userMessageAttempt.findMany({});
-    expect(attemptsAfter).toHaveLength(1);
-    expect(attemptsAfter[0].deliveredAt).not.toBeNull();
-  });
-});
-
-describe("markAsFailed", () => {
-  it("should mark an attempt as failed with an error message", async () => {
-    await wallet.upsert(ETHEREUM_ADDRESS_1);
-    await user.upsert(USER_ID_1);
-    await user.upsertWallet(USER_ID_1, ETHEREUM_ADDRESS_1);
-    await message.create(MESSAGE_CONTENT, ETHEREUM_ADDRESS_1);
-
-    const messages = await prisma.message.findMany({});
-
-    await message.newAttempt(messages[0].id, USER_ID_1);
-
-    const attempts = await prisma.userMessageAttempt.findMany({});
-    expect(attempts).toHaveLength(1);
-    expect(attempts[0].error).toBeNull();
-
-    const errorMessage = "Failed to send message";
-    await message.markAsFailed(attempts[0], errorMessage);
-
-    const attemptsAfter = await prisma.userMessageAttempt.findMany({});
-    expect(attemptsAfter).toHaveLength(1);
-    expect(attemptsAfter[0].error).toBe(errorMessage);
-  });
-
-  it("should set exponential backoff nextAttemptAt times", async () => {
-    await wallet.upsert(ETHEREUM_ADDRESS_1);
-    await user.upsert(USER_ID_1);
-    await user.upsertWallet(USER_ID_1, ETHEREUM_ADDRESS_1);
-    await message.create(MESSAGE_CONTENT, ETHEREUM_ADDRESS_1);
-
-    const messages = await prisma.message.findMany({});
-    const messageId = messages[0].id;
-
-    const testCases = [
-      { attempt: 1, expectedDelayMs: ms("1m") },
-      { attempt: 2, expectedDelayMs: ms("2m") },
-      { attempt: 3, expectedDelayMs: ms("4m") },
-      { attempt: 4, expectedDelayMs: ms("8m") },
-      { attempt: 5, expectedDelayMs: ms("16m") },
-      { attempt: 6, expectedDelayMs: ms("32m") },
-      { attempt: 7, expectedDelayMs: ms("1h") },
-      { attempt: 8, expectedDelayMs: ms("1h") },
-    ];
-
-    for (const { attempt, expectedDelayMs } of testCases) {
-      await prisma.userMessageAttempt.create({
-        data: {
-          attempt,
-          userId: USER_ID_1,
-          messageId,
-        },
-      });
-
-      const attempts = await prisma.userMessageAttempt.findMany({
-        where: { userId: USER_ID_1, messageId, attempt },
-      });
-      expect(attempts).toHaveLength(1);
-
-      const beforeTime = Date.now();
-      await message.markAsFailed(attempts[0], `Test error for attempt ${attempt}`);
-
-      const updatedAttempt = await prisma.userMessageAttempt.findUnique({
-        where: {
-          userId_messageId_attempt: {
-            userId: USER_ID_1,
-            messageId,
-            attempt,
-          },
-        },
-      });
-
-      expect(updatedAttempt?.nextAttemptAt).toBeDefined();
-      const actualDelay = updatedAttempt!.nextAttemptAt!.getTime() - beforeTime;
-
-      expect(actualDelay).toBeGreaterThanOrEqual(expectedDelayMs - 100);
-      expect(actualDelay).toBeLessThanOrEqual(expectedDelayMs + 100);
+    for (let i = 0; i < 5; i++) {
+      promises.push(message.create(MESSAGE_CONTENT, ETHEREUM_ADDRESS_1));
     }
+
+    await Promise.all(promises);
+
+    const sendables = await message.listSendable(3);
+    expect(sendables).toHaveLength(3);
+  });
+});
+
+describe("updateForSend", () => {
+  it("should update a user message for sending", async () => {
+    await wallet.upsert(ETHEREUM_ADDRESS_1);
+    await user.upsert(USER_ID_1);
+    await user.upsertWallet(USER_ID_1, ETHEREUM_ADDRESS_1);
+    await message.create(MESSAGE_CONTENT, ETHEREUM_ADDRESS_1);
+
+    const [userMessage] = await prisma.userMessage.findMany({});
+
+    await message.updateForSend(USER_ID_1, userMessage.messageId);
+
+    const [updatedUserMessage] = await prisma.userMessage.findMany({});
+
+    expect(updatedUserMessage.status).toBe("SENT");
+    expect(updatedUserMessage.attempts).toBe(userMessage.attempts + 1);
+    expect(updatedUserMessage.sentAt).toEqual(expect.any(Date));
+  });
+
+  it('should revert changes if the message is not "PENDING"', async () => {
+    await wallet.upsert(ETHEREUM_ADDRESS_1);
+    await user.upsert(USER_ID_1);
+    await user.upsertWallet(USER_ID_1, ETHEREUM_ADDRESS_1);
+    await message.create(MESSAGE_CONTENT, ETHEREUM_ADDRESS_1);
+
+    const [userMessage] = await prisma.userMessage.findMany({});
+
+    await prisma.userMessage.update({
+      where: {
+        userId_messageId: {
+          userId: userMessage.userId,
+          messageId: userMessage.messageId,
+        },
+      },
+      data: {
+        status: "SENT",
+      },
+    });
+
+    await expect(message.updateForSend(USER_ID_1, userMessage.messageId)).rejects.toThrow(
+      "Message is not pending",
+    );
+  });
+
+  it("should revert changes if the max attempts has been reached", async () => {
+    await wallet.upsert(ETHEREUM_ADDRESS_1);
+    await user.upsert(USER_ID_1);
+    await user.upsertWallet(USER_ID_1, ETHEREUM_ADDRESS_1);
+    await message.create(MESSAGE_CONTENT, ETHEREUM_ADDRESS_1);
+
+    const [userMessage] = await prisma.userMessage.findMany({});
+
+    await prisma.userMessage.update({
+      where: {
+        userId_messageId: {
+          userId: userMessage.userId,
+          messageId: userMessage.messageId,
+        },
+      },
+      data: {
+        attempts: userMessage.maxAttempts,
+      },
+    });
+
+    await expect(message.updateForSend(USER_ID_1, userMessage.messageId)).rejects.toThrow(
+      "Max attempts reached",
+    );
+  });
+});
+
+describe("updateForSuccess", () => {
+  it("should update a user message for success", async () => {
+    await wallet.upsert(ETHEREUM_ADDRESS_1);
+    await user.upsert(USER_ID_1);
+    await user.upsertWallet(USER_ID_1, ETHEREUM_ADDRESS_1);
+    await message.create(MESSAGE_CONTENT, ETHEREUM_ADDRESS_1);
+
+    const [userMessage] = await prisma.userMessage.findMany({});
+
+    await prisma.userMessage.update({
+      where: {
+        userId_messageId: {
+          userId: userMessage.userId,
+          messageId: userMessage.messageId,
+        },
+      },
+      data: {
+        status: "SENT",
+      },
+    });
+
+    await message.updateForSuccess(USER_ID_1, userMessage.messageId);
+
+    const [updatedUserMessage] = await prisma.userMessage.findMany({});
+
+    expect(updatedUserMessage.status).toBe("DELIVERED");
+    expect(updatedUserMessage.deliveredAt).toEqual(expect.any(Date));
+  });
+
+  it('should revert changes if the message is not "SENT"', async () => {
+    await wallet.upsert(ETHEREUM_ADDRESS_1);
+    await user.upsert(USER_ID_1);
+    await user.upsertWallet(USER_ID_1, ETHEREUM_ADDRESS_1);
+    await message.create(MESSAGE_CONTENT, ETHEREUM_ADDRESS_1);
+
+    const [userMessage] = await prisma.userMessage.findMany({});
+
+    await expect(message.updateForSuccess(USER_ID_1, userMessage.messageId)).rejects.toThrow(
+      "Message is not sent",
+    );
+  });
+});
+
+describe("updateForFailure", () => {
+  it("should update a user message for failure", async () => {
+    await wallet.upsert(ETHEREUM_ADDRESS_1);
+    await user.upsert(USER_ID_1);
+    await user.upsertWallet(USER_ID_1, ETHEREUM_ADDRESS_1);
+    await message.create(MESSAGE_CONTENT, ETHEREUM_ADDRESS_1, { maxAttempts: 1 });
+
+    const [userMessage] = await prisma.userMessage.findMany({});
+
+    await prisma.userMessage.update({
+      where: {
+        userId_messageId: {
+          userId: userMessage.userId,
+          messageId: userMessage.messageId,
+        },
+      },
+      data: {
+        status: "SENT",
+        attempts: 1,
+      },
+    });
+
+    await message.updateForFailure(USER_ID_1, userMessage.messageId, "Network error");
+
+    const [updatedUserMessage] = await prisma.userMessage.findMany({});
+
+    expect(updatedUserMessage.status).toBe("FAILED");
+    expect(updatedUserMessage.error).toBe("Network error");
+  });
+
+  it("should update to pending if there are remaining attempts", async () => {
+    await wallet.upsert(ETHEREUM_ADDRESS_1);
+    await user.upsert(USER_ID_1);
+    await user.upsertWallet(USER_ID_1, ETHEREUM_ADDRESS_1);
+    await message.create(MESSAGE_CONTENT, ETHEREUM_ADDRESS_1, { maxAttempts: 3 });
+
+    const [userMessage] = await prisma.userMessage.findMany({});
+
+    await prisma.userMessage.update({
+      where: {
+        userId_messageId: {
+          userId: userMessage.userId,
+          messageId: userMessage.messageId,
+        },
+      },
+      data: {
+        status: "SENT",
+        attempts: 1,
+      },
+    });
+
+    await message.updateForFailure(USER_ID_1, userMessage.messageId, "Network error");
+
+    const [updatedUserMessage] = await prisma.userMessage.findMany({});
+
+    expect(updatedUserMessage.status).toBe("PENDING");
+  });
+
+  it('should fail if the message is not "SENT"', async () => {
+    await wallet.upsert(ETHEREUM_ADDRESS_1);
+    await user.upsert(USER_ID_1);
+    await user.upsertWallet(USER_ID_1, ETHEREUM_ADDRESS_1);
+    await message.create(MESSAGE_CONTENT, ETHEREUM_ADDRESS_1);
+
+    const [userMessage] = await prisma.userMessage.findMany({});
+
+    await expect(
+      message.updateForFailure(USER_ID_1, userMessage.messageId, "Network error"),
+    ).rejects.toThrow("Message is not sent");
   });
 });

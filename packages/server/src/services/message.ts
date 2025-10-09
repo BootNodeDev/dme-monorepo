@@ -1,14 +1,22 @@
-import { Prisma, PrismaClient, UserMessageAttempt } from "@prisma/client";
+import { PrismaClient } from "@prisma/client";
 import ms from "ms";
 import telegramify from "telegramify-markdown";
 import { sanitizeEthereumAddress } from "./wallet";
 
 export class UsersForAddressNotFoundError extends Error {}
 
-export class MessageService {
-  constructor(private prisma: PrismaClient) {}
+export type MessageOptions = {
+  priority?: number;
+  maxAttempts?: number;
+};
 
-  async create(content: string, address: string) {
+export class MessageService {
+  constructor(
+    private prisma: PrismaClient,
+    private maxAttempts: number,
+  ) {}
+
+  async create(content: string, address: string, options?: MessageOptions) {
     const walletId = sanitizeEthereumAddress(address);
 
     const userWallets = await this.prisma.userWallet.findMany({
@@ -27,110 +35,135 @@ export class MessageService {
       const { id: messageId } = await prisma.message.create({
         data: {
           content: telegramify(content, "remove"),
+          priority: options?.priority ?? 0,
         },
       });
 
       await prisma.userMessage.createMany({
-        data: userIds.map((userId) => ({ messageId, userId })),
+        data: userIds.map((userId) => {
+          return {
+            userId,
+            messageId,
+            maxAttempts: options?.maxAttempts ?? this.maxAttempts,
+          };
+        }),
       });
     });
   }
 
-  async listSendable() {
-    const where: Prisma.UserMessageWhereInput = {
-      AND: [
-        {
-          OR: [
-            {
-              attempts: { none: {} },
-            },
-            {
-              attempts: { some: { nextAttemptAt: { lte: new Date() } } },
-            },
-          ],
-        },
-        {
-          NOT: {
-            attempts: {
-              some: {
-                attempt: {
-                  gte: 3,
-                },
-              },
-            },
-          },
-        },
-      ],
-    };
+  async listSendable(take?: number) {
+    const now = new Date();
 
-    return await this.prisma.message.findMany({
+    return await this.prisma.userMessage.findMany({
       where: {
-        recipients: {
-          some: where,
+        status: "PENDING",
+        nextAttemptAt: {
+          lte: now,
         },
       },
+      orderBy: [{ message: { priority: "desc" } }, { message: { createdAt: "asc" } }],
       include: {
-        recipients: {
-          where,
-        },
+        message: true,
       },
-      orderBy: {
-        createdAt: "asc",
-      },
+      take,
     });
   }
 
-  async newAttempt(messageId: string, userId: number) {
-    const previous = await this.prisma.userMessageAttempt.findFirst({
+  async updateForSend(userId: number, messageId: string) {
+    const userMessage = await this.prisma.userMessage.findUniqueOrThrow({
       where: {
-        userId,
-        messageId,
-      },
-      orderBy: {
-        attempt: "desc",
-      },
-    });
-
-    return await this.prisma.userMessageAttempt.create({
-      data: {
-        attempt: previous ? previous.attempt + 1 : 1,
-        userId,
-        messageId,
-      },
-    });
-  }
-
-  async markAsDelivered({ userId, messageId, attempt }: UserMessageAttempt) {
-    await this.prisma.userMessageAttempt.update({
-      where: {
-        userId_messageId_attempt: {
-          messageId,
+        userId_messageId: {
           userId,
-          attempt,
+          messageId,
+        },
+      },
+    });
+
+    if (userMessage.status !== "PENDING") {
+      throw new Error("Message is not pending");
+    }
+
+    if (userMessage.attempts >= userMessage.maxAttempts) {
+      throw new Error("Max attempts reached");
+    }
+
+    await this.prisma.userMessage.update({
+      where: {
+        userId_messageId: {
+          userId,
+          messageId,
         },
       },
       data: {
+        sentAt: userMessage.sentAt ?? new Date(),
+        attempts: { increment: 1 },
+        status: "SENT",
+      },
+    });
+  }
+
+  async updateForSuccess(userId: number, messageId: string) {
+    const userMessage = await this.prisma.userMessage.findUniqueOrThrow({
+      where: {
+        userId_messageId: {
+          userId,
+          messageId,
+        },
+      },
+    });
+
+    if (userMessage.status !== "SENT") {
+      throw new Error("Message is not sent");
+    }
+
+    await this.prisma.userMessage.update({
+      where: {
+        userId_messageId: {
+          userId,
+          messageId,
+        },
+      },
+      data: {
+        status: "DELIVERED",
         deliveredAt: new Date(),
       },
     });
   }
 
-  async markAsFailed({ userId, messageId, attempt }: UserMessageAttempt, error: string) {
-    const delay = Math.min(Math.pow(2, attempt - 1) * ms("1m"), ms("1h"));
-    const nextAttemptAt = new Date(Date.now() + delay);
-
-    await this.prisma.userMessageAttempt.update({
+  async updateForFailure(userId: number, messageId: string, error: string) {
+    const userMessage = await this.prisma.userMessage.findUniqueOrThrow({
       where: {
-        userId_messageId_attempt: {
-          messageId,
+        userId_messageId: {
           userId,
-          attempt,
+          messageId,
         },
       },
-      data: {
-        error,
-        nextAttemptAt,
+    });
+
+    if (userMessage.status !== "SENT") {
+      throw new Error("Message is not sent");
+    }
+
+    const backoff = Math.min(Math.pow(2, userMessage.attempts) * ms("5s"), ms("160s"));
+    const backofWithJitter = backoff + Math.trunc(Math.random() * backoff * 0.1);
+
+    await this.prisma.userMessage.update({
+      where: {
+        userId_messageId: {
+          userId,
+          messageId,
+        },
       },
+      data:
+        userMessage.attempts < userMessage.maxAttempts
+          ? {
+              status: "PENDING",
+              nextAttemptAt: new Date(Date.now() + backofWithJitter),
+            }
+          : {
+              status: "FAILED",
+              error,
+            },
     });
   }
 }

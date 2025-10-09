@@ -1,159 +1,116 @@
-import { UserMessageAttempt } from "@prisma/client";
-import cron from "node-cron";
-import { Logger } from "pino";
-import { MessageService } from "../services/message";
 import {
   CRON_SCHEDULE,
   MESSAGE_CONTENT,
   MESSAGE_ID,
+  MESSAGES_PER_DISPATCH,
   USER_ID_1,
-  USER_ID_2,
 } from "../tests/constants";
+import { getMockBot, getMockLogger, getMockMessageService } from "../tests/mocks";
 import { DispatchJob } from "./dispatch";
-import { Limiter } from "../limiter";
+import { MessageService } from "../services/message";
+import cron from "node-cron";
 
 jest.mock("node-cron");
-jest.mock("p-queue", () =>
-  jest.fn().mockImplementation(() => ({
-    add: jest.fn((task) => task()),
-    onIdle: jest.fn().mockResolvedValue(undefined),
-    size: 0,
-    pending: 0,
-  })),
-);
-
-const mockCron = cron as jest.Mocked<typeof cron>;
-
-let dispatch: DispatchJob;
-let mockLogger: jest.Mocked<Logger>;
-let mockMessageService: jest.Mocked<MessageService>;
-let mockLimiter: jest.Mocked<Limiter>;
-
-beforeEach(() => {
-  mockLogger = {
-    error: jest.fn(),
-    info: jest.fn(),
-    warn: jest.fn(),
-  } as unknown as jest.Mocked<Logger>;
-
-  mockMessageService = {
-    listSendable: jest.fn(),
-    newAttempt: jest.fn(),
-    markAsDelivered: jest.fn(),
-    markAsFailed: jest.fn(),
-  } as unknown as jest.Mocked<MessageService>;
-
-  mockLimiter = {
-    sendMessage: jest.fn(),
-  } as unknown as jest.Mocked<Limiter>;
-
-  dispatch = new DispatchJob(mockLogger, mockMessageService, CRON_SCHEDULE, mockLimiter);
-});
 
 describe("start", () => {
-  it("should schedule the job with the correct cron expression", async () => {
-    dispatch.start();
+  it("should start the job with the provided cron schedule", () => {
+    const message = getMockMessageService();
+    const logger = getMockLogger();
+    const bot = getMockBot();
+    const schedule = "*/1 * * * * *";
+    const job = new DispatchJob(logger, message, schedule, bot, MESSAGES_PER_DISPATCH);
+    const mockCron = jest.spyOn(cron, "schedule");
 
-    expect(mockCron.schedule).toHaveBeenCalledWith(CRON_SCHEDULE, expect.any(Function));
+    job.start();
+
+    expect(mockCron).toHaveBeenCalledWith(schedule, expect.any(Function));
   });
 });
 
 describe("execute", () => {
-  let attempt1: UserMessageAttempt;
-  let attempt2: UserMessageAttempt;
+  it("should send messages to users", async () => {
+    const message = getMockMessageService();
+    const logger = getMockLogger();
+    const bot = getMockBot();
+    const job = new DispatchJob(logger, message, CRON_SCHEDULE, bot, MESSAGES_PER_DISPATCH);
 
-  beforeEach(() => {
-    const now = new Date();
-
-    mockMessageService.listSendable.mockResolvedValue([
+    message.listSendable.mockResolvedValue([
       {
-        content: MESSAGE_CONTENT,
-        id: MESSAGE_ID,
-        createdAt: now,
-        recipients: [
-          {
-            userId: USER_ID_1,
-            messageId: MESSAGE_ID,
-            createdAt: now,
-          },
-          {
-            userId: USER_ID_2,
-            messageId: MESSAGE_ID,
-            createdAt: now,
-          },
-        ],
+        userId: USER_ID_1,
+        message: {
+          id: MESSAGE_ID,
+          content: MESSAGE_CONTENT,
+        },
       },
-    ]);
+    ] as unknown as Awaited<ReturnType<MessageService["listSendable"]>>);
 
-    attempt1 = {
-      attempt: 1,
-      userId: USER_ID_1,
-      messageId: MESSAGE_ID,
-      sentAt: now,
-      deliveredAt: null,
-      error: null,
-      nextAttemptAt: now,
-    };
+    await job.execute();
 
-    attempt2 = {
-      attempt: 1,
-      userId: USER_ID_2,
-      messageId: MESSAGE_ID,
-      sentAt: now,
-      deliveredAt: null,
-      error: null,
-      nextAttemptAt: now,
-    };
-
-    mockMessageService.newAttempt.mockResolvedValueOnce(attempt1);
-    mockMessageService.newAttempt.mockResolvedValueOnce(attempt2);
-  });
-
-  it("should call send and message service methods for each unsent message and call mark as delivered on success", async () => {
-    mockLimiter.sendMessage.mockImplementation((_, __, onSuccess) => {
-      onSuccess();
+    expect(message.listSendable).toHaveBeenCalledWith(MESSAGES_PER_DISPATCH);
+    expect(message.updateForSend).toHaveBeenCalledWith(USER_ID_1, MESSAGE_ID);
+    expect(bot.api.sendMessage).toHaveBeenCalledWith(USER_ID_1, MESSAGE_CONTENT, {
+      parse_mode: "MarkdownV2",
+      link_preview_options: {
+        is_disabled: true,
+      },
     });
-
-    await dispatch.execute();
-
-    expect(mockMessageService.newAttempt).toHaveBeenCalledWith(MESSAGE_ID, USER_ID_1);
-    expect(mockMessageService.newAttempt).toHaveBeenCalledWith(MESSAGE_ID, USER_ID_2);
-    expect(mockLimiter.sendMessage).toHaveBeenCalledWith(
-      USER_ID_1,
-      MESSAGE_CONTENT,
-      expect.any(Function),
-      expect.any(Function),
-    );
-    expect(mockLimiter.sendMessage).toHaveBeenCalledWith(
-      USER_ID_2,
-      MESSAGE_CONTENT,
-      expect.any(Function),
-      expect.any(Function),
-    );
-    expect(mockMessageService.markAsDelivered).toHaveBeenCalledWith(attempt1);
-    expect(mockMessageService.markAsDelivered).toHaveBeenCalledWith(attempt2);
+    expect(message.updateForSuccess).toHaveBeenCalledWith(USER_ID_1, MESSAGE_ID);
   });
 
-  it("should call mark as failed on error", async () => {
-    mockLimiter.sendMessage.mockImplementation((_, __, ___, onError) => {
-      onError(new Error("Some Error"));
+  it("should handle send message failure", async () => {
+    const message = getMockMessageService();
+    const logger = getMockLogger();
+    const bot = getMockBot();
+    const job = new DispatchJob(logger, message, CRON_SCHEDULE, bot, MESSAGES_PER_DISPATCH);
+
+    message.listSendable.mockResolvedValue([
+      {
+        userId: USER_ID_1,
+        message: {
+          id: MESSAGE_ID,
+          content: MESSAGE_CONTENT,
+        },
+      },
+    ] as unknown as Awaited<ReturnType<MessageService["listSendable"]>>);
+
+    jest.mocked(bot.api.sendMessage).mockRejectedValueOnce(new Error("Telegram error"));
+
+    await job.execute();
+
+    expect(message.updateForSend).toHaveBeenCalledWith(USER_ID_1, MESSAGE_ID);
+    expect(bot.api.sendMessage).toHaveBeenCalledWith(USER_ID_1, MESSAGE_CONTENT, {
+      parse_mode: "MarkdownV2",
+      link_preview_options: {
+        is_disabled: true,
+      },
     });
-
-    await dispatch.execute();
-
-    expect(mockMessageService.markAsFailed).toHaveBeenCalledWith(attempt1, "Some Error");
-    expect(mockMessageService.markAsFailed).toHaveBeenCalledWith(attempt2, "Some Error");
+    expect(message.updateForFailure).toHaveBeenCalledWith(USER_ID_1, MESSAGE_ID, "Telegram error");
   });
 
-  it("should log error when listSendable throws an error", async () => {
-    const error = new Error("Database connection failed");
-    mockMessageService.listSendable.mockRejectedValue(error);
+  it("should handle the case in which listSendable fails", async () => {
+    const message = getMockMessageService();
+    const logger = getMockLogger();
+    const bot = getMockBot();
+    const job = new DispatchJob(logger, message, CRON_SCHEDULE, bot, MESSAGES_PER_DISPATCH);
+    const error = new Error("Database error");
 
-    await dispatch.execute();
+    message.listSendable.mockRejectedValueOnce(error);
 
-    expect(mockLogger.error).toHaveBeenCalledWith(
-      { error },
-      "Error occurred while executing dispatch job",
-    );
+    await job.execute();
+
+    expect(logger.error).toHaveBeenCalledWith(expect.objectContaining({ error }), "Failed");
+  });
+
+  it("should not run if already executing", async () => {
+    const message = getMockMessageService();
+    const logger = getMockLogger();
+    const bot = getMockBot();
+    const job = new DispatchJob(logger, message, CRON_SCHEDULE, bot, MESSAGES_PER_DISPATCH);
+
+    (job as unknown as { isExecuting: boolean }).isExecuting = true;
+
+    await job.execute();
+
+    expect(message.listSendable).not.toHaveBeenCalled();
   });
 });

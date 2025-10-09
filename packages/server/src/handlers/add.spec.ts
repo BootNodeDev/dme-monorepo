@@ -49,7 +49,7 @@ it("should successfully add a wallet and reply with success message", async () =
 
   expect(mockWalletService.upsert).toHaveBeenCalledWith(ETHEREUM_ADDRESS_1);
   expect(mockUserService.upsertWallet).toHaveBeenCalledWith(USER_ID_1, ETHEREUM_ADDRESS_1);
-  expect(mockLimiter.reply).toHaveBeenCalledWith(ctx, "Successfully added 0xBEE9...BBAB.");
+  expect(mockLimiter.reply).toHaveBeenCalledWith(ctx, "Successfully added 0xBEE9...BBAB");
 });
 
 it("should reply with usage message when no wallet address is provided", async () => {
@@ -135,5 +135,5 @@ it("should handle multiple spaces between command and address", async () => {
 
   expect(mockWalletService.upsert).toHaveBeenCalledWith(ETHEREUM_ADDRESS_1);
   expect(mockUserService.upsertWallet).toHaveBeenCalledWith(USER_ID_1, ETHEREUM_ADDRESS_1);
-  expect(mockLimiter.reply).toHaveBeenCalledWith(ctx, "Successfully added 0xBEE9...BBAB.");
+  expect(mockLimiter.reply).toHaveBeenCalledWith(ctx, "Successfully added 0xBEE9...BBAB");
 });
