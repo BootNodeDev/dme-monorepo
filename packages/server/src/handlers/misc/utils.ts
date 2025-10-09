@@ -1,5 +1,4 @@
 import { CommandContext, Context } from "grammy";
-import { Logger } from "pino";
 
 export const UNEXPECTED_ERROR_MESSAGE = "Something went wrong. Please try again later.";
 
