@@ -32,15 +32,6 @@ export class Limiter {
     this.add(TOP_PRIORITY, () => ctx.reply(telegramify(msg, "remove"), this.BASE_MESSAGE_OPTIONS));
   }
 
-  sendMessage(chatId: number, msg: string, onSuccess: () => void, onError: (error: Error) => void) {
-    this.add(LOW_PRIORITY, () =>
-      this.bot.api
-        .sendMessage(chatId, msg, this.BASE_MESSAGE_OPTIONS)
-        .then(onSuccess)
-        .catch(onError),
-    );
-  }
-
   protected add<T>(priority: number, fn: () => Promise<T>): void {
     this.queue.add(fn, { priority });
 

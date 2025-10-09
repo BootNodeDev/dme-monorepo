@@ -1,7 +1,7 @@
 import PQueue from "p-queue";
-import { Limiter, LOW_PRIORITY, TOP_PRIORITY } from "./limiter";
+import { Limiter, TOP_PRIORITY } from "./limiter";
 import { Bot, Context, SessionFlavor } from "grammy";
-import { MESSAGE_CONTENT, USER_ID_1 } from "./tests/constants";
+import { MESSAGE_CONTENT } from "./tests/constants";
 import { Logger } from "pino";
 
 jest.mock("p-queue", () =>
@@ -58,18 +58,6 @@ describe("Limiter", () => {
       limiter.reply(ctx, MESSAGE_CONTENT);
 
       expect(addSpy).toHaveBeenCalledWith(TOP_PRIORITY, expect.any(Function));
-    });
-  });
-
-  describe("sendMessage", () => {
-    it("should add a sendMessage task to the limiter", () => {
-      const limiter = new LimiterHarness(mockLogger, interval, intervalCap, mockBot);
-
-      const addSpy = jest.spyOn(limiter, "add");
-
-      limiter.sendMessage(USER_ID_1, MESSAGE_CONTENT, jest.fn(), jest.fn());
-
-      expect(addSpy).toHaveBeenCalledWith(LOW_PRIORITY, expect.any(Function));
     });
   });
 });
