@@ -1,11 +1,12 @@
 import { CommandContext, Context } from "grammy";
 import { Logger } from "pino";
-import { UserService, UserWalletAlreadyExistsError } from "../services/user";
+import { UserService } from "../services/user";
 import { InvalidEthereumAddressError, WalletService } from "../services/wallet";
 import { getAddHandler } from "./add";
 import { UNEXPECTED_ERROR_MESSAGE } from "./misc/utils";
 import { ETHEREUM_ADDRESS_1, USER_ID_1 } from "../tests/constants";
 import { Limiter } from "../limiter";
+import { getMockUserService } from "../tests/mocks";
 
 jest.mock("../services/user");
 jest.mock("../services/wallet");
@@ -25,10 +26,7 @@ beforeEach(() => {
     info: jest.fn(),
   } as unknown as jest.Mocked<Logger>;
 
-  mockUserService = {
-    create: jest.fn(),
-    addWallet: jest.fn(),
-  } as unknown as jest.Mocked<UserService>;
+  mockUserService = getMockUserService();
 
   mockWalletService = {
     upsert: jest.fn(),
@@ -50,7 +48,7 @@ it("should successfully add a wallet and reply with success message", async () =
   await addWallet(ctx);
 
   expect(mockWalletService.upsert).toHaveBeenCalledWith(ETHEREUM_ADDRESS_1);
-  expect(mockUserService.addWallet).toHaveBeenCalledWith(USER_ID_1, ETHEREUM_ADDRESS_1);
+  expect(mockUserService.upsertWallet).toHaveBeenCalledWith(USER_ID_1, ETHEREUM_ADDRESS_1);
   expect(mockLimiter.reply).toHaveBeenCalledWith(ctx, "Successfully added 0xBEE9...BBAB.");
 });
 
@@ -60,7 +58,7 @@ it("should reply with usage message when no wallet address is provided", async (
   await addWallet(ctx);
 
   expect(mockWalletService.upsert).not.toHaveBeenCalled();
-  expect(mockUserService.addWallet).not.toHaveBeenCalled();
+  expect(mockUserService.upsertWallet).not.toHaveBeenCalled();
   expect(mockLimiter.reply).toHaveBeenCalledWith(
     ctx,
     "Please provide a wallet address.\n\nUsage: /add <address>",
@@ -73,7 +71,7 @@ it("should reply with error when user ID is not found in context", async () => {
   await addWallet(ctx);
 
   expect(mockWalletService.upsert).not.toHaveBeenCalled();
-  expect(mockUserService.addWallet).not.toHaveBeenCalled();
+  expect(mockUserService.upsertWallet).not.toHaveBeenCalled();
   expect(mockLimiter.reply).toHaveBeenCalledWith(ctx, UNEXPECTED_ERROR_MESSAGE);
 });
 
@@ -83,7 +81,7 @@ it("should reply with error when wallet address is invalid", async () => {
   await addWallet(ctx);
 
   expect(mockWalletService.upsert).toHaveBeenCalledWith(ETHEREUM_ADDRESS_1);
-  expect(mockUserService.addWallet).not.toHaveBeenCalled();
+  expect(mockUserService.upsertWallet).not.toHaveBeenCalled();
   expect(mockLimiter.reply).toHaveBeenCalledWith(ctx, "Please provide a valid Ethereum address.");
 });
 
@@ -93,30 +91,17 @@ it("should reply with generic error when wallet upsert fails for unknown reason"
   await addWallet(ctx);
 
   expect(mockWalletService.upsert).toHaveBeenCalledWith(ETHEREUM_ADDRESS_1);
-  expect(mockUserService.addWallet).not.toHaveBeenCalled();
+  expect(mockUserService.upsertWallet).not.toHaveBeenCalled();
   expect(mockLimiter.reply).toHaveBeenCalledWith(ctx, UNEXPECTED_ERROR_MESSAGE);
 });
 
-it("should reply with specific message when wallet is already associated with user", async () => {
-  mockUserService.addWallet.mockRejectedValue(new UserWalletAlreadyExistsError());
-
-  await addWallet(ctx);
-
-  expect(mockWalletService.upsert).toHaveBeenCalledWith(ETHEREUM_ADDRESS_1);
-  expect(mockUserService.addWallet).toHaveBeenCalledWith(USER_ID_1, ETHEREUM_ADDRESS_1);
-  expect(mockLimiter.reply).toHaveBeenCalledWith(
-    ctx,
-    "0xBEE9...BBAB is already associated with your account.",
-  );
-});
-
 it("should reply with generic error when adding wallet to user fails for unknown reason", async () => {
-  mockUserService.addWallet.mockRejectedValue(new Error("Database constraint violation"));
+  mockUserService.upsertWallet.mockRejectedValue(new Error("Database constraint violation"));
 
   await addWallet(ctx);
 
   expect(mockWalletService.upsert).toHaveBeenCalledWith(ETHEREUM_ADDRESS_1);
-  expect(mockUserService.addWallet).toHaveBeenCalledWith(USER_ID_1, ETHEREUM_ADDRESS_1);
+  expect(mockUserService.upsertWallet).toHaveBeenCalledWith(USER_ID_1, ETHEREUM_ADDRESS_1);
   expect(mockLimiter.reply).toHaveBeenCalledWith(ctx, UNEXPECTED_ERROR_MESSAGE);
 });
 
@@ -126,7 +111,7 @@ it("should handle empty string address as missing address", async () => {
   await addWallet(ctx);
 
   expect(mockWalletService.upsert).not.toHaveBeenCalled();
-  expect(mockUserService.addWallet).not.toHaveBeenCalled();
+  expect(mockUserService.upsertWallet).not.toHaveBeenCalled();
   expect(mockLimiter.reply).toHaveBeenCalledWith(
     ctx,
     "Please provide a wallet address.\n\nUsage: /add <address>",
@@ -140,7 +125,7 @@ it("should trim trailing whitespace in wallet address", async () => {
   await addWallet(ctx);
 
   expect(mockWalletService.upsert).toHaveBeenCalledWith(ETHEREUM_ADDRESS_1);
-  expect(mockUserService.addWallet).toHaveBeenCalledWith(USER_ID_1, ETHEREUM_ADDRESS_1);
+  expect(mockUserService.upsertWallet).toHaveBeenCalledWith(USER_ID_1, ETHEREUM_ADDRESS_1);
 });
 
 it("should handle multiple spaces between command and address", async () => {
@@ -149,6 +134,6 @@ it("should handle multiple spaces between command and address", async () => {
   await addWallet(ctx);
 
   expect(mockWalletService.upsert).toHaveBeenCalledWith(ETHEREUM_ADDRESS_1);
-  expect(mockUserService.addWallet).toHaveBeenCalledWith(USER_ID_1, ETHEREUM_ADDRESS_1);
+  expect(mockUserService.upsertWallet).toHaveBeenCalledWith(USER_ID_1, ETHEREUM_ADDRESS_1);
   expect(mockLimiter.reply).toHaveBeenCalledWith(ctx, "Successfully added 0xBEE9...BBAB.");
 });

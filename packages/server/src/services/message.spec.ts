@@ -24,10 +24,10 @@ describe("create", () => {
 
   it("should create a new message", async () => {
     await wallet.upsert(ETHEREUM_ADDRESS_1);
-    await user.create(USER_ID_1);
-    await user.create(USER_ID_2);
-    await user.addWallet(USER_ID_1, ETHEREUM_ADDRESS_1);
-    await user.addWallet(USER_ID_2, ETHEREUM_ADDRESS_1);
+    await user.upsert(USER_ID_1);
+    await user.upsert(USER_ID_2);
+    await user.upsertWallet(USER_ID_1, ETHEREUM_ADDRESS_1);
+    await user.upsertWallet(USER_ID_2, ETHEREUM_ADDRESS_1);
     await message.create(MESSAGE_CONTENT, ETHEREUM_ADDRESS_1);
 
     const result = await prisma.message.findMany({ include: { recipients: true } });
@@ -42,10 +42,10 @@ describe("create", () => {
 describe("listSendable", () => {
   it("should return a list of messages that have never been sent yet", async () => {
     await wallet.upsert(ETHEREUM_ADDRESS_1);
-    await user.create(USER_ID_1);
-    await user.create(USER_ID_2);
-    await user.addWallet(USER_ID_1, ETHEREUM_ADDRESS_1);
-    await user.addWallet(USER_ID_2, ETHEREUM_ADDRESS_1);
+    await user.upsert(USER_ID_1);
+    await user.upsert(USER_ID_2);
+    await user.upsertWallet(USER_ID_1, ETHEREUM_ADDRESS_1);
+    await user.upsertWallet(USER_ID_2, ETHEREUM_ADDRESS_1);
     await message.create(MESSAGE_CONTENT, ETHEREUM_ADDRESS_1);
 
     const result = await message.listSendable();
@@ -72,10 +72,10 @@ describe("listSendable", () => {
 
   it("should return a list of messages that have failed attempts", async () => {
     await wallet.upsert(ETHEREUM_ADDRESS_1);
-    await user.create(USER_ID_1);
-    await user.create(USER_ID_2);
-    await user.addWallet(USER_ID_1, ETHEREUM_ADDRESS_1);
-    await user.addWallet(USER_ID_2, ETHEREUM_ADDRESS_1);
+    await user.upsert(USER_ID_1);
+    await user.upsert(USER_ID_2);
+    await user.upsertWallet(USER_ID_1, ETHEREUM_ADDRESS_1);
+    await user.upsertWallet(USER_ID_2, ETHEREUM_ADDRESS_1);
     await message.create(MESSAGE_CONTENT, ETHEREUM_ADDRESS_1);
 
     const result = await message.listSendable();
@@ -114,8 +114,8 @@ describe("listSendable", () => {
 
   it("should exclude messages that have reached 3 attempts", async () => {
     await wallet.upsert(ETHEREUM_ADDRESS_1);
-    await user.create(USER_ID_1);
-    await user.addWallet(USER_ID_1, ETHEREUM_ADDRESS_1);
+    await user.upsert(USER_ID_1);
+    await user.upsertWallet(USER_ID_1, ETHEREUM_ADDRESS_1);
     await message.create(MESSAGE_CONTENT, ETHEREUM_ADDRESS_1);
 
     const result = await message.listSendable();
@@ -163,8 +163,8 @@ describe("listSendable", () => {
 
   it("should exclude messages with nextAttemptAt in the future", async () => {
     await wallet.upsert(ETHEREUM_ADDRESS_1);
-    await user.create(USER_ID_1);
-    await user.addWallet(USER_ID_1, ETHEREUM_ADDRESS_1);
+    await user.upsert(USER_ID_1);
+    await user.upsertWallet(USER_ID_1, ETHEREUM_ADDRESS_1);
     await message.create(MESSAGE_CONTENT, ETHEREUM_ADDRESS_1);
 
     const messages = await prisma.message.findMany({});
@@ -207,8 +207,8 @@ describe("listSendable", () => {
 describe("newAttempt", () => {
   it("should create an attempt with attempt number 1 when there are no previous attempts for the user and message", async () => {
     await wallet.upsert(ETHEREUM_ADDRESS_1);
-    await user.create(USER_ID_1);
-    await user.addWallet(USER_ID_1, ETHEREUM_ADDRESS_1);
+    await user.upsert(USER_ID_1);
+    await user.upsertWallet(USER_ID_1, ETHEREUM_ADDRESS_1);
     await message.create(MESSAGE_CONTENT, ETHEREUM_ADDRESS_1);
 
     const messages = await prisma.message.findMany({});
@@ -230,8 +230,8 @@ describe("newAttempt", () => {
 
   it("should create an attempt with attempt number incremented by 1 when there are previous attempts for the user and message", async () => {
     await wallet.upsert(ETHEREUM_ADDRESS_1);
-    await user.create(USER_ID_1);
-    await user.addWallet(USER_ID_1, ETHEREUM_ADDRESS_1);
+    await user.upsert(USER_ID_1);
+    await user.upsertWallet(USER_ID_1, ETHEREUM_ADDRESS_1);
     await message.create(MESSAGE_CONTENT, ETHEREUM_ADDRESS_1);
 
     const messages = await prisma.message.findMany({});
@@ -250,8 +250,8 @@ describe("newAttempt", () => {
 describe("markAsDelivered", () => {
   it("should mark an attempt as delivered", async () => {
     await wallet.upsert(ETHEREUM_ADDRESS_1);
-    await user.create(USER_ID_1);
-    await user.addWallet(USER_ID_1, ETHEREUM_ADDRESS_1);
+    await user.upsert(USER_ID_1);
+    await user.upsertWallet(USER_ID_1, ETHEREUM_ADDRESS_1);
     await message.create(MESSAGE_CONTENT, ETHEREUM_ADDRESS_1);
 
     const messages = await prisma.message.findMany({});
@@ -273,8 +273,8 @@ describe("markAsDelivered", () => {
 describe("markAsFailed", () => {
   it("should mark an attempt as failed with an error message", async () => {
     await wallet.upsert(ETHEREUM_ADDRESS_1);
-    await user.create(USER_ID_1);
-    await user.addWallet(USER_ID_1, ETHEREUM_ADDRESS_1);
+    await user.upsert(USER_ID_1);
+    await user.upsertWallet(USER_ID_1, ETHEREUM_ADDRESS_1);
     await message.create(MESSAGE_CONTENT, ETHEREUM_ADDRESS_1);
 
     const messages = await prisma.message.findMany({});
@@ -295,8 +295,8 @@ describe("markAsFailed", () => {
 
   it("should set exponential backoff nextAttemptAt times", async () => {
     await wallet.upsert(ETHEREUM_ADDRESS_1);
-    await user.create(USER_ID_1);
-    await user.addWallet(USER_ID_1, ETHEREUM_ADDRESS_1);
+    await user.upsert(USER_ID_1);
+    await user.upsertWallet(USER_ID_1, ETHEREUM_ADDRESS_1);
     await message.create(MESSAGE_CONTENT, ETHEREUM_ADDRESS_1);
 
     const messages = await prisma.message.findMany({});

@@ -1,15 +1,12 @@
 import { CommandContext, Context } from "grammy";
 import { Logger } from "pino";
-import {
-  UserAlreadyExistsError,
-  UserService,
-  UserWalletAlreadyExistsError,
-} from "../services/user";
+import { UserService } from "../services/user";
 import { InvalidEthereumAddressError, WalletService } from "../services/wallet";
 import { getStartHandler } from "./start";
 import { UNEXPECTED_ERROR_MESSAGE } from "./misc/utils";
 import { ETHEREUM_ADDRESS_1, USER_ID_1 } from "../tests/constants";
 import { Limiter } from "../limiter";
+import { getMockUserService } from "../tests/mocks";
 
 jest.mock("../services/user");
 jest.mock("../services/wallet");
@@ -29,10 +26,7 @@ beforeEach(() => {
     info: jest.fn(),
   } as unknown as jest.Mocked<Logger>;
 
-  mockUserService = {
-    create: jest.fn(),
-    addWallet: jest.fn(),
-  } as unknown as jest.Mocked<UserService>;
+  mockUserService = getMockUserService();
 
   mockWalletService = {
     upsert: jest.fn(),
@@ -50,22 +44,12 @@ beforeEach(() => {
   } as unknown as CommandContext<Context>;
 });
 
-it("should reply with a welcome message if the user is new", async () => {
+it("should reply with a welcome message", async () => {
   ctx.message!.text = START_COMMAND;
 
   await start(ctx);
 
   expect(mockLimiter.reply).toHaveBeenCalledWith(ctx, `Welcome!`);
-});
-
-it("should reply with a welcome back message if the user already exists", async () => {
-  mockUserService.create.mockRejectedValue(new UserAlreadyExistsError());
-
-  ctx.message!.text = START_COMMAND;
-
-  await start(ctx);
-
-  expect(mockLimiter.reply).toHaveBeenCalledWith(ctx, `Welcome back!`);
 });
 
 it("should reply with the address of the wallet being subscribed", async () => {
@@ -75,14 +59,6 @@ it("should reply with the address of the wallet being subscribed", async () => {
     ctx,
     `Welcome!\n\nYou have successfully subscribed 0xBEE9...BBAB`,
   );
-});
-
-it("should reply only with welcome if the wallet was already added", async () => {
-  mockUserService.addWallet.mockRejectedValue(new UserWalletAlreadyExistsError());
-
-  await start(ctx);
-
-  expect(mockLimiter.reply).toHaveBeenCalledWith(ctx, `Welcome!`);
 });
 
 it("should reply with an error when wallet upsert fails due to invalid address", async () => {
@@ -112,7 +88,7 @@ it("should reply with an error when the user id is not found in context", async 
 });
 
 it("should reply with an error when user create fails for an unknown reason", async () => {
-  mockUserService.create.mockRejectedValue(new Error("Unknown error"));
+  mockUserService.upsert.mockRejectedValue(new Error("Unknown error"));
 
   await start(ctx);
 
@@ -120,7 +96,7 @@ it("should reply with an error when user create fails for an unknown reason", as
 });
 
 it("should reply with an error when adding wallet to user fails for an unknown reason", async () => {
-  mockUserService.addWallet.mockRejectedValue(new Error("Unknown error"));
+  mockUserService.upsertWallet.mockRejectedValue(new Error("Unknown error"));
 
   await start(ctx);
 
@@ -133,7 +109,7 @@ it("should handle multiple spaces between command and address", async () => {
   await start(ctx);
 
   expect(mockWalletService.upsert).toHaveBeenCalledWith(ETHEREUM_ADDRESS_1);
-  expect(mockUserService.addWallet).toHaveBeenCalledWith(USER_ID_1, ETHEREUM_ADDRESS_1);
+  expect(mockUserService.upsertWallet).toHaveBeenCalledWith(USER_ID_1, ETHEREUM_ADDRESS_1);
   expect(mockLimiter.reply).toHaveBeenCalledWith(
     ctx,
     `Welcome!\n\nYou have successfully subscribed 0xBEE9...BBAB`,
