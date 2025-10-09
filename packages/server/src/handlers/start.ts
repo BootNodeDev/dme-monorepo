@@ -8,12 +8,15 @@ import {
 import { InvalidEthereumAddressError, WalletService } from "../services/wallet";
 import { formatAddress, UNEXPECTED_ERROR_MESSAGE } from "./misc/utils";
 import { Limiter } from "../limiter";
+import { getOutOfRangePositions, getOutOfRangePositionsMessage } from "../jobs/outOfRange";
+import { PositionService } from "../services/position";
 
 export function getStartHandler(
   logger: Logger,
   limiter: Limiter,
   user: UserService,
   wallet: WalletService,
+  position: PositionService,
 ) {
   return async (ctx: CommandContext<Context>) => {
     const userId = ctx.from?.id;
@@ -76,6 +79,16 @@ export function getStartHandler(
 
     if (address && !walletAlreadySubscribed) {
       response.push(`You have successfully subscribed ${formatAddress(address)}`);
+    }
+
+    if (address) {
+      const oorPositions = await getOutOfRangePositions(address, position);
+
+      if (oorPositions.length > 0) {
+        const oorPositionsMessage = getOutOfRangePositionsMessage(oorPositions, address);
+
+        response.push(oorPositionsMessage);
+      }
     }
 
     limiter.reply(ctx, response.join("\n\n"));

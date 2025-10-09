@@ -18,6 +18,8 @@ export class DispatchJob {
   }
 
   async execute() {
+    this.logger.info("Dispatch job executing");
+
     try {
       const messages = await this.message.listSendable();
 

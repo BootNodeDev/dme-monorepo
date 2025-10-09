@@ -12,7 +12,7 @@ type RevertPosition = {
   nft_id: number;
 };
 
-type Position = {
+export type Position = {
   network: string;
   inRange: boolean;
   poolPrice: string;

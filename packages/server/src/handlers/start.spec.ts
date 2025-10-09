@@ -10,6 +10,7 @@ import { getStartHandler } from "./start";
 import { UNEXPECTED_ERROR_MESSAGE } from "./misc/utils";
 import { ETHEREUM_ADDRESS_1, USER_ID_1 } from "../tests/constants";
 import { Limiter } from "../limiter";
+import { PositionService } from "../services/position";
 
 jest.mock("../services/user");
 jest.mock("../services/wallet");
@@ -19,6 +20,7 @@ const START_COMMAND = "/start";
 let mockLogger: jest.Mocked<Logger>;
 let mockUserService: jest.Mocked<UserService>;
 let mockWalletService: jest.Mocked<WalletService>;
+let mockPositionService: jest.Mocked<PositionService>;
 let mockLimiter: jest.Mocked<Limiter>;
 let start: ReturnType<typeof getStartHandler>;
 let ctx: CommandContext<Context>;
@@ -38,11 +40,19 @@ beforeEach(() => {
     upsert: jest.fn(),
   } as unknown as jest.Mocked<WalletService>;
 
+  mockPositionService = {} as unknown as jest.Mocked<PositionService>;
+
   mockLimiter = {
     reply: jest.fn(),
   } as unknown as jest.Mocked<Limiter>;
 
-  start = getStartHandler(mockLogger, mockLimiter, mockUserService, mockWalletService);
+  start = getStartHandler(
+    mockLogger,
+    mockLimiter,
+    mockUserService,
+    mockWalletService,
+    mockPositionService,
+  );
 
   ctx = {
     from: { id: USER_ID_1 },
