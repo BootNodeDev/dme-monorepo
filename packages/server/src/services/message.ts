@@ -2,6 +2,10 @@ import { PrismaClient } from "@prisma/client";
 import ms from "ms";
 import telegramify from "telegramify-markdown";
 import { sanitizeEthereumAddress } from "./wallet";
+import { CommandContext, Context } from "grammy";
+
+export const LOW_PRIORITY = 0;
+export const TOP_PRIORITY = 1000;
 
 export class UsersForAddressNotFoundError extends Error {}
 
@@ -35,7 +39,7 @@ export class MessageService {
       const { id: messageId } = await prisma.message.create({
         data: {
           content: telegramify(content, "remove"),
-          priority: options?.priority ?? 0,
+          priority: options?.priority ?? LOW_PRIORITY,
         },
       });
 
@@ -47,6 +51,31 @@ export class MessageService {
             maxAttempts: options?.maxAttempts ?? this.maxAttempts,
           };
         }),
+      });
+    });
+  }
+
+  async createForCtx(content: string, ctx: CommandContext<Context>, options?: MessageOptions) {
+    const userId = ctx.chat.id;
+
+    if (!userId) {
+      return;
+    }
+
+    await this.prisma.$transaction(async (prisma) => {
+      const { id: messageId } = await prisma.message.create({
+        data: {
+          content: telegramify(content, "remove"),
+          priority: options?.priority ?? TOP_PRIORITY,
+        },
+      });
+
+      await prisma.userMessage.create({
+        data: {
+          userId,
+          messageId,
+          maxAttempts: options?.maxAttempts ?? this.maxAttempts,
+        },
       });
     });
   }

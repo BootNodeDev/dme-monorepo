@@ -32,7 +32,7 @@ const message = new MessageService(prisma, env.MAX_ATTEMPTS);
 
 /* Handlers */
 
-const start = getStartHandler(logger.child({ handler: "start" }), limiter, user, wallet);
+const start = getStartHandler(logger.child({ handler: "start" }), message, user, wallet);
 const add = getAddHandler(logger.child({ handler: "add" }), limiter, user, wallet);
 const list = getListHandler(logger.child({ handler: "list" }), limiter, user);
 const remove = getRemoveHandler(logger.child({ handler: "remove" }), limiter, user);

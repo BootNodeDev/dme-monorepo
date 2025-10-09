@@ -15,6 +15,7 @@ export function getMockUserService() {
 export function getMockMessageService() {
   return {
     create: jest.fn(),
+    createForCtx: jest.fn(),
     listSendable: jest.fn(),
     updateForSend: jest.fn(),
     updateForSuccess: jest.fn(),
