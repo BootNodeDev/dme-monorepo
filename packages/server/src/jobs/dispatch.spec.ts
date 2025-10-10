@@ -98,7 +98,7 @@ describe("execute", () => {
 
     await job.execute();
 
-    expect(logger.error).toHaveBeenCalledWith(expect.objectContaining({ error }), "Failed");
+    expect(logger.error).toHaveBeenCalledWith({ err: error }, "Failed");
   });
 
   it("should not run if already executing", async () => {

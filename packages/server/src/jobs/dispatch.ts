@@ -48,8 +48,8 @@ export class DispatchJob {
           }
         }),
       );
-    } catch (error) {
-      this.logger.error({ error }, "Failed");
+    } catch (err) {
+      this.logger.error({ err }, "Failed");
     } finally {
       this.isExecuting = false;
     }

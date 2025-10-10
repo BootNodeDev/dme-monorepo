@@ -80,6 +80,25 @@ export class MessageService {
     });
   }
 
+  async createForUser(content: string, userId: number, options?: MessageOptions) {
+    await this.prisma.$transaction(async (prisma) => {
+      const { id: messageId } = await prisma.message.create({
+        data: {
+          content: telegramify(content, "remove"),
+          priority: options?.priority ?? LOW_PRIORITY,
+        },
+      });
+
+      await prisma.userMessage.create({
+        data: {
+          userId,
+          messageId,
+          maxAttempts: options?.maxAttempts ?? this.maxAttempts,
+        },
+      });
+    });
+  }
+
   async listSendable(take?: number) {
     const now = new Date();
 

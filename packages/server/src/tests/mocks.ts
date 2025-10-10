@@ -2,6 +2,7 @@ import { Logger } from "pino";
 import { UserService } from "../services/user";
 import { Bot, Context, SessionFlavor } from "grammy";
 import { MessageService } from "../services/message";
+import { WalletService } from "../services/wallet";
 
 export function getMockUserService() {
   return {
@@ -16,11 +17,19 @@ export function getMockMessageService() {
   return {
     create: jest.fn(),
     createForCtx: jest.fn(),
+    createForUser: jest.fn(),
     listSendable: jest.fn(),
     updateForSend: jest.fn(),
     updateForSuccess: jest.fn(),
     updateForFailure: jest.fn(),
   } as unknown as jest.Mocked<MessageService>;
+}
+
+export function getMockWalletService() {
+  return {
+    upsert: jest.fn(),
+    listAll: jest.fn(),
+  } as unknown as jest.Mocked<WalletService>;
 }
 
 export function getMockLogger() {

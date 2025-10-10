@@ -41,16 +41,13 @@ bot.command("add", add);
 bot.command("list", list);
 bot.command("remove", remove);
 
-bot.catch((error) =>
-  logger.error(
-    { error: error.error, userId: error.ctx.from?.id, message: error.ctx.message?.text },
-    "Bot error",
-  ),
+bot.catch((err) =>
+  logger.error({ err, userId: err.ctx.from?.id, message: err.ctx.message?.text }, "Failure"),
 );
 
 run(bot);
 
-logger.info("Bot started");
+logger.info("Started");
 
 /* Jobs */
 
