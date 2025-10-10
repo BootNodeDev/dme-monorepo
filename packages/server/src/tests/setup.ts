@@ -21,7 +21,12 @@ async function truncateDb() {
     { name: string }[]
   >`SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' AND name != '_prisma_migrations'`;
 
-  await Promise.all(
-    tablenames.map(({ name }) => prisma.$executeRawUnsafe(`DELETE FROM "${name}"`)),
-  );
+  // Disable foreign key constraints and wrap in transaction for faster truncation
+  await prisma.$executeRawUnsafe(`PRAGMA foreign_keys = OFF;`);
+  await prisma.$transaction(async (tx) => {
+    await Promise.all(
+      tablenames.map(({ name }) => tx.$executeRawUnsafe(`DELETE FROM "${name}"`)),
+    );
+  });
+  await prisma.$executeRawUnsafe(`PRAGMA foreign_keys = ON;`);
 }
