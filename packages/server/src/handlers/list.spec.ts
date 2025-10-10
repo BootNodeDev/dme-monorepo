@@ -1,10 +1,11 @@
 import { CommandContext, Context } from "grammy";
 import { Logger } from "pino";
 import { UserService } from "../services/user";
+import { MessageService } from "../services/message";
 import { getListHandler } from "./list";
 import { UNEXPECTED_ERROR_MESSAGE } from "./misc/utils";
 import { ETHEREUM_ADDRESS_1, ETHEREUM_ADDRESS_2, USER_ID_1 } from "../tests/constants";
-import { Limiter } from "../limiter";
+import { getMockUserService, getMockMessageService } from "../tests/mocks";
 
 jest.mock("../services/user");
 
@@ -12,7 +13,7 @@ const LIST_COMMAND = "/list";
 
 let mockLogger: jest.Mocked<Logger>;
 let mockUserService: jest.Mocked<UserService>;
-let mockLimiter: jest.Mocked<Limiter>;
+let mockMessageService: jest.Mocked<MessageService>;
 let listWallets: ReturnType<typeof getListHandler>;
 let ctx: CommandContext<Context>;
 
@@ -22,17 +23,11 @@ beforeEach(() => {
     info: jest.fn(),
   } as unknown as jest.Mocked<Logger>;
 
-  mockUserService = {
-    create: jest.fn(),
-    addWallet: jest.fn(),
-    listWallets: jest.fn(),
-  } as unknown as jest.Mocked<UserService>;
+  mockUserService = getMockUserService();
 
-  mockLimiter = {
-    reply: jest.fn(),
-  } as unknown as jest.Mocked<Limiter>;
+  mockMessageService = getMockMessageService();
 
-  listWallets = getListHandler(mockLogger, mockLimiter, mockUserService);
+  listWallets = getListHandler(mockLogger, mockMessageService, mockUserService);
 
   ctx = {
     from: { id: USER_ID_1 },
@@ -46,9 +41,9 @@ it("should reply with empty message when user has no wallets", async () => {
   await listWallets(ctx);
 
   expect(mockUserService.listWallets).toHaveBeenCalledWith(USER_ID_1);
-  expect(mockLimiter.reply).toHaveBeenCalledWith(
-    ctx,
+  expect(mockMessageService.createForCtx).toHaveBeenCalledWith(
     "You don't have any wallets associated with your account yet.\n\nUse /add <address> to add one.",
+    ctx,
   );
 });
 
@@ -61,9 +56,9 @@ it("should reply with formatted list when user has multiple wallets", async () =
   await listWallets(ctx);
 
   expect(mockUserService.listWallets).toHaveBeenCalledWith(USER_ID_1);
-  expect(mockLimiter.reply).toHaveBeenCalledWith(
-    ctx,
+  expect(mockMessageService.createForCtx).toHaveBeenCalledWith(
     "Your wallets:\n\n1. 0xbee9...bbab\n2. 0xcf48...bd8d",
+    ctx,
   );
 });
 
@@ -73,7 +68,7 @@ it("should reply with error when user ID is not found in context", async () => {
   await listWallets(ctx);
 
   expect(mockUserService.listWallets).not.toHaveBeenCalled();
-  expect(mockLimiter.reply).toHaveBeenCalledWith(ctx, UNEXPECTED_ERROR_MESSAGE);
+  expect(mockMessageService.createForCtx).toHaveBeenCalledWith(UNEXPECTED_ERROR_MESSAGE, ctx);
 });
 
 it("should reply with error when listing wallets fails", async () => {
@@ -82,5 +77,5 @@ it("should reply with error when listing wallets fails", async () => {
   await listWallets(ctx);
 
   expect(mockUserService.listWallets).toHaveBeenCalledWith(USER_ID_1);
-  expect(mockLimiter.reply).toHaveBeenCalledWith(ctx, UNEXPECTED_ERROR_MESSAGE);
+  expect(mockMessageService.createForCtx).toHaveBeenCalledWith(UNEXPECTED_ERROR_MESSAGE, ctx);
 });

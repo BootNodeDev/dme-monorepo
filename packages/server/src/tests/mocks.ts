@@ -6,9 +6,9 @@ import { MessageService } from "../services/message";
 export function getMockUserService() {
   return {
     upsert: jest.fn(),
-    upsertWallet: jest.fn(),
     listWallets: jest.fn(),
-    removeWallet: jest.fn(),
+    upsertWallet: jest.fn(),
+    deleteWallet: jest.fn(),
   } as unknown as jest.Mocked<UserService>;
 }
 

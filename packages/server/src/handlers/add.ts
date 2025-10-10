@@ -3,11 +3,11 @@ import { Logger } from "pino";
 import { UserService } from "../services/user";
 import { InvalidEthereumAddressError, WalletService } from "../services/wallet";
 import { formatAddress, getUserIdFromCtx, UNEXPECTED_ERROR_MESSAGE } from "./misc/utils";
-import { Limiter } from "../limiter";
+import { MessageService } from "../services/message";
 
 export function getAddHandler(
   logger: Logger,
-  limiter: Limiter,
+  message: MessageService,
   user: UserService,
   wallet: WalletService,
 ) {
@@ -18,7 +18,7 @@ export function getAddHandler(
       const address = ctx.message?.text.split(/\s+/)[1];
 
       if (!address) {
-        limiter.reply(ctx, "Please provide a wallet address.\n\nUsage: /add <address>");
+        await message.createForCtx("Please provide a wallet address.\n\nUsage: /add <address>", ctx);
         return;
       }
 
@@ -26,7 +26,7 @@ export function getAddHandler(
         await wallet.upsert(address);
       } catch (error) {
         if (error instanceof InvalidEthereumAddressError) {
-          limiter.reply(ctx, "Please provide a valid Ethereum address.");
+          await message.createForCtx("Please provide a valid Ethereum address.", ctx);
           return;
         }
 
@@ -35,11 +35,11 @@ export function getAddHandler(
 
       await user.upsertWallet(userId, address);
 
-      limiter.reply(ctx, `Successfully added ${formatAddress(address)}`);
+      await message.createForCtx(`Successfully added ${formatAddress(address)}`, ctx);
     } catch (error) {
       logger.error({ error, ctx });
 
-      limiter.reply(ctx, UNEXPECTED_ERROR_MESSAGE);
+      await message.createForCtx(UNEXPECTED_ERROR_MESSAGE, ctx);
     }
   };
 }
