@@ -6,7 +6,7 @@ import {
   USER_ID_2,
 } from "../tests/constants";
 import { prisma } from "../tests/setup";
-import { MessageService, UsersForAddressNotFoundError } from "./message";
+import { MessageService, TOP_PRIORITY, UsersForAddressNotFoundError } from "./message";
 import { UserService } from "./user";
 import { WalletService } from "./wallet";
 
@@ -84,7 +84,7 @@ describe("createForUser", () => {
       content: MESSAGE_CONTENT,
       createdAt: expect.any(Date),
       id: expect.any(String),
-      priority: 0, // LOW_PRIORITY
+      priority: TOP_PRIORITY,
       recipients: [
         {
           attempts: 0,

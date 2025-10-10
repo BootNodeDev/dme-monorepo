@@ -59,7 +59,7 @@ export class MessageService {
       const { id: messageId } = await prisma.message.create({
         data: {
           content: telegramify(content, "remove"),
-          priority: options?.priority ?? LOW_PRIORITY,
+          priority: options?.priority ?? TOP_PRIORITY,
         },
       });
 
