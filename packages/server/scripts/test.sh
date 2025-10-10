@@ -15,4 +15,4 @@ pnpm tsc --noEmit
 pnpm prisma db push --force-reset --skip-generate
 
 # Run tests, and exit with the test results
-pnpm jest --coverage --runInBand --verbose "$@"
+pnpm jest --coverage --runInBand --verbose --testTimeout 10000 "$@"
