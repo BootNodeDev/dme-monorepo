@@ -34,8 +34,6 @@ export function baseHandler(
       }
 
       await fn(userId, ctx);
-
-      throw new Error("foo");
     } catch (err) {
       logger.error({ err, userId, message: ctx.message?.text }, "Handler error");
 

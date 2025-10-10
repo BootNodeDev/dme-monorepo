@@ -1,8 +1,7 @@
-import { CommandContext, Context } from "grammy";
 import { Logger } from "pino";
 import { UserService } from "../services/user";
 import { InvalidEthereumAddressError, WalletService } from "../services/wallet";
-import { formatAddress, getUserIdFromCtx, UNEXPECTED_ERROR_MESSAGE } from "./misc/utils";
+import { formatAddress, baseHandler } from "./misc/utils";
 import { MessageService } from "../services/message";
 
 export function getStartHandler(
@@ -11,44 +10,36 @@ export function getStartHandler(
   user: UserService,
   wallet: WalletService,
 ) {
-  return async (ctx: CommandContext<Context>) => {
-    try {
-      const userId = getUserIdFromCtx(ctx);
+  return baseHandler(logger, message, async (userId, ctx) => {
+    await user.upsert(userId);
 
-      await user.upsert(userId);
+    const address = ctx.message?.text.split(/\s+/)[1];
 
-      const address = ctx.message?.text.split(/\s+/)[1];
+    logger.info({ userId, address }, "Start command executed");
 
-      logger.info({ userId, address }, "Start command executed");
-
-      if (address) {
-        try {
-          await wallet.upsert(address);
-        } catch (error) {
-          if (error instanceof InvalidEthereumAddressError) {
-            await message.createForCtx("Please provide a valid Ethereum address.", ctx);
-            return;
-          }
-
-          throw error;
+    if (address) {
+      try {
+        await wallet.upsert(address);
+      } catch (error) {
+        if (error instanceof InvalidEthereumAddressError) {
+          await message.createForUser("Please provide a valid Ethereum address.", userId);
+          return;
         }
 
-        await user.upsertWallet(userId, address);
+        throw error;
       }
 
-      const msg: string[] = [];
-
-      msg.push("Welcome!");
-
-      if (address) {
-        msg.push(`You have successfully subscribed ${formatAddress(address)}`);
-      }
-
-      await message.createForCtx(msg.join("\n\n"), ctx);
-    } catch (error) {
-      logger.error({ error, ctx });
-
-      await message.createForCtx(UNEXPECTED_ERROR_MESSAGE, ctx);
+      await user.upsertWallet(userId, address);
     }
-  };
+
+    const msg: string[] = [];
+
+    msg.push("Welcome!");
+
+    if (address) {
+      msg.push(`You have successfully subscribed ${formatAddress(address)}`);
+    }
+
+    await message.createForUser(msg.join("\n\n"), userId);
+  });
 }

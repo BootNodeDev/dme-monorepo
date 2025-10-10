@@ -5,9 +5,7 @@ import { MessageService } from "../services/message";
 import { getListHandler } from "./list";
 import { UNEXPECTED_ERROR_MESSAGE } from "./misc/utils";
 import { ETHEREUM_ADDRESS_1, ETHEREUM_ADDRESS_2, USER_ID_1 } from "../tests/constants";
-import { getMockUserService, getMockMessageService } from "../tests/mocks";
-
-jest.mock("../services/user");
+import { getMockUserService, getMockMessageService, getMockLogger } from "../tests/mocks";
 
 const LIST_COMMAND = "/list";
 
@@ -18,13 +16,8 @@ let listWallets: ReturnType<typeof getListHandler>;
 let ctx: CommandContext<Context>;
 
 beforeEach(() => {
-  mockLogger = {
-    error: jest.fn(),
-    info: jest.fn(),
-  } as unknown as jest.Mocked<Logger>;
-
+  mockLogger = getMockLogger();
   mockUserService = getMockUserService();
-
   mockMessageService = getMockMessageService();
 
   listWallets = getListHandler(mockLogger, mockMessageService, mockUserService);
@@ -41,9 +34,9 @@ it("should reply with empty message when user has no wallets", async () => {
   await listWallets(ctx);
 
   expect(mockUserService.listWallets).toHaveBeenCalledWith(USER_ID_1);
-  expect(mockMessageService.createForCtx).toHaveBeenCalledWith(
+  expect(mockMessageService.createForUser).toHaveBeenCalledWith(
     "You don't have any wallets associated with your account yet.\n\nUse /add <address> to add one.",
-    ctx,
+    USER_ID_1,
   );
 });
 
@@ -56,9 +49,9 @@ it("should reply with formatted list when user has multiple wallets", async () =
   await listWallets(ctx);
 
   expect(mockUserService.listWallets).toHaveBeenCalledWith(USER_ID_1);
-  expect(mockMessageService.createForCtx).toHaveBeenCalledWith(
+  expect(mockMessageService.createForUser).toHaveBeenCalledWith(
     "Your wallets:\n\n1. 0xbee9...bbab\n2. 0xcf48...bd8d",
-    ctx,
+    USER_ID_1,
   );
 });
 
@@ -68,7 +61,7 @@ it("should reply with error when user ID is not found in context", async () => {
   await listWallets(ctx);
 
   expect(mockUserService.listWallets).not.toHaveBeenCalled();
-  expect(mockMessageService.createForCtx).toHaveBeenCalledWith(UNEXPECTED_ERROR_MESSAGE, ctx);
+  expect(mockMessageService.createForUser).not.toHaveBeenCalled();
 });
 
 it("should reply with error when listing wallets fails", async () => {
@@ -77,5 +70,8 @@ it("should reply with error when listing wallets fails", async () => {
   await listWallets(ctx);
 
   expect(mockUserService.listWallets).toHaveBeenCalledWith(USER_ID_1);
-  expect(mockMessageService.createForCtx).toHaveBeenCalledWith(UNEXPECTED_ERROR_MESSAGE, ctx);
+  expect(mockMessageService.createForUser).toHaveBeenCalledWith(
+    UNEXPECTED_ERROR_MESSAGE,
+    USER_ID_1,
+  );
 });

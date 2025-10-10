@@ -9,7 +9,7 @@ export function getMockUserService() {
     upsert: jest.fn(),
     listWallets: jest.fn(),
     upsertWallet: jest.fn(),
-    deleteWallet: jest.fn(),
+    removeWallet: jest.fn(),
   } as unknown as jest.Mocked<UserService>;
 }
 

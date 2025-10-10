@@ -1,4 +1,10 @@
-import { ETHEREUM_ADDRESS_1, MAX_ATTEMPTS, MESSAGE_CONTENT, USER_ID_1, USER_ID_2 } from "../tests/constants";
+import {
+  ETHEREUM_ADDRESS_1,
+  MAX_ATTEMPTS,
+  MESSAGE_CONTENT,
+  USER_ID_1,
+  USER_ID_2,
+} from "../tests/constants";
 import { prisma } from "../tests/setup";
 import { MessageService, UsersForAddressNotFoundError } from "./message";
 import { UserService } from "./user";

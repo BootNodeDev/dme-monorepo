@@ -18,6 +18,7 @@ export function getAddHandler(
         "Please provide a wallet address.\n\nUsage: /add <address>",
         userId,
       );
+
       return;
     }
 
@@ -26,6 +27,7 @@ export function getAddHandler(
     } catch (error) {
       if (error instanceof InvalidEthereumAddressError) {
         await message.createForUser("Please provide a valid Ethereum address.", userId);
+
         return;
       }
 
