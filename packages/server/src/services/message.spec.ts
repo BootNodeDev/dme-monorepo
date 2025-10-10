@@ -9,7 +9,6 @@ import { prisma } from "../tests/setup";
 import { MessageService, UsersForAddressNotFoundError } from "./message";
 import { UserService } from "./user";
 import { WalletService } from "./wallet";
-import { CommandContext, Context } from "grammy";
 
 let wallet: WalletService;
 let user: UserService;
@@ -73,15 +72,11 @@ describe("create", () => {
   });
 });
 
-describe("createForCtx", () => {
-  it("should create a message for a specific user from context", async () => {
+describe("createForUser", () => {
+  it("should create a message for a specific user", async () => {
     await user.upsert(USER_ID_1);
 
-    const ctx = {
-      chat: { id: USER_ID_1 },
-    } as CommandContext<Context>;
-
-    await message.createForCtx(MESSAGE_CONTENT, ctx);
+    await message.createForUser(MESSAGE_CONTENT, USER_ID_1);
 
     const result = await prisma.message.findMany({ include: { recipients: true } });
     expect(result).toHaveLength(1);
@@ -89,7 +84,7 @@ describe("createForCtx", () => {
       content: MESSAGE_CONTENT,
       createdAt: expect.any(Date),
       id: expect.any(String),
-      priority: 1000, // TOP_PRIORITY
+      priority: 0, // LOW_PRIORITY
       recipients: [
         {
           attempts: 0,
@@ -110,27 +105,12 @@ describe("createForCtx", () => {
   it("should use custom options when provided", async () => {
     await user.upsert(USER_ID_1);
 
-    const ctx = {
-      chat: { id: USER_ID_1 },
-    } as CommandContext<Context>;
-
-    await message.createForCtx(MESSAGE_CONTENT, ctx, { priority: 500, maxAttempts: 3 });
+    await message.createForUser(MESSAGE_CONTENT, USER_ID_1, { priority: 500, maxAttempts: 3 });
 
     const result = await prisma.message.findMany({ include: { recipients: true } });
     expect(result).toHaveLength(1);
     expect(result[0].priority).toBe(500);
     expect(result[0].recipients[0].maxAttempts).toBe(3);
-  });
-
-  it("should do nothing when userId is not found in context", async () => {
-    const ctx = {
-      chat: { id: undefined },
-    } as unknown as CommandContext<Context>;
-
-    await message.createForCtx(MESSAGE_CONTENT, ctx);
-
-    const result = await prisma.message.findMany();
-    expect(result).toHaveLength(0);
   });
 });
 
