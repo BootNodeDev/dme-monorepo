@@ -9,6 +9,7 @@ const EnvSchema = z.object({
   DISPATCH_CRON: z.string().default("* * * * * *"),
   OUT_OF_RANGE_CRON: z.string().default("0 * * * *"),
   UNCOLLECTED_FEES_CRON: z.string().default("0 */2 * * *"),
+  SUMMARY_CRON: z.string().default("0 */3 * * *"),
   MAX_ATTEMPTS: z.coerce.number().int().positive().default(5),
   MESSAGES_PER_DISPATCH: z.coerce.number().int().positive().default(30),
 });

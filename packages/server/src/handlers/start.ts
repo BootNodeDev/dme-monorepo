@@ -9,6 +9,7 @@ import {
   getUncollectedFeesPositions,
   getUncollectedFeesPositionsMessage,
 } from "../jobs/uncolletedFees";
+import { getSummaryMessage } from "../jobs/summary";
 
 export function getStartHandler(
   logger: Logger,
@@ -46,20 +47,22 @@ export function getStartHandler(
     if (address) {
       msg.push(`You have successfully subscribed ${formatAddress(address)}`);
 
-      const oorPositions = await getOutOfRangePositions(address, position);
+      const positions = await position.getPositions(address);
 
-      if (oorPositions.length > 0) {
-        const oorPositionsMessage = getOutOfRangePositionsMessage(oorPositions, address);
-
-        msg.push(oorPositionsMessage);
+      if (positions.length > 0) {
+        msg.push(getSummaryMessage(positions, address));
       }
 
-      const ufPositions = await getUncollectedFeesPositions(address, position);
+      const oorPositions = getOutOfRangePositions(positions);
+
+      if (oorPositions.length > 0) {
+        msg.push(getOutOfRangePositionsMessage(oorPositions, address));
+      }
+
+      const ufPositions = getUncollectedFeesPositions(positions);
 
       if (ufPositions.length > 0) {
-        const ufPositionsMessage = getUncollectedFeesPositionsMessage(ufPositions, address);
-
-        msg.push(ufPositionsMessage);
+        msg.push(getUncollectedFeesPositionsMessage(ufPositions, address));
       }
     }
 

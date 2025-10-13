@@ -12,6 +12,13 @@ type RevertPosition = {
   token1: string;
   uncollected_fees0: string;
   uncollected_fees1: string;
+  current_amount0: string;
+  current_amount1: string;
+  performance: {
+    usd: {
+      pnl: string;
+    };
+  };
 };
 
 export type Position = {
@@ -29,6 +36,9 @@ export type Position = {
   token1Price: string;
   uncollectedFees0: string;
   uncollectedFees1: string;
+  currentAmount0: string;
+  currentAmount1: string;
+  pnlUsd: string;
 };
 
 export class PositionService {
@@ -56,6 +66,9 @@ export class PositionService {
         token1Price: p.tokens[p.token1].price,
         uncollectedFees0: p.uncollected_fees0,
         uncollectedFees1: p.uncollected_fees1,
+        currentAmount0: p.current_amount0,
+        currentAmount1: p.current_amount1,
+        pnlUsd: p.performance.usd.pnl,
       };
     });
   }

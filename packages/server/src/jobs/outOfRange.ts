@@ -4,10 +4,7 @@ import { MessageService } from "../services/message";
 import { Position, PositionService } from "../services/position";
 import { WalletService } from "../services/wallet";
 import { formatAddress } from "../handlers/misc/utils";
-
-function formatChainName(name: string) {
-  return name.charAt(0).toUpperCase() + name.slice(1);
-}
+import { formatChainName } from "./misc/utils";
 
 export class OutOfRangeJob {
   constructor(
@@ -25,12 +22,14 @@ export class OutOfRangeJob {
   }
 
   async execute() {
-    this.logger.info("Out of range job executing");
+    this.logger.info("Executing");
 
     const wallets = await this.wallet.listAll();
 
     for (const address of wallets) {
-      const oorPositions = await getOutOfRangePositions(address, this.position);
+      const positions = await this.position.getPositions(address);
+
+      const oorPositions = getOutOfRangePositions(positions);
 
       if (oorPositions.length === 0) {
         continue;
@@ -48,11 +47,8 @@ export class OutOfRangeJob {
   }
 }
 
-export async function getOutOfRangePositions(
-  address: string,
-  position: PositionService,
-): Promise<Position[]> {
-  return (await position.getPositions(address)).filter((pos) => !pos.inRange);
+export function getOutOfRangePositions(positions: Position[]): Position[] {
+  return positions.filter((pos) => !pos.inRange);
 }
 
 export function getOutOfRangePositionsMessage(oorPositions: Position[], address: string): string {

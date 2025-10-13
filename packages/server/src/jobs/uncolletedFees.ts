@@ -4,36 +4,7 @@ import { MessageService } from "../services/message";
 import { Position, PositionService } from "../services/position";
 import { WalletService } from "../services/wallet";
 import { formatAddress } from "../handlers/misc/utils";
-
-function formatChainName(name: string) {
-  return name.charAt(0).toUpperCase() + name.slice(1);
-}
-
-export function formatCurrency(num: number) {
-  const [integer, decimal = ""] = num.toString().split(".");
-
-  if (!decimal.length) {
-    return integer;
-  }
-
-  let decimalSignificantFoundAt = 0;
-
-  for (let i = 0; i < decimal.length; i++) {
-    if (decimal[i] !== "0") {
-      decimalSignificantFoundAt = i;
-      break;
-    }
-  }
-
-  return (
-    "$" +
-    Intl.NumberFormat("en-US", {
-      compactDisplay: "short",
-      notation: "compact",
-      maximumFractionDigits: decimalSignificantFoundAt + 2,
-    }).format(num)
-  );
-}
+import { formatChainName, formatCurrency } from "./misc/utils";
 
 export class UncollectedFeesJob {
   constructor(
@@ -51,34 +22,33 @@ export class UncollectedFeesJob {
   }
 
   async execute() {
-    this.logger.info("Out of range job executing");
+    this.logger.info("Executing");
 
     const wallets = await this.wallet.listAll();
 
     for (const address of wallets) {
-      const oorPositions = await getUncollectedFeesPositions(address, this.position);
+      const positions = await this.position.getPositions(address);
 
-      if (oorPositions.length === 0) {
+      const ufPositions = getUncollectedFeesPositions(positions);
+
+      if (ufPositions.length === 0) {
         continue;
       }
 
-      const oorPositionsMessage = getUncollectedFeesPositionsMessage(oorPositions, address);
+      const ufPositionsMessage = getUncollectedFeesPositionsMessage(ufPositions, address);
 
-      await this.message.create(oorPositionsMessage, address);
+      await this.message.create(ufPositionsMessage, address);
 
       this.logger.info(
-        { address, oorPositions: oorPositions.length },
-        "Created out of range message",
+        { address, ufPositions: ufPositions.length },
+        "Created uncollected fees message",
       );
     }
   }
 }
 
-export async function getUncollectedFeesPositions(
-  address: string,
-  position: PositionService,
-): Promise<Position[]> {
-  return (await position.getPositions(address)).filter((pos) => {
+export function getUncollectedFeesPositions(positions: Position[]): Position[] {
+  return positions.filter((pos) => {
     const uncollected0 = parseFloat(pos.uncollectedFees0);
     const uncollected1 = parseFloat(pos.uncollectedFees1);
 
