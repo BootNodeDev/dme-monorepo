@@ -21,7 +21,7 @@ export class OutOfRangeJob {
   start() {
     cron.schedule(this.schedule, this.execute.bind(this));
 
-    this.logger.info({ schedule: this.schedule }, "Out of range job started");
+    this.logger.info({ schedule: this.schedule }, "Job started");
   }
 
   async execute() {
@@ -52,7 +52,7 @@ export async function getOutOfRangePositions(
   address: string,
   position: PositionService,
 ): Promise<Position[]> {
-  return (await position.getPositions(address)).filter((p) => !p.inRange);
+  return (await position.getPositions(address)).filter((pos) => !pos.inRange);
 }
 
 export function getOutOfRangePositionsMessage(oorPositions: Position[], address: string): string {
@@ -77,7 +77,7 @@ export function getOutOfRangePositionsMessage(oorPositions: Position[], address:
     }
 
     content.push(
-      `[${pos.tokens.map((t) => t.symbol).join(", ")} (${formatChainName(pos.network)})](${url}) ${isAbove ? "🔺" : "🔻"}${percentage.toFixed(2)}%`,
+      `[${pos.token0Symbol}, ${pos.token1Symbol} (${formatChainName(pos.network)})](${url}) ${isAbove ? "🔺" : "🔻"}${percentage.toFixed(2)}%`,
     );
   }
 

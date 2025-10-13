@@ -13,6 +13,7 @@ import { MessageService } from "./services/message";
 import { getEnv } from "./env";
 import { PositionService } from "./services/position";
 import { OutOfRangeJob } from "./jobs/outOfRange";
+import { UncollectedFeesJob } from "./jobs/uncolletedFees";
 
 const env = getEnv();
 const prisma = new PrismaClient({ datasourceUrl: env.DATABASE_URL });
@@ -60,12 +61,20 @@ new DispatchJob(
   env.DISPATCH_CRON,
   bot,
   env.MESSAGES_PER_DISPATCH,
-).start()
+).start();
 
 new OutOfRangeJob(
   logger.child({ job: "outOfRange" }),
   message,
   env.OUT_OF_RANGE_CRON,
+  wallet,
+  position,
+).start();
+
+new UncollectedFeesJob(
+  logger.child({ job: "uncollectedFees" }),
+  message,
+  env.UNCOLLECTED_FEES_CRON,
   wallet,
   position,
 ).start();

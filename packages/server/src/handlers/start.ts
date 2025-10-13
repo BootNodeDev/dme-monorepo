@@ -5,6 +5,10 @@ import { formatAddress, baseHandler } from "./misc/utils";
 import { MessageService } from "../services/message";
 import { PositionService } from "../services/position";
 import { getOutOfRangePositions, getOutOfRangePositionsMessage } from "../jobs/outOfRange";
+import {
+  getUncollectedFeesPositions,
+  getUncollectedFeesPositionsMessage,
+} from "../jobs/uncolletedFees";
 
 export function getStartHandler(
   logger: Logger,
@@ -48,6 +52,14 @@ export function getStartHandler(
         const oorPositionsMessage = getOutOfRangePositionsMessage(oorPositions, address);
 
         msg.push(oorPositionsMessage);
+      }
+
+      const ufPositions = await getUncollectedFeesPositions(address, position);
+
+      if (ufPositions.length > 0) {
+        const ufPositionsMessage = getUncollectedFeesPositionsMessage(ufPositions, address);
+
+        msg.push(ufPositionsMessage);
       }
     }
 
