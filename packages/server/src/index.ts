@@ -11,6 +11,7 @@ import { WalletService } from "./services/wallet";
 import { DispatchJob } from "./jobs/dispatch";
 import { MessageService } from "./services/message";
 import { getEnv } from "./env";
+import { SampleJob } from "./jobs/sample";
 
 const env = getEnv();
 const prisma = new PrismaClient({ datasourceUrl: env.DATABASE_URL });
@@ -57,4 +58,11 @@ new DispatchJob(
   env.DISPATCH_CRON,
   bot,
   env.MESSAGES_PER_DISPATCH,
+).start();
+
+new SampleJob(
+  logger.child({ job: "sample" }),
+  message,
+  "*/10 * * * * *", // Every 10 seconds
+  wallet,
 ).start();
