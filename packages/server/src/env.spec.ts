@@ -10,6 +10,7 @@ beforeEach(() => {
     LIMITER_INTERVAL: "2000",
     LIMITER_INTERVAL_CAP: "50",
     DISPATCH_CRON: "* * * * * *",
+    OUT_OF_RANGE_CRON: "1 * * * *",
     MAX_ATTEMPTS: "5",
     MESSAGES_PER_DISPATCH: "30",
   };
@@ -31,6 +32,7 @@ describe("getEnv", () => {
       LIMITER_INTERVAL: 2000,
       LIMITER_INTERVAL_CAP: 50,
       DISPATCH_CRON: "* * * * * *",
+      OUT_OF_RANGE_CRON: "1 * * * *",
       MAX_ATTEMPTS: 5,
       MESSAGES_PER_DISPATCH: 30,
     });

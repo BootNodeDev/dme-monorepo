@@ -5,19 +5,22 @@ import { InvalidEthereumAddressError, WalletService } from "../services/wallet";
 import { getStartHandler } from "./start";
 import { UNEXPECTED_ERROR_MESSAGE } from "./misc/utils";
 import { ETHEREUM_ADDRESS_1, USER_ID_1 } from "../tests/constants";
-import { Limiter } from "../limiter";
+import {
+  getMockLogger,
+  getMockMessageService,
+  getMockUserService,
+  getMockWalletService,
+} from "../tests/mocks";
+import { MessageService } from "../services/message";
 import { PositionService } from "../services/position";
-
-jest.mock("../services/user");
-jest.mock("../services/wallet");
 
 const START_COMMAND = "/start";
 
 let mockLogger: jest.Mocked<Logger>;
 let mockUserService: jest.Mocked<UserService>;
 let mockWalletService: jest.Mocked<WalletService>;
+let mockMessageService: jest.Mocked<MessageService>;
 let mockPositionService: jest.Mocked<PositionService>;
-let mockLimiter: jest.Mocked<Limiter>;
 let start: ReturnType<typeof getStartHandler>;
 let ctx: CommandContext<Context>;
 
@@ -26,25 +29,13 @@ beforeEach(() => {
   mockUserService = getMockUserService();
   mockWalletService = getMockWalletService();
   mockMessageService = getMockMessageService();
-
-  mockUserService = {
-    create: jest.fn(),
-    addWallet: jest.fn(),
-  } as unknown as jest.Mocked<UserService>;
-
-  mockWalletService = {
-    upsert: jest.fn(),
-  } as unknown as jest.Mocked<WalletService>;
-
-  mockPositionService = {} as unknown as jest.Mocked<PositionService>;
-
-  mockLimiter = {
-    reply: jest.fn(),
-  } as unknown as jest.Mocked<Limiter>;
+  mockPositionService = {
+    getPositions: jest.fn().mockResolvedValue([]),
+  } as unknown as jest.Mocked<PositionService>;
 
   start = getStartHandler(
     mockLogger,
-    mockLimiter,
+    mockMessageService,
     mockUserService,
     mockWalletService,
     mockPositionService,
