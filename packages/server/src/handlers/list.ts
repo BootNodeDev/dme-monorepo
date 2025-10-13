@@ -1,39 +1,24 @@
-import { CommandContext, Context } from "grammy";
 import { Logger } from "pino";
 import { UserService } from "../services/user";
-import { formatAddress, UNEXPECTED_ERROR_MESSAGE } from "./misc/utils";
-import { Limiter } from "../limiter";
+import { formatAddress, baseHandler } from "./misc/utils";
+import { MessageService } from "../services/message";
 
-export function getListHandler(logger: Logger, limiter: Limiter, user: UserService) {
-  return async (ctx: CommandContext<Context>) => {
-    const userId = ctx.from?.id;
+export function getListHandler(logger: Logger, message: MessageService, user: UserService) {
+  return baseHandler(logger, message, async (userId) => {
+    const userWallets = await user.listWallets(userId);
 
-    if (!userId) {
-      logger.error("No user ID found in the context");
-      limiter.reply(ctx, UNEXPECTED_ERROR_MESSAGE);
+    if (userWallets.length === 0) {
+      await message.createForUser(
+        "You don't have any wallets associated with your account yet.\n\nUse /add <address> to add one.",
+        userId,
+      );
       return;
     }
 
-    logger.info({ userId }, "List command executed");
+    const walletList = userWallets
+      .map((wallet, index) => `${index + 1}. ${formatAddress(wallet)}`)
+      .join("\n");
 
-    try {
-      const wallets = await user.listWallets(userId);
-
-      if (wallets.length === 0) {
-        limiter.reply(
-          ctx,
-          "You don't have any wallets associated with your account yet.\n\nUse /add <address> to add one.",
-        );
-        return;
-      }
-
-      const walletList = wallets
-        .map((wallet, index) => `${index + 1}. ${formatAddress(wallet)}`)
-        .join("\n");
-      limiter.reply(ctx, `Your wallets:\n\n${walletList}`);
-    } catch {
-      logger.error({ userId }, "Error listing wallets for user");
-      limiter.reply(ctx, UNEXPECTED_ERROR_MESSAGE);
-    }
-  };
+    await message.createForUser(`Your wallets:\n\n${walletList}`, userId);
+  });
 }

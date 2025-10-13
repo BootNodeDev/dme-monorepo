@@ -1,48 +1,34 @@
 import { CommandContext, Context } from "grammy";
 import { Logger } from "pino";
-import {
-  UserAlreadyExistsError,
-  UserService,
-  UserWalletAlreadyExistsError,
-} from "../services/user";
+import { UserService } from "../services/user";
 import { InvalidEthereumAddressError, WalletService } from "../services/wallet";
 import { getStartHandler } from "./start";
 import { UNEXPECTED_ERROR_MESSAGE } from "./misc/utils";
 import { ETHEREUM_ADDRESS_1, USER_ID_1 } from "../tests/constants";
-import { Limiter } from "../limiter";
-
-jest.mock("../services/user");
-jest.mock("../services/wallet");
+import {
+  getMockLogger,
+  getMockMessageService,
+  getMockUserService,
+  getMockWalletService,
+} from "../tests/mocks";
+import { MessageService } from "../services/message";
 
 const START_COMMAND = "/start";
 
 let mockLogger: jest.Mocked<Logger>;
 let mockUserService: jest.Mocked<UserService>;
 let mockWalletService: jest.Mocked<WalletService>;
-let mockLimiter: jest.Mocked<Limiter>;
+let mockMessageService: jest.Mocked<MessageService>;
 let start: ReturnType<typeof getStartHandler>;
 let ctx: CommandContext<Context>;
 
 beforeEach(() => {
-  mockLogger = {
-    error: jest.fn(),
-    info: jest.fn(),
-  } as unknown as jest.Mocked<Logger>;
+  mockLogger = getMockLogger();
+  mockUserService = getMockUserService();
+  mockWalletService = getMockWalletService();
+  mockMessageService = getMockMessageService();
 
-  mockUserService = {
-    create: jest.fn(),
-    addWallet: jest.fn(),
-  } as unknown as jest.Mocked<UserService>;
-
-  mockWalletService = {
-    upsert: jest.fn(),
-  } as unknown as jest.Mocked<WalletService>;
-
-  mockLimiter = {
-    reply: jest.fn(),
-  } as unknown as jest.Mocked<Limiter>;
-
-  start = getStartHandler(mockLogger, mockLimiter, mockUserService, mockWalletService);
+  start = getStartHandler(mockLogger, mockMessageService, mockUserService, mockWalletService);
 
   ctx = {
     from: { id: USER_ID_1 },
@@ -50,39 +36,21 @@ beforeEach(() => {
   } as unknown as CommandContext<Context>;
 });
 
-it("should reply with a welcome message if the user is new", async () => {
+it("should reply with a welcome message", async () => {
   ctx.message!.text = START_COMMAND;
 
   await start(ctx);
 
-  expect(mockLimiter.reply).toHaveBeenCalledWith(ctx, `Welcome!`);
-});
-
-it("should reply with a welcome back message if the user already exists", async () => {
-  mockUserService.create.mockRejectedValue(new UserAlreadyExistsError());
-
-  ctx.message!.text = START_COMMAND;
-
-  await start(ctx);
-
-  expect(mockLimiter.reply).toHaveBeenCalledWith(ctx, `Welcome back!`);
+  expect(mockMessageService.createForUser).toHaveBeenCalledWith(`Welcome!`, USER_ID_1);
 });
 
 it("should reply with the address of the wallet being subscribed", async () => {
   await start(ctx);
 
-  expect(mockLimiter.reply).toHaveBeenCalledWith(
-    ctx,
+  expect(mockMessageService.createForUser).toHaveBeenCalledWith(
     `Welcome!\n\nYou have successfully subscribed 0xBEE9...BBAB`,
+    USER_ID_1,
   );
-});
-
-it("should reply only with welcome if the wallet was already added", async () => {
-  mockUserService.addWallet.mockRejectedValue(new UserWalletAlreadyExistsError());
-
-  await start(ctx);
-
-  expect(mockLimiter.reply).toHaveBeenCalledWith(ctx, `Welcome!`);
 });
 
 it("should reply with an error when wallet upsert fails due to invalid address", async () => {
@@ -90,7 +58,10 @@ it("should reply with an error when wallet upsert fails due to invalid address",
 
   await start(ctx);
 
-  expect(mockLimiter.reply).toHaveBeenCalledWith(ctx, "Please provide a valid Ethereum address.");
+  expect(mockMessageService.createForUser).toHaveBeenCalledWith(
+    "Please provide a valid Ethereum address.",
+    USER_ID_1,
+  );
 });
 
 it("should reply with an error when wallet upsert fails for an unknown reason", async () => {
@@ -98,7 +69,10 @@ it("should reply with an error when wallet upsert fails for an unknown reason", 
 
   await start(ctx);
 
-  expect(mockLimiter.reply).toHaveBeenCalledWith(ctx, UNEXPECTED_ERROR_MESSAGE);
+  expect(mockMessageService.createForUser).toHaveBeenCalledWith(
+    UNEXPECTED_ERROR_MESSAGE,
+    USER_ID_1,
+  );
 });
 
 it("should reply with an error when the user id is not found in context", async () => {
@@ -108,23 +82,29 @@ it("should reply with an error when the user id is not found in context", async 
 
   await start(ctx);
 
-  expect(mockLimiter.reply).toHaveBeenCalledWith(ctx, UNEXPECTED_ERROR_MESSAGE);
+  expect(mockMessageService.createForUser).not.toHaveBeenCalled();
 });
 
 it("should reply with an error when user create fails for an unknown reason", async () => {
-  mockUserService.create.mockRejectedValue(new Error("Unknown error"));
+  mockUserService.upsert.mockRejectedValue(new Error("Unknown error"));
 
   await start(ctx);
 
-  expect(mockLimiter.reply).toHaveBeenCalledWith(ctx, UNEXPECTED_ERROR_MESSAGE);
+  expect(mockMessageService.createForUser).toHaveBeenCalledWith(
+    UNEXPECTED_ERROR_MESSAGE,
+    USER_ID_1,
+  );
 });
 
 it("should reply with an error when adding wallet to user fails for an unknown reason", async () => {
-  mockUserService.addWallet.mockRejectedValue(new Error("Unknown error"));
+  mockUserService.upsertWallet.mockRejectedValue(new Error("Unknown error"));
 
   await start(ctx);
 
-  expect(mockLimiter.reply).toHaveBeenCalledWith(ctx, UNEXPECTED_ERROR_MESSAGE);
+  expect(mockMessageService.createForUser).toHaveBeenCalledWith(
+    UNEXPECTED_ERROR_MESSAGE,
+    USER_ID_1,
+  );
 });
 
 it("should handle multiple spaces between command and address", async () => {
@@ -133,9 +113,9 @@ it("should handle multiple spaces between command and address", async () => {
   await start(ctx);
 
   expect(mockWalletService.upsert).toHaveBeenCalledWith(ETHEREUM_ADDRESS_1);
-  expect(mockUserService.addWallet).toHaveBeenCalledWith(USER_ID_1, ETHEREUM_ADDRESS_1);
-  expect(mockLimiter.reply).toHaveBeenCalledWith(
-    ctx,
+  expect(mockUserService.upsertWallet).toHaveBeenCalledWith(USER_ID_1, ETHEREUM_ADDRESS_1);
+  expect(mockMessageService.createForUser).toHaveBeenCalledWith(
     `Welcome!\n\nYou have successfully subscribed 0xBEE9...BBAB`,
+    USER_ID_1,
   );
 });
