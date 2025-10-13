@@ -72,4 +72,5 @@ model UserMessage {
   status        UserMessageStatus @default(PENDING)
 
   @@id([userId, messageId])
+  @@map("users_messages")
 }
