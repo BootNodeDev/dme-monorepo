@@ -49,9 +49,9 @@ describe("baseHandler", () => {
       {
         err: expect.any(Error),
         userId: undefined,
-        message: "/test command"
+        message: "/test command",
       },
-      "Handler error"
+      "Handler error",
     );
     expect(mockMessageService.createForUser).not.toHaveBeenCalled();
   });
@@ -68,13 +68,13 @@ describe("baseHandler", () => {
       {
         err: error,
         userId: USER_ID_1,
-        message: "/test command"
+        message: "/test command",
       },
-      "Handler error"
+      "Handler error",
     );
     expect(mockMessageService.createForUser).toHaveBeenCalledWith(
       UNEXPECTED_ERROR_MESSAGE,
-      USER_ID_1
+      USER_ID_1,
     );
   });
 });

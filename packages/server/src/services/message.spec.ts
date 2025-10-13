@@ -187,13 +187,9 @@ describe("listSendable", () => {
     await user.upsert(USER_ID_1);
     await user.upsertWallet(USER_ID_1, ETHEREUM_ADDRESS_1);
 
-    const promises: Promise<void>[] = [];
-
     for (let i = 0; i < 5; i++) {
-      promises.push(message.create(MESSAGE_CONTENT, ETHEREUM_ADDRESS_1));
+      await message.create(MESSAGE_CONTENT, ETHEREUM_ADDRESS_1);
     }
-
-    await Promise.all(promises);
 
     const sendables = await message.listSendable(3);
     expect(sendables).toHaveLength(3);
