@@ -51,6 +51,6 @@ export function getStartHandler(
       }
     }
 
-    message.createForUser(msg.join("\n\n"), userId);
+    await message.createForUser(msg.join("\n\n"), userId);
   });
 }
