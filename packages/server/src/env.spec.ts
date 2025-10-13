@@ -9,7 +9,9 @@ beforeEach(() => {
     DATABASE_URL: "postgresql://user:password@localhost:5432/dbname",
     LIMITER_INTERVAL: "2000",
     LIMITER_INTERVAL_CAP: "50",
-    DISPATCH_CRON: "*/20 * * * * *",
+    DISPATCH_CRON: "* * * * * *",
+    MAX_ATTEMPTS: "5",
+    MESSAGES_PER_DISPATCH: "30",
   };
 });
 
@@ -28,7 +30,9 @@ describe("getEnv", () => {
       DATABASE_URL: "postgresql://user:password@localhost:5432/dbname",
       LIMITER_INTERVAL: 2000,
       LIMITER_INTERVAL_CAP: 50,
-      DISPATCH_CRON: "*/20 * * * * *",
+      DISPATCH_CRON: "* * * * * *",
+      MAX_ATTEMPTS: 5,
+      MESSAGES_PER_DISPATCH: 30,
     });
   });
 
@@ -154,6 +158,6 @@ describe("getEnv", () => {
   it("should use default value for dispatch cron if not provided", () => {
     delete process.env.DISPATCH_CRON;
 
-    expect(getEnv().DISPATCH_CRON).toEqual("*/30 * * * * *");
+    expect(getEnv().DISPATCH_CRON).toEqual("* * * * * *");
   });
 });

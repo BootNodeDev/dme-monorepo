@@ -1,96 +1,56 @@
-import { CommandContext, Context } from "grammy";
 import { Logger } from "pino";
-import {
-  UserAlreadyExistsError,
-  UserService,
-  UserWalletAlreadyExistsError,
-} from "../services/user";
+import { UserService } from "../services/user";
 import { InvalidEthereumAddressError, WalletService } from "../services/wallet";
-import { formatAddress, UNEXPECTED_ERROR_MESSAGE } from "./misc/utils";
-import { Limiter } from "../limiter";
-import { getOutOfRangePositions, getOutOfRangePositionsMessage } from "../jobs/outOfRange";
+import { formatAddress, baseHandler } from "./misc/utils";
+import { MessageService } from "../services/message";
 import { PositionService } from "../services/position";
+import { getOutOfRangePositions, getOutOfRangePositionsMessage } from "../jobs/outOfRange";
 
 export function getStartHandler(
   logger: Logger,
-  limiter: Limiter,
+  message: MessageService,
   user: UserService,
   wallet: WalletService,
   position: PositionService,
 ) {
-  return async (ctx: CommandContext<Context>) => {
-    const userId = ctx.from?.id;
-
-    if (!userId) {
-      logger.error("No user ID found in the context");
-      limiter.reply(ctx, UNEXPECTED_ERROR_MESSAGE);
-      return;
-    }
-
-    let alreadyExists = false;
-
-    try {
-      await user.create(userId);
-    } catch (error) {
-      if (error instanceof UserAlreadyExistsError) {
-        alreadyExists = true;
-      } else {
-        logger.error({ error, userId }, "Error creating user");
-        limiter.reply(ctx, UNEXPECTED_ERROR_MESSAGE);
-        return;
-      }
-    }
+  return baseHandler(logger, message, async (userId, ctx) => {
+    await user.upsert(userId);
 
     const address = ctx.message?.text.split(/\s+/)[1];
 
     logger.info({ userId, address }, "Start command executed");
-
-    let walletAlreadySubscribed = false;
 
     if (address) {
       try {
         await wallet.upsert(address);
       } catch (error) {
         if (error instanceof InvalidEthereumAddressError) {
-          limiter.reply(ctx, "Please provide a valid Ethereum address.");
-        } else {
-          logger.error({ error, userId, address }, "Error upserting wallet");
-          limiter.reply(ctx, UNEXPECTED_ERROR_MESSAGE);
-        }
-        return;
-      }
-
-      try {
-        await user.addWallet(userId, address);
-      } catch (error) {
-        if (error instanceof UserWalletAlreadyExistsError) {
-          walletAlreadySubscribed = true;
-        } else {
-          logger.error({ error, userId, address }, "Error adding wallet to user");
-          limiter.reply(ctx, UNEXPECTED_ERROR_MESSAGE);
+          await message.createForUser("Please provide a valid Ethereum address.", userId);
           return;
         }
+
+        throw error;
       }
+
+      await user.upsertWallet(userId, address);
     }
 
-    const response: string[] = [];
+    const msg: string[] = [];
 
-    response.push(alreadyExists ? "Welcome back!" : "Welcome!");
-
-    if (address && !walletAlreadySubscribed) {
-      response.push(`You have successfully subscribed ${formatAddress(address)}`);
-    }
+    msg.push("Welcome!");
 
     if (address) {
+      msg.push(`You have successfully subscribed ${formatAddress(address)}`);
+
       const oorPositions = await getOutOfRangePositions(address, position);
 
       if (oorPositions.length > 0) {
         const oorPositionsMessage = getOutOfRangePositionsMessage(oorPositions, address);
 
-        response.push(oorPositionsMessage);
+        msg.push(oorPositionsMessage);
       }
     }
 
-    limiter.reply(ctx, response.join("\n\n"));
-  };
+    message.createForUser(msg.join("\n\n"), userId);
+  });
 }
