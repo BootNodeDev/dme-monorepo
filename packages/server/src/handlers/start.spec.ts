@@ -12,6 +12,7 @@ import {
   getMockWalletService,
 } from "../tests/mocks";
 import { MessageService } from "../services/message";
+import { PositionService } from "../services/position";
 
 const START_COMMAND = "/start";
 
@@ -19,6 +20,7 @@ let mockLogger: jest.Mocked<Logger>;
 let mockUserService: jest.Mocked<UserService>;
 let mockWalletService: jest.Mocked<WalletService>;
 let mockMessageService: jest.Mocked<MessageService>;
+let mockPositionService: jest.Mocked<PositionService>;
 let start: ReturnType<typeof getStartHandler>;
 let ctx: CommandContext<Context>;
 
@@ -27,8 +29,17 @@ beforeEach(() => {
   mockUserService = getMockUserService();
   mockWalletService = getMockWalletService();
   mockMessageService = getMockMessageService();
+  mockPositionService = {
+    getPositions: jest.fn().mockResolvedValue([]),
+  } as unknown as jest.Mocked<PositionService>;
 
-  start = getStartHandler(mockLogger, mockMessageService, mockUserService, mockWalletService);
+  start = getStartHandler(
+    mockLogger,
+    mockMessageService,
+    mockUserService,
+    mockWalletService,
+    mockPositionService,
+  );
 
   ctx = {
     from: { id: USER_ID_1 },

@@ -28,7 +28,7 @@ const position = new PositionService();
 
 /* Handlers */
 
-const start = getStartHandler(logger.child({ handler: "start" }), message, user, wallet);
+const start = getStartHandler(logger.child({ handler: "start" }), message, user, wallet, position);
 const add = getAddHandler(logger.child({ handler: "add" }), message, user, wallet);
 const list = getListHandler(logger.child({ handler: "list" }), message, user);
 const remove = getRemoveHandler(logger.child({ handler: "remove" }), message, user);

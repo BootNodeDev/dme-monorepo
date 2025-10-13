@@ -1,7 +1,7 @@
 import cron from "node-cron";
 import { Logger } from "pino";
 import { MessageService } from "../services/message";
-import { PositionService } from "../services/position";
+import { Position, PositionService } from "../services/position";
 import { WalletService } from "../services/wallet";
 import { formatAddress } from "../handlers/misc/utils";
 
@@ -30,44 +30,15 @@ export class OutOfRangeJob {
     const wallets = await this.wallet.listAll();
 
     for (const address of wallets) {
-      const positions = await this.position.getPositions(address);
-
-      if (positions.length === 0) {
-        continue;
-      }
-
-      const oorPositions = positions.filter((p) => !p.inRange);
+      const oorPositions = await getOutOfRangePositions(address, this.position);
 
       if (oorPositions.length === 0) {
         continue;
       }
 
-      const content: string[] = [];
+      const oorPositionsMessage = getOutOfRangePositionsMessage(oorPositions, address);
 
-      content.push(
-        `⚠️ ${formatAddress(address)} has ${oorPositions.length} out-of-range position${oorPositions.length === 1 ? "" : "s"}:\n`,
-      );
-
-      for (const pos of oorPositions) {
-        const isAbove = Number(pos.poolPrice) > Number(pos.priceUpper);
-        const url = `https://app.uniswap.org/positions/v3/${pos.network}/${pos.nftId}`;
-
-        let percentage: number;
-
-        if (isAbove) {
-          percentage =
-            ((Number(pos.poolPrice) - Number(pos.priceUpper)) / Number(pos.priceUpper)) * 100;
-        } else {
-          percentage =
-            ((Number(pos.priceLower) - Number(pos.poolPrice)) / Number(pos.priceLower)) * 100;
-        }
-
-        content.push(
-          `[${pos.tokens.map((t) => t.symbol).join(", ")} (${formatChainName(pos.network)})](${url}) ${isAbove ? "🔺" : "🔻"}${percentage.toFixed(2)}%`,
-        );
-      }
-
-      await this.message.create(content.join("\n"), address);
+      await this.message.create(oorPositionsMessage, address);
 
       this.logger.info(
         { address, oorPositions: oorPositions.length },
@@ -75,4 +46,40 @@ export class OutOfRangeJob {
       );
     }
   }
+}
+
+export async function getOutOfRangePositions(
+  address: string,
+  position: PositionService,
+): Promise<Position[]> {
+  return (await position.getPositions(address)).filter((p) => !p.inRange);
+}
+
+export function getOutOfRangePositionsMessage(oorPositions: Position[], address: string): string {
+  const content: string[] = [];
+
+  content.push(
+    `⚠️ ${formatAddress(address)} has ${oorPositions.length} out-of-range position${oorPositions.length === 1 ? "" : "s"}:\n`,
+  );
+
+  for (const pos of oorPositions) {
+    const isAbove = Number(pos.poolPrice) > Number(pos.priceUpper);
+    const url = `https://app.uniswap.org/positions/v3/${pos.network}/${pos.nftId}`;
+
+    let percentage: number;
+
+    if (isAbove) {
+      percentage =
+        ((Number(pos.poolPrice) - Number(pos.priceUpper)) / Number(pos.priceUpper)) * 100;
+    } else {
+      percentage =
+        ((Number(pos.priceLower) - Number(pos.poolPrice)) / Number(pos.priceLower)) * 100;
+    }
+
+    content.push(
+      `[${pos.tokens.map((t) => t.symbol).join(", ")} (${formatChainName(pos.network)})](${url}) ${isAbove ? "🔺" : "🔻"}${percentage.toFixed(2)}%`,
+    );
+  }
+
+  return content.join("\n");
 }

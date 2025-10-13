@@ -3,12 +3,15 @@ import { UserService } from "../services/user";
 import { InvalidEthereumAddressError, WalletService } from "../services/wallet";
 import { formatAddress, baseHandler } from "./misc/utils";
 import { MessageService } from "../services/message";
+import { PositionService } from "../services/position";
+import { getOutOfRangePositions, getOutOfRangePositionsMessage } from "../jobs/outOfRange";
 
 export function getStartHandler(
   logger: Logger,
   message: MessageService,
   user: UserService,
   wallet: WalletService,
+  position: PositionService,
 ) {
   return baseHandler(logger, message, async (userId, ctx) => {
     await user.upsert(userId);
@@ -38,6 +41,14 @@ export function getStartHandler(
 
     if (address) {
       msg.push(`You have successfully subscribed ${formatAddress(address)}`);
+
+      const oorPositions = await getOutOfRangePositions(address, position);
+
+      if (oorPositions.length > 0) {
+        const oorPositionsMessage = getOutOfRangePositionsMessage(oorPositions, address);
+
+        msg.push(oorPositionsMessage);
+      }
     }
 
     await message.createForUser(msg.join("\n\n"), userId);
