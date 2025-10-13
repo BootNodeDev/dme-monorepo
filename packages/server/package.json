@@ -4,8 +4,9 @@
   "description": "",
   "main": "dist/index.js",
   "scripts": {
-    "start": "prisma generate && prisma db push && tsc && node --env-file .env .",
+    "dev": "prisma migrate dev && tsc && node --env-file .env .",
     "build": "prisma generate && tsc",
+    "start": "node .",
     "test": "scripts/test.sh",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
@@ -38,7 +39,6 @@
     "grammy": "^1.38.2",
     "ms": "^2.1.3",
     "node-cron": "^4.2.1",
-    "p-queue": "^9.0.0",
     "pino": "^10.0.0",
     "telegramify-markdown": "^1.3.0",
     "zod": "^4.1.11"
