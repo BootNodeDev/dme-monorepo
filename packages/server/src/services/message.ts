@@ -1,4 +1,4 @@
-import { PrismaClient } from "@prisma/client";
+import { Message, PrismaClient, UserMessage as PrismaUserMessage } from "@prisma/client";
 import ms from "ms";
 import telegramify from "telegramify-markdown";
 import { sanitizeEthereumAddress } from "./wallet";
@@ -12,6 +12,8 @@ export type MessageOptions = {
   priority?: number;
   maxAttempts?: number;
 };
+
+export type UserMessage = PrismaUserMessage & { message: Message };
 
 export class MessageService {
   constructor(
@@ -73,7 +75,7 @@ export class MessageService {
     });
   }
 
-  async listSendable(take?: number) {
+  async listSendable(take?: number): Promise<UserMessage[]> {
     const now = new Date();
 
     return await this.prisma.userMessage.findMany({

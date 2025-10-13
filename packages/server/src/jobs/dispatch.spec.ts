@@ -7,7 +7,7 @@ import {
 } from "../tests/constants";
 import { getMockBot, getMockLogger, getMockMessageService } from "../tests/mocks";
 import { DispatchJob } from "./dispatch";
-import { MessageService } from "../services/message";
+import { MessageService, UserMessage } from "../services/message";
 import cron from "node-cron";
 
 jest.mock("node-cron");
@@ -99,6 +99,34 @@ describe("execute", () => {
     await job.execute();
 
     expect(logger.error).toHaveBeenCalledWith({ err: error }, "Failed");
+  });
+
+  it("should handle updateForSend failure", async () => {
+    const message = getMockMessageService();
+    const logger = getMockLogger();
+    const bot = getMockBot();
+    const job = new DispatchJob(logger, message, CRON_SCHEDULE, bot, MESSAGES_PER_DISPATCH);
+
+    message.listSendable.mockResolvedValue([
+      {
+        userId: USER_ID_1,
+        message: {
+          id: MESSAGE_ID,
+          content: MESSAGE_CONTENT,
+        },
+      },
+    ] as unknown as UserMessage[]);
+
+    const error = new Error("Update error");
+    message.updateForSend.mockRejectedValueOnce(error);
+
+    await job.execute();
+
+    expect(message.updateForSend).toHaveBeenCalledWith(USER_ID_1, MESSAGE_ID);
+    expect(logger.error).toHaveBeenCalledWith(
+      { err: error, userId: USER_ID_1, messageId: MESSAGE_ID },
+      "Something went wrong sending message",
+    );
   });
 
   it("should not run if already executing", async () => {
