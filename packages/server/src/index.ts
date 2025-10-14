@@ -15,6 +15,7 @@ import { PositionService } from "./services/position";
 import { OutOfRangeJob } from "./jobs/outOfRange";
 import { UncollectedFeesJob } from "./jobs/uncolletedFees";
 import { CleanupJob } from "./jobs/cleanup";
+import { SummaryJob } from "./jobs/summary";
 
 const env = getEnv();
 const prisma = new PrismaClient({ datasourceUrl: env.DATABASE_URL });
@@ -83,6 +84,14 @@ new UncollectedFeesJob(
   logger.child({ job: "uncollectedFees" }),
   message,
   env.UNCOLLECTED_FEES_CRON,
+  wallet,
+  position,
+).start();
+
+new SummaryJob(
+  logger.child({ job: "summary" }),
+  message,
+  env.SUMMARY_CRON,
   wallet,
   position,
 ).start();
