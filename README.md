@@ -1,35 +1,65 @@
 # DMe Monorepo
 
-This monorepo contains the source code for the DMe framework. It provides a solid foundation to easily build and deploy a Telegram bot notification system.
+This monorepo contains the source code for the DMe framework. It provides a solid foundation to easily build and deploy a Telegram bot notification system. It comes with an optimized message queue and dispatching system to ensure reliable delivery of notifications, a ready-to-use user onboarding component for React dApps that allows users to subscribe with a single click or QR scan, and a predefined set of commands for users to manage their subscribed wallets.
+
+It is designed for anyone to clone or fork and use it as a starting point to build their own Telegram notification system, without worrying about the complexities of the underlying messaging system.
+
+## Index
+
+- [Features](#features)
+- [Getting Started](#getting-started)
+- [Example](#example)
+- [Project Structure](#project-structure)
+- [Onboarding Modal Component](#onboarding-modal-component)
+- [Database](#database)
 
 ## Features
 
-### Optimized Message Queue and Dispatching
+### 1. Optimized Notifications
 
-Send messages effortlessly through the `MessageService` — the framework handles the rest.
-It automatically manages:
+Reliable Telegram delivery out of the box. No complex setup required.
 
-* Message delivery and retries on failure
-* Rate limiting to stay within Telegram’s API limits
-* Message formatting compliant with Telegram’s MarkdownV2 syntax
+### 2. From Pull to Push
 
-This ensures reliable, consistent communication with minimal setup.
+Trigger relevant, contextual messages based on wallet activity. Keep your users informed in real-time without them having to check your dashboard.
 
-### Single-Instance Architecture
+### 3. Telegram Bot
 
-The framework runs as a **single service**, simplifying deployment and maintenance.
-All you need is a Telegram bot token — no domains, SSL certificates, or external databases required.
-You can self-host it or deploy it to your preferred cloud provider in minutes.
+Prebuilt bot with wallet linkage and user controls. No need to build your own interface.
 
-### User Onboarding and Management
+### 4. Telegram Mini App (Coming Soon)
 
-A ready-to-use **React modal component** is included for seamless user onboarding in your dApp.
-By providing the Telegram bot username and the user’s connected wallet address, users can:
+Richer Telegram UI via a lightweight, integrated Telegram Mini App.
 
-* Start receiving notifications via a simple link or QR code
-* Manage their subscriptions directly from Telegram with commands to add, remove, or list wallets
+### 5. Onboarding Component
 
-### Open Source and Community-Driven
+React component for instant onboarding. Users click a link or scan a QR — no wallet connection needed.
+
+### 6. Zero Installs
+
+No apps, no browser extensions. Everything runs through Telegram.
+
+### 7. Easy Deployment
+
+Runs as a single-node service. Self-host or deploy in your cloud infra.
+
+### 8. White Label
+
+Customize components with your own branding and front-end logic.
+
+### 9. Data Flexibility
+
+Compatible with SQLite, Postgres, MySQL, or MongoDB. Use your preferred stack. You own your user's data, eliminating exposure to third-party risks.
+
+### 10. Built for Simplicity
+
+Deliver what drives user engagement, retention, and re-activation. DMe handles delivery logic; you focus on wallet signals.
+
+### 11. Attribution Dashboard (Coming Soon)
+
+Track delivery, opens, and basic interaction metrics to measure messaging impact.
+
+### 12. Open Source
 
 This framework is **fully open source**. You can inspect, extend, and contribute to its codebase.
 It’s actively maintained and open to community feedback and contributions.
@@ -103,8 +133,6 @@ You should receive a welcome message and a test message every 10 seconds from th
 To customize behavior, open `packages/server/src/index.ts` and **comment out or remove** the `SampleJob`.
 You can then create your own jobs to send custom notifications to users.
 
----
-
 ## Example
 
 You can checkout to the `example/uniswap` branch to see a working example of the DMe framework used to notify Uniswap liquidity providers about their position status.
@@ -126,8 +154,6 @@ Sends a summary of the total values of the user's liquidity positions along with
 The example also demonstrates how commands can be customized—for instance, obtaining position data of a user that just subscribed to the bot and sending a welcome message with a summary of their current positions.
 
 > **Note:** The example is provided for educational purposes and may require further customization to fit specific use cases or production environments.
-
----
 
 ## Project Structure
 
@@ -161,8 +187,6 @@ You can do whatever you want with the code in this monorepo. The current structu
 Imagine that you want to send alerts to your users when their Aave positions are at risk of liquidation. You could rely on the existing onboarding and message dispatching system, and just add a new job that periodically checks your users' Aave positions using the [Aave API](https://github.com/aave/aave-utilities). When a position is at risk (because the health factor is under 1.5, for example), you can use the `MessageService` to send a notification to the user, leveraging all the built-in features like rate limiting, retries, and markdown formatting.
 
 In this case, you would add an `aave.ts` service to the **services** folder and a new `health.ts` job to the **jobs** folder that uses the Aave service to fetch user positions and build the message to be sent with the `MessageService.create` method, then instantiate them in the `index.ts` file.
-
----
 
 ## Onboarding Modal Component
 
@@ -198,8 +222,6 @@ function Navbar() {
 ```
 
 The wallet address can be obtained from your dApp’s Web3 provider, such as **MetaMask** or **WalletConnect**.
-
----
 
 ## Database
 
