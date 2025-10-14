@@ -80,7 +80,24 @@ Clone the **DMe** monorepo to your local machine:
 git clone git@github.com:BootNodeDev/dme-monorepo.git && cd dme-monorepo
 ```
 
-### 3. Install Dependencies
+### 3. Install Node.js
+
+Install Node.js version 22.19.0. We recommend using [nvm](https://github.com/nvm-sh/nvm) for Node.js version management:
+
+```bash
+nvm install 22.19.0
+nvm use 22.19.0
+```
+
+### 4. Install pnpm
+
+Install pnpm package manager:
+
+```bash
+npm install -g pnpm
+```
+
+### 5. Install Dependencies
 
 Install the required dependencies using **pnpm**:
 
@@ -88,13 +105,13 @@ Install the required dependencies using **pnpm**:
 pnpm install
 ```
 
-### 4. Navigate to the Server Package
+### 6. Navigate to the Server Package
 
 ```bash
 cd packages/server
 ```
 
-### 5. Set Up Environment Variables
+### 7. Set Up Environment Variables
 
 Copy the example environment file and update it with your bot token:
 
@@ -105,7 +122,9 @@ cp .env.example .env
 Fill in the `BOT_TOKEN` value with the token you received from BotFather.
 Other environment variables are optional and include sensible defaults for getting started.
 
-### 6. Run the Server
+The cleanup feature is configured via `CLEANUP_CRON` (default: daily at midnight) and `CLEANUP_CUTOFF` (default: 1 week retention).
+
+### 8. Run the Server
 
 Start the development server with:
 
@@ -113,9 +132,9 @@ Start the development server with:
 pnpm dev
 ```
 
-### 7. Start the Bot
+### 9. Start the Bot
 
-Replace `{botname}` in the link below with your bot’s username (without the `@` symbol) and open it in your browser:
+Replace `{botname}` in the link below with your bot's username (without the `@` symbol) and open it in your browser:
 
 ```
 https://t.me/{botname}?start=0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045
@@ -132,8 +151,6 @@ You should receive a welcome message and a test message every 10 seconds from th
 
 To customize behavior, open `packages/server/src/index.ts` and **comment out or remove** the `SampleJob`.
 You can then create your own jobs to send custom notifications to users.
-
-The framework also includes a `CleanupJob` that automatically removes old messages based on the configured retention period (default: 1 week). This helps maintain database performance and storage efficiency. Feel free to remove it or adjust the retention period in the `.env` file as needed.
 
 ## Example
 
