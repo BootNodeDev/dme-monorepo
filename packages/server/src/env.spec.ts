@@ -1,4 +1,3 @@
-import ms from "ms";
 import { getEnv } from "./env";
 
 let previousEnv: NodeJS.ProcessEnv;
@@ -7,13 +6,13 @@ beforeEach(() => {
   process.env = {
     BOT_TOKEN: "test-bot-token",
     DATABASE_URL: "postgresql://user:password@localhost:5432/dbname",
-    LIMITER_INTERVAL: "2000",
-    LIMITER_INTERVAL_CAP: "50",
+    MAX_ATTEMPTS: "5",
+    MESSAGES_PER_DISPATCH: "30",
+    CLEANUP_CRON: "0 0 * * *",
+    CLEANUP_CUTOFF: "1w",
     DISPATCH_CRON: "* * * * * *",
     OUT_OF_RANGE_CRON: "* * * * * *",
     UNCOLLECTED_FEES_CRON: "* * * * * *",
-    MAX_ATTEMPTS: "5",
-    MESSAGES_PER_DISPATCH: "30",
   };
 });
 
@@ -30,13 +29,13 @@ describe("getEnv", () => {
     expect(getEnv()).toEqual({
       BOT_TOKEN: "test-bot-token",
       DATABASE_URL: "postgresql://user:password@localhost:5432/dbname",
-      LIMITER_INTERVAL: 2000,
-      LIMITER_INTERVAL_CAP: 50,
+      MAX_ATTEMPTS: 5,
+      MESSAGES_PER_DISPATCH: 30,
+      CLEANUP_CRON: "0 0 * * *",
+      CLEANUP_CUTOFF: "1w",
       DISPATCH_CRON: "* * * * * *",
       OUT_OF_RANGE_CRON: "* * * * * *",
       UNCOLLECTED_FEES_CRON: "* * * * * *",
-      MAX_ATTEMPTS: 5,
-      MESSAGES_PER_DISPATCH: 30,
     });
   });
 
@@ -91,77 +90,52 @@ describe("getEnv", () => {
     `);
   });
 
-  it("should use default values for limiter if not provided", () => {
-    delete process.env.LIMITER_INTERVAL;
-    delete process.env.LIMITER_INTERVAL_CAP;
-
-    const env = getEnv();
-
-    expect(env.LIMITER_INTERVAL).toEqual(ms("1s"));
-    expect(env.LIMITER_INTERVAL_CAP).toEqual(30);
-  });
-
-  it("should fail if limiter interval and are not numbers", () => {
-    process.env.LIMITER_INTERVAL = "abc";
-    process.env.LIMITER_INTERVAL_CAP = "abc";
-
-    expect(() => getEnv()).toThrowErrorMatchingInlineSnapshot(`
-      "[
-        {
-          "expected": "number",
-          "code": "invalid_type",
-          "received": "NaN",
-          "path": [
-            "LIMITER_INTERVAL"
-          ],
-          "message": "Invalid input: expected number, received NaN"
-        },
-        {
-          "expected": "number",
-          "code": "invalid_type",
-          "received": "NaN",
-          "path": [
-            "LIMITER_INTERVAL_CAP"
-          ],
-          "message": "Invalid input: expected number, received NaN"
-        }
-      ]"
-    `);
-  });
-
-  it("should fail if limiter interval and cap are not positive integers", () => {
-    process.env.LIMITER_INTERVAL = "0";
-    process.env.LIMITER_INTERVAL_CAP = "0";
-
-    expect(() => getEnv()).toThrowErrorMatchingInlineSnapshot(`
-      "[
-        {
-          "origin": "number",
-          "code": "too_small",
-          "minimum": 0,
-          "inclusive": false,
-          "path": [
-            "LIMITER_INTERVAL"
-          ],
-          "message": "Too small: expected number to be >0"
-        },
-        {
-          "origin": "number",
-          "code": "too_small",
-          "minimum": 0,
-          "inclusive": false,
-          "path": [
-            "LIMITER_INTERVAL_CAP"
-          ],
-          "message": "Too small: expected number to be >0"
-        }
-      ]"
-    `);
-  });
-
   it("should use default value for dispatch cron if not provided", () => {
     delete process.env.DISPATCH_CRON;
 
     expect(getEnv().DISPATCH_CRON).toEqual("* * * * * *");
+  });
+
+  it("should use default value for cleanup cron if not provided", () => {
+    delete process.env.CLEANUP_CRON;
+
+    expect(getEnv().CLEANUP_CRON).toEqual("0 0 * * *");
+  });
+
+  it("should use default value for cleanup cutoff if not provided", () => {
+    delete process.env.CLEANUP_CUTOFF;
+
+    expect(getEnv().CLEANUP_CUTOFF).toEqual("1w");
+  });
+
+  it("should use default value for max attempts if not provided", () => {
+    delete process.env.MAX_ATTEMPTS;
+
+    expect(getEnv().MAX_ATTEMPTS).toEqual(5);
+  });
+
+  it("should use default value for messages per dispatch if not provided", () => {
+    delete process.env.MESSAGES_PER_DISPATCH;
+
+    expect(getEnv().MESSAGES_PER_DISPATCH).toEqual(30);
+  });
+
+  it("should fail if max attempts is not a positive integer", () => {
+    process.env.MAX_ATTEMPTS = "0";
+
+    expect(() => getEnv()).toThrowErrorMatchingInlineSnapshot(`
+      "[
+        {
+          "origin": "number",
+          "code": "too_small",
+          "minimum": 0,
+          "inclusive": false,
+          "path": [
+            "MAX_ATTEMPTS"
+          ],
+          "message": "Too small: expected number to be >0"
+        }
+      ]"
+    `);
   });
 });

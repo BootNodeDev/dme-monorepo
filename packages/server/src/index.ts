@@ -14,6 +14,7 @@ import { getEnv } from "./env";
 import { PositionService } from "./services/position";
 import { OutOfRangeJob } from "./jobs/outOfRange";
 import { UncollectedFeesJob } from "./jobs/uncolletedFees";
+import { CleanupJob } from "./jobs/cleanup";
 
 const env = getEnv();
 const prisma = new PrismaClient({ datasourceUrl: env.DATABASE_URL });
@@ -61,6 +62,13 @@ new DispatchJob(
   env.DISPATCH_CRON,
   bot,
   env.MESSAGES_PER_DISPATCH,
+).start();
+
+new CleanupJob(
+  logger.child({ job: "cleanup" }),
+  message,
+  env.CLEANUP_CRON,
+  env.CLEANUP_CUTOFF,
 ).start();
 
 new OutOfRangeJob(

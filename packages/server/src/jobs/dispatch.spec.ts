@@ -37,6 +37,7 @@ describe("execute", () => {
     message.listSendable.mockResolvedValue([
       {
         userId: USER_ID_1,
+        messageId: MESSAGE_ID,
         message: {
           id: MESSAGE_ID,
           content: MESSAGE_CONTENT,
@@ -66,6 +67,7 @@ describe("execute", () => {
     message.listSendable.mockResolvedValue([
       {
         userId: USER_ID_1,
+        messageId: MESSAGE_ID,
         message: {
           id: MESSAGE_ID,
           content: MESSAGE_CONTENT,
@@ -110,6 +112,7 @@ describe("execute", () => {
     message.listSendable.mockResolvedValue([
       {
         userId: USER_ID_1,
+        messageId: MESSAGE_ID,
         message: {
           id: MESSAGE_ID,
           content: MESSAGE_CONTENT,
@@ -125,7 +128,43 @@ describe("execute", () => {
     expect(message.updateForSend).toHaveBeenCalledWith(USER_ID_1, MESSAGE_ID);
     expect(logger.error).toHaveBeenCalledWith(
       { err: error, userId: USER_ID_1, messageId: MESSAGE_ID },
-      "Something went wrong sending message",
+      "Failed to update message for send",
+    );
+  });
+
+  it("should handle updateForResult failure", async () => {
+    const message = getMockMessageService();
+    const logger = getMockLogger();
+    const bot = getMockBot();
+    const job = new DispatchJob(logger, message, CRON_SCHEDULE, bot, MESSAGES_PER_DISPATCH);
+
+    message.listSendable.mockResolvedValue([
+      {
+        userId: USER_ID_1,
+        messageId: MESSAGE_ID,
+        message: {
+          id: MESSAGE_ID,
+          content: MESSAGE_CONTENT,
+        },
+      },
+    ] as unknown as UserMessage[]);
+
+    const error = new Error("Update success error");
+    message.updateForSuccess.mockRejectedValueOnce(error);
+
+    await job.execute();
+
+    expect(message.updateForSend).toHaveBeenCalledWith(USER_ID_1, MESSAGE_ID);
+    expect(bot.api.sendMessage).toHaveBeenCalledWith(USER_ID_1, MESSAGE_CONTENT, {
+      parse_mode: "MarkdownV2",
+      link_preview_options: {
+        is_disabled: true,
+      },
+    });
+    expect(message.updateForSuccess).toHaveBeenCalledWith(USER_ID_1, MESSAGE_ID);
+    expect(logger.error).toHaveBeenCalledWith(
+      { err: error, userId: USER_ID_1, messageId: MESSAGE_ID },
+      "Failed to update message after send",
     );
   });
 
