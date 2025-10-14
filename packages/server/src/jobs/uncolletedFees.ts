@@ -55,8 +55,6 @@ export function getUncollectedFeesPositions(positions: Position[]): Position[] {
     const priceUsd0 = parseFloat(pos.token0Price);
     const priceUsd1 = parseFloat(pos.token1Price);
 
-    console.log({ uncollected0, uncollected1, priceUsd0, priceUsd1 });
-
     return uncollected0 * priceUsd0 + uncollected1 * priceUsd1 > 1;
   });
 }
