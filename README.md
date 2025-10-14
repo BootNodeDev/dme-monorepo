@@ -156,6 +156,8 @@ You can then create your own jobs to send custom notifications to users.
 
 You can checkout to the `example/uniswap` branch to see a working example of the DMe framework used to notify Uniswap liquidity providers about their position status.
 
+![DMe Demo](https://github.com/user-attachments/assets/a01fad30-c92e-4a40-b75c-0dbde4cb4f1b)
+
 The example extends the base framework by adding three jobs that periodically make requests to the **revert.finance** API to fetch subscribed user position data and send notifications based on certain conditions:
 
 ### 1. Out-of-Range Position Alerts
