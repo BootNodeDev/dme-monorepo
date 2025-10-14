@@ -8,6 +8,8 @@ beforeEach(() => {
     DATABASE_URL: "postgresql://user:password@localhost:5432/dbname",
     MAX_ATTEMPTS: "5",
     MESSAGES_PER_DISPATCH: "30",
+    CLEANUP_CRON: "0 0 * * *",
+    CLEANUP_CUTOFF: "1w",
     DISPATCH_CRON: "* * * * * *",
   };
 });
@@ -27,6 +29,8 @@ describe("getEnv", () => {
       DATABASE_URL: "postgresql://user:password@localhost:5432/dbname",
       MAX_ATTEMPTS: 5,
       MESSAGES_PER_DISPATCH: 30,
+      CLEANUP_CRON: "0 0 * * *",
+      CLEANUP_CUTOFF: "1w",
       DISPATCH_CRON: "* * * * * *",
     });
   });
@@ -86,5 +90,48 @@ describe("getEnv", () => {
     delete process.env.DISPATCH_CRON;
 
     expect(getEnv().DISPATCH_CRON).toEqual("* * * * * *");
+  });
+
+  it("should use default value for cleanup cron if not provided", () => {
+    delete process.env.CLEANUP_CRON;
+
+    expect(getEnv().CLEANUP_CRON).toEqual("0 0 * * *");
+  });
+
+  it("should use default value for cleanup cutoff if not provided", () => {
+    delete process.env.CLEANUP_CUTOFF;
+
+    expect(getEnv().CLEANUP_CUTOFF).toEqual("1w");
+  });
+
+  it("should use default value for max attempts if not provided", () => {
+    delete process.env.MAX_ATTEMPTS;
+
+    expect(getEnv().MAX_ATTEMPTS).toEqual(5);
+  });
+
+  it("should use default value for messages per dispatch if not provided", () => {
+    delete process.env.MESSAGES_PER_DISPATCH;
+
+    expect(getEnv().MESSAGES_PER_DISPATCH).toEqual(30);
+  });
+
+  it("should fail if max attempts is not a positive integer", () => {
+    process.env.MAX_ATTEMPTS = "0";
+
+    expect(() => getEnv()).toThrowErrorMatchingInlineSnapshot(`
+      "[
+        {
+          "origin": "number",
+          "code": "too_small",
+          "minimum": 0,
+          "inclusive": false,
+          "path": [
+            "MAX_ATTEMPTS"
+          ],
+          "message": "Too small: expected number to be >0"
+        }
+      ]"
+    `);
   });
 });

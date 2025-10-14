@@ -12,6 +12,7 @@ import { DispatchJob } from "./jobs/dispatch";
 import { MessageService } from "./services/message";
 import { getEnv } from "./env";
 import { SampleJob } from "./jobs/sample";
+import { CleanupJob } from "./jobs/cleanup";
 
 const env = getEnv();
 const prisma = new PrismaClient({ datasourceUrl: env.DATABASE_URL });
@@ -58,6 +59,13 @@ new DispatchJob(
   env.DISPATCH_CRON,
   bot,
   env.MESSAGES_PER_DISPATCH,
+).start();
+
+new CleanupJob(
+  logger.child({ job: "cleanup" }),
+  message,
+  env.CLEANUP_CRON,
+  env.CLEANUP_CUTOFF,
 ).start();
 
 new SampleJob(

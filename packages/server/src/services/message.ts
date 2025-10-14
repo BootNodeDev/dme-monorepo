@@ -93,6 +93,16 @@ export class MessageService {
     });
   }
 
+  async deleteBefore(date: Date) {
+    return await this.prisma.message.deleteMany({
+      where: {
+        createdAt: {
+          lt: date,
+        },
+      },
+    });
+  }
+
   async updateForSend(userId: number, messageId: string) {
     const userMessage = await this.prisma.userMessage.findUniqueOrThrow({
       where: {

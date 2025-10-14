@@ -133,6 +133,8 @@ You should receive a welcome message and a test message every 10 seconds from th
 To customize behavior, open `packages/server/src/index.ts` and **comment out or remove** the `SampleJob`.
 You can then create your own jobs to send custom notifications to users.
 
+The framework also includes a `CleanupJob` that automatically removes old messages based on the configured retention period (default: 1 week). This helps maintain database performance and storage efficiency. Feel free to remove it or adjust the retention period in the `.env` file as needed.
+
 ## Example
 
 You can checkout to the `example/uniswap` branch to see a working example of the DMe framework used to notify Uniswap liquidity providers about their position status.
@@ -174,7 +176,7 @@ packages/
 │       ├── scripts/           # Utility scripts. Includes a script to run integration tests
 │       └── src/
 │           ├── handlers/      # Telegram bot command handlers. Includes /start, /add, /remove, /list base commands
-│           ├── jobs/          # Scheduled jobs for sending notifications. Includes the dispatch job in charge of sending messages from the queue and a sample job
+│           ├── jobs/          # Scheduled jobs for sending notifications. Includes the dispatch job in charge of sending messages from the queue, cleanup job for old messages, and a sample job
 │           ├── services/      # Services used to abstract database and Telegram API interactions.
 │           └── tests/         # Utility functions for testing
 └── onboarding-modal/          # React component for user onboarding

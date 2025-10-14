@@ -22,6 +22,7 @@ export function getMockMessageService() {
     updateForSend: jest.fn(),
     updateForSuccess: jest.fn(),
     updateForFailure: jest.fn(),
+    deleteBefore: jest.fn(),
   } as unknown as jest.Mocked<MessageService>;
 }
 
