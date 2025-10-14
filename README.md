@@ -15,54 +15,20 @@ It is designed for anyone to clone or fork and use it as a starting point to bui
 
 ## Features
 
-### 1. Optimized Notifications
-
-Reliable Telegram delivery out of the box. No complex setup required.
-
-### 2. From Pull to Push
-
-Trigger relevant, contextual messages based on wallet activity. Keep your users informed in real-time without them having to check your dashboard.
-
-### 3. Telegram Bot
-
-Prebuilt bot with wallet linkage and user controls. No need to build your own interface.
-
-### 4. Telegram Mini App (Coming Soon)
-
-Richer Telegram UI via a lightweight, integrated Telegram Mini App.
-
-### 5. Onboarding Component
-
-React component for instant onboarding. Users click a link or scan a QR — no wallet connection needed.
-
-### 6. Zero Installs
-
-No apps, no browser extensions. Everything runs through Telegram.
-
-### 7. Easy Deployment
-
-Runs as a single-node service. Self-host or deploy in your cloud infra.
-
-### 8. White Label
-
-Customize components with your own branding and front-end logic.
-
-### 9. Data Flexibility
-
-Compatible with SQLite, Postgres, MySQL, or MongoDB. Use your preferred stack. You own your user's data, eliminating exposure to third-party risks.
-
-### 10. Built for Simplicity
-
-Deliver what drives user engagement, retention, and re-activation. DMe handles delivery logic; you focus on wallet signals.
-
-### 11. Attribution Dashboard (Coming Soon)
-
-Track delivery, opens, and basic interaction metrics to measure messaging impact.
-
-### 12. Open Source
-
-This framework is **fully open source**. You can inspect, extend, and contribute to its codebase.
-It’s actively maintained and open to community feedback and contributions.
+| Feature | Description |
+|---------|-------------|
+| Optimized Notifications | Reliable Telegram delivery out of the box. No complex setup required. |
+| From Pull to Push | Trigger relevant, contextual messages based on wallet activity. Keep your users informed in real-time without them having to check your dashboard. |
+| Telegram Bot | Prebuilt bot with wallet linkage and user controls. No need to build your own interface. |
+| Telegram Mini App (Coming Soon) | Richer Telegram UI via a lightweight, integrated Telegram Mini App. |
+| Onboarding Component | React component for instant onboarding. Users click a link or scan a QR. No wallet connection needed. |
+| Zero Installs | No apps, no browser extensions. Everything runs through Telegram. |
+| Easy Deployment | Runs as a single-node service. Self-host or deploy in your cloud infra. |
+| White Label | Customize components with your own branding and front-end logic. |
+| Data Flexibility | Compatible with SQLite, Postgres, MySQL, or MongoDB. Use your preferred stack. You own your user's data, eliminating exposure to third-party risks. |
+| Built for Simplicity | Deliver what drives user engagement, retention, and re-activation. DMe handles delivery logic; you focus on wallet signals. |
+| Attribution Dashboard (Coming Soon) | Track delivery, opens, and basic interaction metrics to measure messaging impact. |
+| Open Source | This framework is **fully open source**. You can inspect, extend, and contribute to its codebase. It’s actively maintained and open to community feedback and contributions. |
 
 ## Getting Started
 
