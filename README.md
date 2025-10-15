@@ -195,19 +195,19 @@ The framework includes a React component that can be integrated into your React 
 ### 1. Install the Component
 
 ```bash
-pnpm install dme-onboarding-modal
+pnpm install @bootnodedev/dme-onboarding-modal
 ```
 
 ### 2. Import Styles in Your Main App File
 
 ```tsx
-import "dme-onboarding-modal/lib/index.css";
+import "@bootnodedev/dme-onboarding-modal/lib/index.css";
 ```
 
 ### 3. Use the Component in Your React App
 
 ```tsx
-import { Button } from "dme-onboarding-modal";
+import { Button } from "@bootnodedev/dme-onboarding-modal";
 
 function Navbar() {
   return (
