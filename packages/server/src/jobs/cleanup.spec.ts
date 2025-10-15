@@ -38,7 +38,7 @@ describe("CleanupJob", () => {
       expect(message.deleteBefore).toHaveBeenCalledWith(expect.any(Date));
       expect(logger.info).toHaveBeenCalledWith(
         { count: 5, beforeDate: expect.any(Date) },
-        "Executed"
+        "Executed",
       );
     });
 
