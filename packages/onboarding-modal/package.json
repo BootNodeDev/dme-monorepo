@@ -48,6 +48,8 @@
   "dependencies": {
     "react-qr-code": "^2.0.18"
   },
+  "author": "BootNode",
+  "license": "MIT",
   "prettier": {
     "tabWidth": 2,
     "printWidth": 100

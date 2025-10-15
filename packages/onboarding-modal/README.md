@@ -113,7 +113,7 @@ export default App;
 
 ## License
 
-MIT
+This project is licensed under the MIT License - see the [LICENSE](https://github.com/BootNodeDev/dme-monorepo/blob/main/LICENSE) file for details.
 
 ## Part of DMe Framework
 

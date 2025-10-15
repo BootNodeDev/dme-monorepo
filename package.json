@@ -12,7 +12,7 @@
     "format:fix": "pnpm -r format:fix"
   },
   "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "author": "BootNode",
+  "license": "MIT",
   "packageManager": "pnpm@10.17.1"
 }

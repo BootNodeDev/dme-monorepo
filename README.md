@@ -253,3 +253,7 @@ For more details about supported databases and handling migrations, check the [P
 # Deployment
 
 For production, do not use the `dev` script as it is intended for development purposes only. Instead, run `pnpm prisma migrate deploy` to apply migrations and, the run `pnpm build` followed by `pnpm start` to start the server.
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](https://github.com/BootNodeDev/dme-monorepo/blob/main/LICENSE) file for details.
