@@ -16,7 +16,9 @@ import { SampleJob } from "./jobs/sample";
 import { CleanupJob } from "./jobs/cleanup";
 
 const env = getEnv();
-const prisma = new PrismaClient({ adapter: new PrismaBetterSQLite3({ url: env.DATABASE_URL }) });
+const prisma = new PrismaClient({
+  adapter: new PrismaBetterSQLite3({ url: env.DATABASE_URL.replace("file:./", "file:./prisma/") }),
+});
 const logger = pino();
 const bot = new Bot<Context & SessionFlavor<unknown>>(env.BOT_TOKEN);
 
