@@ -2,6 +2,7 @@ import { Bot, Context, session, SessionFlavor } from "grammy";
 import { run, sequentialize } from "@grammyjs/runner";
 import { PrismaClient } from "@prisma/client";
 import pino from "pino";
+import { PrismaBetterSQLite3 } from "@prisma/adapter-better-sqlite3";
 import { getStartHandler } from "./handlers/start";
 import { getAddHandler } from "./handlers/add";
 import { getListHandler } from "./handlers/list";
@@ -15,7 +16,7 @@ import { SampleJob } from "./jobs/sample";
 import { CleanupJob } from "./jobs/cleanup";
 
 const env = getEnv();
-const prisma = new PrismaClient({ datasourceUrl: env.DATABASE_URL });
+const prisma = new PrismaClient({ adapter: new PrismaBetterSQLite3({ url: env.DATABASE_URL }) });
 const logger = pino();
 const bot = new Bot<Context & SessionFlavor<unknown>>(env.BOT_TOKEN);
 
