@@ -1,73 +1,107 @@
-# React + TypeScript + Vite
+# DMe Onboarding Modal Component
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A React component for seamless user onboarding to Telegram bot notifications, part of the [DMe Framework](https://github.com/BootNodeDev/dme-monorepo). This component provides a user-friendly interface that allows users to subscribe to wallet notifications with a single click or QR scan, without requiring wallet connection.
 
-Currently, two official plugins are available:
+## Installation
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
-
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(["dist"]),
-  {
-    files: ["**/*.{ts,tsx}"],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ["./tsconfig.node.json", "./tsconfig.app.json"],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-]);
+```bash
+npm install dme-onboarding-modal
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## Usage
 
-```js
-// eslint.config.js
-import reactX from "eslint-plugin-react-x";
-import reactDom from "eslint-plugin-react-dom";
+### 1. Import the Component and Styles
 
-export default defineConfig([
-  globalIgnores(["dist"]),
-  {
-    files: ["**/*.{ts,tsx}"],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs["recommended-typescript"],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ["./tsconfig.node.json", "./tsconfig.app.json"],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-]);
+In your main app file (e.g., `App.tsx` or `index.tsx`), import the component's styles:
+
+```tsx
+import "dme-onboarding-modal/lib/index.css";
 ```
+
+### 2. Use the Component in Your React App
+
+```tsx
+import { OnboardingModal } from "dme-onboarding-modal";
+
+function Navbar() {
+  return (
+    <nav>
+      <OnboardingModal
+        botUsername="MyBot"
+        walletAddress="0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045"
+      />
+    </nav>
+  );
+}
+```
+
+### 3. Get the Wallet Address
+
+The wallet address can be obtained from your dApp's Web3 provider, such as **MetaMask** or **WalletConnect**:
+
+```tsx
+import { OnboardingModal } from "dme-onboarding-modal";
+import { useAccount } from "wagmi"; // or your Web3 library
+
+function Navbar() {
+  const { address } = useAccount();
+
+  return (
+    <nav>
+      {address && (
+        <OnboardingModal
+          botUsername="MyBot"
+          walletAddress={address}
+        />
+      )}
+    </nav>
+  );
+}
+```
+
+## Props
+
+| Prop | Type | Required | Description |
+|------|------|----------|-------------|
+| `botUsername` | `string` | Yes | Your Telegram bot's username (without the `@` symbol) |
+| `walletAddress` | `string` | Yes | The Ethereum wallet address to link with the user's Telegram account |
+
+## How It Works
+
+When clicked, the component opens a modal dialog that displays:
+
+1. **QR Code**: Users can scan with their mobile device to instantly open the Telegram bot and link their wallet
+2. **Direct Link**: Alternative option to open Telegram directly in the browser
+
+The modal generates a deep link to your Telegram bot with the wallet address as a start parameter, enabling seamless onboarding in a single action.
+
+## Example
+
+```tsx
+import { OnboardingModal } from "dme-onboarding-modal";
+import "dme-onboarding-modal/lib/index.css";
+
+function App() {
+  return (
+    <div className="app">
+      <header>
+        <h1>My DeFi App</h1>
+        <OnboardingModal
+          botUsername="MyDeFiBot"
+          walletAddress="0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045"
+        />
+      </header>
+    </div>
+  );
+}
+
+export default App;
+```
+
+## License
+
+MIT
+
+## Part of DMe Framework
+
+This component is part of the [DMe Framework](https://github.com/BootNodeDev/dme-monorepo), a complete solution for building Telegram bot notification systems for Web3 applications.
