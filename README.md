@@ -10,8 +10,10 @@ It is designed for anyone to clone or fork and use it as a starting point to bui
 - [Getting Started](#getting-started)
 - [Example](#example)
 - [Project Structure](#project-structure)
+- [Telegram Bot Commands](#telegram-bot-commands)
 - [Onboarding Modal Component](#onboarding-modal-component)
 - [Database](#database)
+- [Deployment](#deployment)
 
 ## Features
 
@@ -175,6 +177,17 @@ Imagine that you want to send alerts to your users when their Aave positions are
 
 In this case, you would add an `aave.ts` service to the **services** folder and a new `health.ts` job to the **jobs** folder that uses the Aave service to fetch user positions and build the message to be sent with the `MessageService.create` method, then instantiate them in the `index.ts` file.
 
+## Telegram Bot Commands
+
+The DMe framework includes a set of predefined commands that users can use to interact with the Telegram bot. These commands allow users to manage their subscriptions and get information about their linked wallets.
+
+| Command            | Description                                                                                                                           |
+|--------------------|---------------------------------------------------------------------------------------------------------------------------------------|
+| `/start [address]` | Starts a conversation with the bot. If a wallet address is provided, it is linked to the user.                                       |
+| `/add <address>`   | Links an additional wallet address to the user's Telegram account.                                                                   |
+| `/remove <index>`  | Unlinks a wallet address from the user's Telegram account. The index is the number to the left of the address provided in `/list`.  |
+| `/list`            | Lists all wallet addresses linked to the user's Telegram account.                                                                    |
+
 ## Onboarding Modal Component
 
 The framework includes a React component that can be integrated into your React dApp to facilitate user onboarding. This component consists of a button that, when clicked, opens a modal dialog. The modal displays a QR code that the user can scan with their phone to easily start a conversation with the Telegram bot and link their wallet address for notifications in a single action. The modal also provides a link as an alternative to open Telegram directly in the browser.
@@ -234,3 +247,7 @@ DATABASE_URL="postgresql://user:password@localhost:5432/mydb"
 Keep in mind that the migration files included with the framework are tailored for SQLite, so you may need to delete them and create new migrations for your chosen database.
 
 For more details about supported databases and handling migrations, check the [Prisma documentation](https://www.prisma.io/docs/).
+
+# Deployment
+
+For production, do not use the `dev` script as it is intended for development purposes only. Instead, run `pnpm prisma migrate deploy` to apply migrations and, the run `pnpm build` followed by `pnpm start` to start the server.
