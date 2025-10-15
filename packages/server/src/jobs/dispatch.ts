@@ -34,7 +34,7 @@ export class DispatchJob {
       const userMessages = await this.message.listSendable(this.messagesPerDispatch);
 
       // Updates all messages to "sending" status
-      // Has to be done sequentially to avoid SQlite DB deadlocks
+      // Has to be done sequentially to avoid SQlite DB busy errors
       // Consider using PostgresQL and refactor for parallel execution if performance becomes an issue
       const updatedForSend = await this.updateForSend(userMessages);
 
