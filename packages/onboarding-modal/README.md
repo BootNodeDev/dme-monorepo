@@ -65,14 +65,14 @@ function Navbar() {
 
 ## Props
 
-| Prop | Type | Required | Description |
-|------|------|----------|-------------|
-| `modal` | `object` | Yes | Configuration object for the modal |
-| `modal.bot` | `string` | Yes | Your Telegram bot's username (without the `@` symbol) |
-| `modal.address` | `string` | Yes | The Ethereum wallet address to link with the user's Telegram account |
-| `modal.title` | `string` | No | Custom modal title (default: "DMe") |
-| `modal.description` | `string` | No | Custom modal description |
-| `modal.cta` | `string` | No | Custom call-to-action button text (default: "Open Telegram") |
+| Prop                | Type     | Required | Description                                                          |
+| ------------------- | -------- | -------- | -------------------------------------------------------------------- |
+| `modal`             | `object` | Yes      | Configuration object for the modal                                   |
+| `modal.bot`         | `string` | Yes      | Your Telegram bot's username (without the `@` symbol)                |
+| `modal.address`     | `string` | Yes      | The Ethereum wallet address to link with the user's Telegram account |
+| `modal.title`       | `string` | No       | Custom modal title (default: "DMe")                                  |
+| `modal.description` | `string` | No       | Custom modal description                                             |
+| `modal.cta`         | `string` | No       | Custom call-to-action button text (default: "Open Telegram")         |
 
 ## How It Works
 
