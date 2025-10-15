@@ -1,7 +1,6 @@
 {
-  "name": "onboarding-modal",
-  "private": true,
-  "version": "0.0.0",
+  "name": "dme-onboarding-modal",
+  "version": "0.0.1",
   "type": "module",
   "files": [
     "dist"
