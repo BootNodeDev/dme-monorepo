@@ -35,6 +35,7 @@
   },
   "dependencies": {
     "@grammyjs/runner": "^2.0.3",
+    "@prisma/adapter-better-sqlite3": "^6.17.1",
     "@prisma/client": "6.16.3",
     "grammy": "^1.38.2",
     "ms": "^2.1.3",
