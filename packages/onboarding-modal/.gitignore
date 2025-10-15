@@ -25,3 +25,6 @@ dist-ssr
 
 # pnpm pack output
 *.tgz
+
+# Ignore license as it is copied from the root
+LICENSE

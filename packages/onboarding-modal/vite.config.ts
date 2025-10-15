@@ -18,7 +18,7 @@ export default defineConfig({
       name: "copy-files",
       closeBundle: () => {
         copyFileSync("lib/index.css", "dist/index.css");
-        copyFileSync("../../LICENSE", "dist/LICENSE");
+        copyFileSync("../../LICENSE", "LICENSE");
       },
     },
   ],
