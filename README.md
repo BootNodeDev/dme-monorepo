@@ -207,21 +207,23 @@ import "dme-onboarding-modal/lib/index.css";
 ### 3. Use the Component in Your React App
 
 ```tsx
-import { OnboardingModal } from "dme-onboarding-modal";
+import { Button } from "dme-onboarding-modal";
 
 function Navbar() {
   return (
     <nav>
-      <OnboardingModal
-        botUsername="MyBot"
-        walletAddress="0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045"
+      <Button
+        modal={{
+          bot: "MyBot",
+          address: "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045",
+        }}
       />
     </nav>
   );
 }
 ```
 
-The wallet address can be obtained from your dApp’s Web3 provider, such as **MetaMask** or **WalletConnect**.
+The wallet address can be obtained from your dApp's Web3 provider, such as **MetaMask** or **WalletConnect**.
 
 ## Database
 

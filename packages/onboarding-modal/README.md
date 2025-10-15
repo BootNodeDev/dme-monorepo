@@ -21,14 +21,16 @@ import "dme-onboarding-modal/lib/index.css";
 ### 2. Use the Component in Your React App
 
 ```tsx
-import { OnboardingModal } from "dme-onboarding-modal";
+import { Button } from "dme-onboarding-modal";
 
 function Navbar() {
   return (
     <nav>
-      <OnboardingModal
-        botUsername="MyBot"
-        walletAddress="0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045"
+      <Button
+        modal={{
+          bot: "MyBot",
+          address: "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045",
+        }}
       />
     </nav>
   );
@@ -40,7 +42,7 @@ function Navbar() {
 The wallet address can be obtained from your dApp's Web3 provider, such as **MetaMask** or **WalletConnect**:
 
 ```tsx
-import { OnboardingModal } from "dme-onboarding-modal";
+import { Button } from "dme-onboarding-modal";
 import { useAccount } from "wagmi"; // or your Web3 library
 
 function Navbar() {
@@ -49,9 +51,11 @@ function Navbar() {
   return (
     <nav>
       {address && (
-        <OnboardingModal
-          botUsername="MyBot"
-          walletAddress={address}
+        <Button
+          modal={{
+            bot: "MyBot",
+            address,
+          }}
         />
       )}
     </nav>
@@ -63,8 +67,12 @@ function Navbar() {
 
 | Prop | Type | Required | Description |
 |------|------|----------|-------------|
-| `botUsername` | `string` | Yes | Your Telegram bot's username (without the `@` symbol) |
-| `walletAddress` | `string` | Yes | The Ethereum wallet address to link with the user's Telegram account |
+| `modal` | `object` | Yes | Configuration object for the modal |
+| `modal.bot` | `string` | Yes | Your Telegram bot's username (without the `@` symbol) |
+| `modal.address` | `string` | Yes | The Ethereum wallet address to link with the user's Telegram account |
+| `modal.title` | `string` | No | Custom modal title (default: "DMe") |
+| `modal.description` | `string` | No | Custom modal description |
+| `modal.cta` | `string` | No | Custom call-to-action button text (default: "Open Telegram") |
 
 ## How It Works
 
@@ -78,7 +86,7 @@ The modal generates a deep link to your Telegram bot with the wallet address as 
 ## Example
 
 ```tsx
-import { OnboardingModal } from "dme-onboarding-modal";
+import { Button } from "dme-onboarding-modal";
 import "dme-onboarding-modal/lib/index.css";
 
 function App() {
@@ -86,9 +94,14 @@ function App() {
     <div className="app">
       <header>
         <h1>My DeFi App</h1>
-        <OnboardingModal
-          botUsername="MyDeFiBot"
-          walletAddress="0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045"
+        <Button
+          modal={{
+            bot: "MyDeFiBot",
+            address: "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045",
+            title: "Get Notified",
+            description: "Subscribe to receive important updates about your positions.",
+            cta: "Subscribe Now",
+          }}
         />
       </header>
     </div>
