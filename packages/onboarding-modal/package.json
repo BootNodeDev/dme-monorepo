@@ -1,6 +1,8 @@
 {
   "name": "dme-onboarding-modal",
-  "version": "0.0.4",
+  "version": "0.0.5",
+  "author": "BootNode",
+  "license": "MIT",
   "type": "module",
   "files": [
     "dist"
@@ -48,8 +50,6 @@
   "dependencies": {
     "react-qr-code": "^2.0.18"
   },
-  "author": "BootNode",
-  "license": "MIT",
   "prettier": {
     "tabWidth": 2,
     "printWidth": 100
