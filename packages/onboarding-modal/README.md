@@ -5,7 +5,7 @@ A React component for seamless user onboarding to Telegram bot notifications, pa
 ## Installation
 
 ```bash
-npm install dme-onboarding-modal
+npm install @bootnodedev/dme-onboarding-modal
 ```
 
 ## Usage
@@ -15,13 +15,13 @@ npm install dme-onboarding-modal
 In your main app file (e.g., `App.tsx` or `index.tsx`), import the component's styles:
 
 ```tsx
-import "dme-onboarding-modal/lib/index.css";
+import "@bootnodedev/dme-onboarding-modal/lib/index.css";
 ```
 
 ### 2. Use the Component in Your React App
 
 ```tsx
-import { Button } from "dme-onboarding-modal";
+import { Button } from "@bootnodedev/dme-onboarding-modal";
 
 function Navbar() {
   return (
@@ -42,7 +42,7 @@ function Navbar() {
 The wallet address can be obtained from your dApp's Web3 provider, such as **MetaMask** or **WalletConnect**:
 
 ```tsx
-import { Button } from "dme-onboarding-modal";
+import { Button } from "@bootnodedev/dme-onboarding-modal";
 import { useAccount } from "wagmi"; // or your Web3 library
 
 function Navbar() {
@@ -86,8 +86,8 @@ The modal generates a deep link to your Telegram bot with the wallet address as 
 ## Example
 
 ```tsx
-import { Button } from "dme-onboarding-modal";
-import "dme-onboarding-modal/lib/index.css";
+import { Button } from "@bootnodedev/dme-onboarding-modal";
+import "@bootnodedev/dme-onboarding-modal/lib/index.css";
 
 function App() {
   return (
