@@ -1,24 +1,21 @@
-import { useState } from "react";
+import { useState, type ButtonHTMLAttributes } from "react";
 import { Modal, type ModalProps } from "./Modal";
-import { Bell } from "./Bell";
 
-export type MyButtonProps = {
-  modal: ModalProps;
+export type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
+  modal: Omit<ModalProps, "onClose">;
 };
 
-export function Button({ modal }: MyButtonProps) {
+export function Button({ modal, ...rest }: ButtonProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   return (
     <>
       <button
-        className="dme-modal__button--reset dme-modal__trigger"
+        className="dme-onboarding-modal__button"
         onClick={() => setIsModalOpen(true)}
-      >
-        <span>DMe </span>
-        <Bell />
-      </button>
-      {isModalOpen && <Modal {...modal} onClose={() => setIsModalOpen(false)} />}
+        {...rest}
+      />
+      {isModalOpen && <Modal onClose={() => setIsModalOpen(false)} {...modal} />}
     </>
   );
 }

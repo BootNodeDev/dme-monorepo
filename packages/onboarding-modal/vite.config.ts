@@ -15,8 +15,11 @@ export default defineConfig({
       rollupTypes: true,
     }),
     {
-      name: "copy-css",
-      closeBundle: () => copyFileSync("lib/index.css", "dist/index.css"),
+      name: "copy-files",
+      closeBundle: () => {
+        copyFileSync("lib/index.css", "dist/index.css");
+        copyFileSync("../../LICENSE", "LICENSE");
+      },
     },
   ],
   build: {

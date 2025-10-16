@@ -10,59 +10,28 @@ It is designed for anyone to clone or fork and use it as a starting point to bui
 - [Getting Started](#getting-started)
 - [Example](#example)
 - [Project Structure](#project-structure)
+- [Telegram Bot Commands](#telegram-bot-commands)
+- [Queuing Messages](#queuing-messages)
 - [Onboarding Modal Component](#onboarding-modal-component)
 - [Database](#database)
+- [Deployment](#deployment)
 
 ## Features
 
-### 1. Optimized Notifications
-
-Reliable Telegram delivery out of the box. No complex setup required.
-
-### 2. From Pull to Push
-
-Trigger relevant, contextual messages based on wallet activity. Keep your users informed in real-time without them having to check your dashboard.
-
-### 3. Telegram Bot
-
-Prebuilt bot with wallet linkage and user controls. No need to build your own interface.
-
-### 4. Telegram Mini App (Coming Soon)
-
-Richer Telegram UI via a lightweight, integrated Telegram Mini App.
-
-### 5. Onboarding Component
-
-React component for instant onboarding. Users click a link or scan a QR — no wallet connection needed.
-
-### 6. Zero Installs
-
-No apps, no browser extensions. Everything runs through Telegram.
-
-### 7. Easy Deployment
-
-Runs as a single-node service. Self-host or deploy in your cloud infra.
-
-### 8. White Label
-
-Customize components with your own branding and front-end logic.
-
-### 9. Data Flexibility
-
-Compatible with SQLite, Postgres, MySQL, or MongoDB. Use your preferred stack. You own your user's data, eliminating exposure to third-party risks.
-
-### 10. Built for Simplicity
-
-Deliver what drives user engagement, retention, and re-activation. DMe handles delivery logic; you focus on wallet signals.
-
-### 11. Attribution Dashboard (Coming Soon)
-
-Track delivery, opens, and basic interaction metrics to measure messaging impact.
-
-### 12. Open Source
-
-This framework is **fully open source**. You can inspect, extend, and contribute to its codebase.
-It’s actively maintained and open to community feedback and contributions.
+| Feature                             | Description                                                                                                                                                                  |
+| ----------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Optimized Notifications             | Reliable Telegram delivery out of the box. No complex setup required.                                                                                                        |
+| From Pull to Push                   | Trigger relevant, contextual messages based on wallet activity. Keep your users informed in real-time without them having to check your dashboard.                           |
+| Telegram Bot                        | Prebuilt bot with wallet linkage and user controls. No need to build your own interface.                                                                                     |
+| Telegram Mini App (Coming Soon)     | Richer Telegram UI via a lightweight, integrated Telegram Mini App.                                                                                                          |
+| Onboarding Component                | React component for instant onboarding. Users click a link or scan a QR. No wallet connection needed.                                                                        |
+| Zero Installs                       | No apps, no browser extensions. Everything runs through Telegram.                                                                                                            |
+| Easy Deployment                     | Runs as a single-node service. Self-host or deploy in your cloud infra.                                                                                                      |
+| White Label                         | Customize components with your own branding and front-end logic.                                                                                                             |
+| Data Flexibility                    | Compatible with SQLite, Postgres, MySQL, or MongoDB. Use your preferred stack. You own your user's data, eliminating exposure to third-party risks.                          |
+| Built for Simplicity                | Deliver what drives user engagement, retention, and re-activation. DMe handles delivery logic; you focus on wallet signals.                                                  |
+| Attribution Dashboard (Coming Soon) | Track delivery, opens, and basic interaction metrics to measure messaging impact.                                                                                            |
+| Open Source                         | This framework is **fully open source**. You can inspect, extend, and contribute to its codebase. It’s actively maintained and open to community feedback and contributions. |
 
 ## Getting Started
 
@@ -156,6 +125,8 @@ You can then create your own jobs to send custom notifications to users.
 
 You can checkout to the `example/uniswap` branch to see a working example of the DMe framework used to notify Uniswap liquidity providers about their position status.
 
+![DMe Demo](https://github.com/user-attachments/assets/a01fad30-c92e-4a40-b75c-0dbde4cb4f1b)
+
 The example extends the base framework by adding three jobs that periodically make requests to the **revert.finance** API to fetch subscribed user position data and send notifications based on certain conditions:
 
 ### 1. Out-of-Range Position Alerts
@@ -178,8 +149,8 @@ The example also demonstrates how commands can be customized—for instance, obt
 
 The monorepo is organized into the following packages:
 
-* `packages/server`: The main server application that runs the Telegram bot and handles user interactions, message dispatching, and job scheduling.
-* `packages/onboarding-modal`: A React component that provides a user-friendly onboarding experience for linking Telegram accounts with their wallet addresses.
+- `packages/server`: The main server application that runs the Telegram bot and handles user interactions, message dispatching, and job scheduling.
+- `packages/onboarding-modal`: A React component that provides a user-friendly onboarding experience for linking Telegram accounts with their wallet addresses.
 
 The server package is built with TypeScript and uses the [grammy](https://grammy.dev/) framework for Telegram bot interactions, [Prisma](https://www.prisma.io/) for database management, and [node-cron](https://www.npmjs.com/package/node-cron) for scheduling jobs.
 
@@ -207,6 +178,32 @@ Imagine that you want to send alerts to your users when their Aave positions are
 
 In this case, you would add an `aave.ts` service to the **services** folder and a new `health.ts` job to the **jobs** folder that uses the Aave service to fetch user positions and build the message to be sent with the `MessageService.create` method, then instantiate them in the `index.ts` file.
 
+## Telegram Bot Commands
+
+The DMe framework includes a set of predefined commands that users can use to interact with the Telegram bot. These commands allow users to manage their subscriptions and get information about their linked wallets.
+
+| Command            | Description                                                                                                                        |
+| ------------------ | ---------------------------------------------------------------------------------------------------------------------------------- |
+| `/start [address]` | Starts a conversation with the bot. If a wallet address is provided, it is linked to the user.                                     |
+| `/add <address>`   | Links an additional wallet address to the user's Telegram account.                                                                 |
+| `/remove <index>`  | Unlinks a wallet address from the user's Telegram account. The index is the number to the left of the address provided in `/list`. |
+| `/list`            | Lists all wallet addresses linked to the user's Telegram account.                                                                  |
+
+## Queuing Messages
+
+The MessageService is the main component you will be using to queue messages to users, ensuring reliable delivery with built-in rate limiting and retry logic. All messages should be created using the `MessageService.create` or `MessageService.createForUser` methods.
+
+`MessageService.create(content: string, address: string, options?: MessageOptions)` Creates a message targeted for a certain wallet address. The message will be queued and delivered to all users that have linked that address. This should be used to send messages to users based on wallet activity.
+
+`MessageService.createForUser(content: string, userId: number, options?: MessageOptions)` Creates a message targeted for a specific user. This should be used to send messages that are not related to wallet activity, such as welcome messages or responses to user commands.
+
+`MessageOptions` include:
+
+- priority: number - Sets the priority of the message. Higher priority messages are sent first. This allows you to prioritize certain messages over others. Default is 0 for create, and 1000 for createForUser. This is to ensure that command replies are sent before any other queued messages.
+- maxAttempts: number - Sets the maximum number of attempts to send the message. Default is 5, this is configurable via the `MAX_ATTEMPTS` environment variable.
+
+Messages are formatted to support **MarkdownV2** when queued. See the [Telegram documentation](https://core.telegram.org/bots/api#markdownv2-style) for more details.
+
 ## Onboarding Modal Component
 
 The framework includes a React component that can be integrated into your React dApp to facilitate user onboarding. This component consists of a button that, when clicked, opens a modal dialog. The modal displays a QR code that the user can scan with their phone to easily start a conversation with the Telegram bot and link their wallet address for notifications in a single action. The modal also provides a link as an alternative to open Telegram directly in the browser.
@@ -214,33 +211,39 @@ The framework includes a React component that can be integrated into your React 
 ### 1. Install the Component
 
 ```bash
-pnpm install dme-onboarding-modal
+pnpm install @bootnodedev/dme-onboarding-modal
 ```
 
 ### 2. Import Styles in Your Main App File
 
 ```tsx
-import "dme-onboarding-modal/lib/index.css";
+import "@bootnodedev/dme-onboarding-modal/lib/index.css";
 ```
 
 ### 3. Use the Component in Your React App
 
 ```tsx
-import { OnboardingModal } from "dme-onboarding-modal";
+import { Button } from "@bootnodedev/dme-onboarding-modal";
 
 function Navbar() {
   return (
     <nav>
-      <OnboardingModal
-        botUsername="MyBot"
-        walletAddress="0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045"
+      <Button
+        modal={{
+          bot: "MyBot",
+          address: "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045",
+          title: "Stay Updated",
+          description:
+            "Scan the QR code or click the button below to get started.",
+          cta: "Open Telegram",
+        }}
       />
     </nav>
   );
 }
 ```
 
-The wallet address can be obtained from your dApp’s Web3 provider, such as **MetaMask** or **WalletConnect**.
+The wallet address can be obtained from your dApp's Web3 provider, such as **MetaMask** or **WalletConnect**.
 
 ## Database
 
@@ -266,3 +269,11 @@ DATABASE_URL="postgresql://user:password@localhost:5432/mydb"
 Keep in mind that the migration files included with the framework are tailored for SQLite, so you may need to delete them and create new migrations for your chosen database.
 
 For more details about supported databases and handling migrations, check the [Prisma documentation](https://www.prisma.io/docs/).
+
+# Deployment
+
+For production, do not use the `dev` script as it is intended for development purposes only. Instead, run `pnpm prisma migrate deploy` to apply migrations and, the run `pnpm build` followed by `pnpm start` to start the server.
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](https://github.com/BootNodeDev/dme-monorepo/blob/main/LICENSE) file for details.

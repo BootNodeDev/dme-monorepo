@@ -1,6 +1,7 @@
 {
-  "name": "server",
+  "name": "@bootnodedev/dme-server",
   "version": "1.0.0",
+  "private": true,
   "description": "",
   "main": "dist/index.js",
   "scripts": {
@@ -14,8 +15,6 @@
     "format:fix": "prettier . --write"
   },
   "keywords": [],
-  "author": "",
-  "license": "ISC",
   "packageManager": "pnpm@10.17.1",
   "devDependencies": {
     "@eslint/js": "^9.36.0",

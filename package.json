@@ -1,6 +1,7 @@
 {
-  "name": "dme-monorepo",
+  "name": "@bootnodedev/dme-monorepo",
   "version": "1.0.0",
+  "private": true,
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -12,7 +13,5 @@
     "format:fix": "pnpm -r format:fix"
   },
   "keywords": [],
-  "author": "",
-  "license": "ISC",
   "packageManager": "pnpm@10.17.1"
 }

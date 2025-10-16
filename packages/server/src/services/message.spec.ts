@@ -389,7 +389,7 @@ describe("deleteBefore", () => {
 
     await message.create(MESSAGE_CONTENT, ETHEREUM_ADDRESS_1);
 
-    const twoWeeksAgo = new Date(Date.now() - ms('2w'));
+    const twoWeeksAgo = new Date(Date.now() - ms("2w"));
     await prisma.message.create({
       data: {
         content: "Old message",
@@ -397,8 +397,8 @@ describe("deleteBefore", () => {
       },
     });
 
-    const oneWeekAgo = new Date(Date.now() - ms('1w'));
-    const weekOldMessage = 'Week old message';
+    const oneWeekAgo = new Date(Date.now() - ms("1w"));
+    const weekOldMessage = "Week old message";
     await prisma.message.create({
       data: {
         content: weekOldMessage,
@@ -409,19 +409,19 @@ describe("deleteBefore", () => {
     const messagesBefore = await prisma.message.findMany();
     expect(messagesBefore).toHaveLength(3);
 
-    const tenDaysAgo = new Date(Date.now() - ms('10d'));
+    const tenDaysAgo = new Date(Date.now() - ms("10d"));
     const result = await message.deleteBefore(tenDaysAgo);
 
     expect(result.count).toBe(1);
 
     const messagesAfter = await prisma.message.findMany();
     expect(messagesAfter).toHaveLength(2);
-    expect(messagesAfter.some(m => m.content === MESSAGE_CONTENT)).toBe(true);
-    expect(messagesAfter.some(m => m.content === weekOldMessage)).toBe(true);
+    expect(messagesAfter.some((m) => m.content === MESSAGE_CONTENT)).toBe(true);
+    expect(messagesAfter.some((m) => m.content === weekOldMessage)).toBe(true);
   });
 
   it("should return zero count when no messages to delete", async () => {
-    const pastDate = new Date(Date.now() - ms('1y'));
+    const pastDate = new Date(Date.now() - ms("1y"));
     const result = await message.deleteBefore(pastDate);
 
     expect(result.count).toBe(0);

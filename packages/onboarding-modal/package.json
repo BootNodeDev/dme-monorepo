@@ -1,7 +1,8 @@
 {
-  "name": "onboarding-modal",
-  "private": true,
-  "version": "0.0.0",
+  "name": "@bootnodedev/dme-onboarding-modal",
+  "version": "0.0.3",
+  "author": "BootNode",
+  "license": "MIT",
   "type": "module",
   "files": [
     "dist"
@@ -26,8 +27,8 @@
     "format:fix": "prettier . --write"
   },
   "peerDependencies": {
-    "react": "^18.0.0",
-    "react-dom": "^18.0.0"
+    "react": ">=18.0.0",
+    "react-dom": ">=18.0.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.36.0",
