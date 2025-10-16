@@ -3,50 +3,49 @@ import QRCode from "react-qr-code";
 export type ModalProps = {
   bot: string;
   address: string;
-  title?: string;
-  description?: string;
-  cta?: string;
-  onClose?: () => void;
+  title: string;
+  description: string;
+  cta: string;
+  onClose: () => void;
 };
 
 export function Modal({ bot, address, title, description, cta, onClose }: ModalProps) {
   const link = `https://t.me/${bot}?start=${address}`;
 
   return (
-    <div className="dme-modal__overlay" onClick={onClose}>
-      <div className="dme-modal__content" onClick={(e) => e.stopPropagation()}>
-        <div className="dme-modal__header">
-          <h2 className="dme-modal__title">{title || "DMe"}</h2>
-          <button className="dme-modal__button--reset dme-modal__close" onClick={onClose}>
+    <div className="dme-onboarding-modal__overlay" onClick={onClose}>
+      <div className="dme-onboarding-modal__modal" onClick={(e) => e.stopPropagation()}>
+        <header className="dme-onboarding-modal__header">
+          <h2 className="dme-onboarding-modal__title">{title}</h2>
+          <button className="dme-onboarding-modal__close-button" onClick={onClose}>
             &times;
           </button>
-        </div>
-        <div className="dme-modal__body">
-          <p className="dme-modal__description">
-            {description ||
-              "Scan the QR code below or click the button to start receiving valuable and actionable alerts and notifications on telegram."}
-          </p>
-          <QRCode className="dme-modal__qr" value={link} />
+        </header>
+
+        <main className="dme-onboarding-modal__main">
+          <p className="dme-onboarding-modal__description">{description}</p>
+          <QRCode className="dme-onboarding-modal__qr-code" value={link} />
           <a
-            className="dme-modal__a--reset dme-modal__cta"
+            className="dme-onboarding-modal__cta"
             href={link}
             target="_blank"
             rel="noopener noreferrer"
           >
-            {cta || "Open Telegram"}
+            {cta}
           </a>
-        </div>
-        <div className="dme-modal__footer">
+        </main>
+
+        <footer className="dme-onboarding-modal__footer">
           Powered by{" "}
           <a
-            className="dme-modal__a--reset"
+            className="dme-onboarding-modal__footer-link"
             href="https://github.com/BootNodeDev/dme-monorepo"
             target="_blank"
             rel="noopener noreferrer"
           >
             BootNode
           </a>
-        </div>
+        </footer>
       </div>
     </div>
   );
