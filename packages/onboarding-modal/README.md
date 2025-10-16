@@ -1,6 +1,6 @@
 # DMe Onboarding Modal Component
 
-A React component for seamless user onboarding to Telegram bot notifications, part of the [DMe Framework](https://github.com/BootNodeDev/dme-monorepo). This component provides a user-friendly interface that allows users to subscribe to wallet notifications with a single click or QR scan, without requiring wallet connection.
+A React component for seamless user onboarding to Telegram bot notifications, part of the [DMe Framework](https://github.com/BootNodeDev/dme-monorepo). This component provides a user-friendly interface that allows users to subscribe to wallet notifications on Telegram with a single click or QR scan, without requiring wallet connection.
 
 ## Installation
 
@@ -30,6 +30,9 @@ function Navbar() {
         modal={{
           bot: "MyBot",
           address: "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045",
+          title: "Stay Updated",
+          description: "Scan the QR code or click the button below to get started.",
+          cta: "Open Telegram",
         }}
       />
     </nav>
@@ -55,6 +58,9 @@ function Navbar() {
           modal={{
             bot: "MyBot",
             address,
+            title: "Stay Updated",
+            description: "Scan the QR code or click the button below to get started.",
+            cta: "Open Telegram",
           }}
         />
       )}
@@ -62,17 +68,6 @@ function Navbar() {
   );
 }
 ```
-
-## Props
-
-| Prop                | Type     | Required | Description                                                          |
-| ------------------- | -------- | -------- | -------------------------------------------------------------------- |
-| `modal`             | `object` | Yes      | Configuration object for the modal                                   |
-| `modal.bot`         | `string` | Yes      | Your Telegram bot's username (without the `@` symbol)                |
-| `modal.address`     | `string` | Yes      | The Ethereum wallet address to link with the user's Telegram account |
-| `modal.title`       | `string` | No       | Custom modal title (default: "DMe")                                  |
-| `modal.description` | `string` | No       | Custom modal description                                             |
-| `modal.cta`         | `string` | No       | Custom call-to-action button text (default: "Open Telegram")         |
 
 ## How It Works
 
@@ -82,34 +77,6 @@ When clicked, the component opens a modal dialog that displays:
 2. **Direct Link**: Alternative option to open Telegram directly in the browser
 
 The modal generates a deep link to your Telegram bot with the wallet address as a start parameter, enabling seamless onboarding in a single action.
-
-## Example
-
-```tsx
-import { Button } from "@bootnodedev/dme-onboarding-modal";
-import "@bootnodedev/dme-onboarding-modal/lib/index.css";
-
-function App() {
-  return (
-    <div className="app">
-      <header>
-        <h1>My DeFi App</h1>
-        <Button
-          modal={{
-            bot: "MyDeFiBot",
-            address: "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045",
-            title: "Get Notified",
-            description: "Subscribe to receive important updates about your positions.",
-            cta: "Subscribe Now",
-          }}
-        />
-      </header>
-    </div>
-  );
-}
-
-export default App;
-```
 
 ## License
 
