@@ -189,6 +189,8 @@ The DMe framework includes a set of predefined commands that users can use to in
 | `/remove <index>`  | Unlinks a wallet address from the user's Telegram account. The index is the number to the left of the address provided in `/list`. |
 | `/list`            | Lists all wallet addresses linked to the user's Telegram account.                                                                  |
 
+Keep in mind that you need to add these commands to your bot through [BotFather](https://t.me/BotFather) manually for them to show up in the Telegram UI. If you don't, users can still use the commands, but they won't see them in the command list when they type `/` in the chat with your bot.
+
 ## Queuing Messages
 
 The MessageService is the main component you will be using to queue messages to users, ensuring reliable delivery with built-in rate limiting and retry logic. All messages should be created using the `MessageService.create` or `MessageService.createForUser` methods.
