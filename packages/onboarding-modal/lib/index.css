@@ -1,7 +1,7 @@
 .dme-onboarding-modal__button {
   all: unset;
-  background-color: rgb(48, 48, 48);
-  color: white;
+  background-color: white;
+  color: black;
   padding: 8px 16px;
   border-radius: 999px;
   font-family:
@@ -11,10 +11,13 @@
   opacity: 1;
   transition: opacity 0.2s ease;
   font-weight: 600;
+  border-style: solid;
+  border-width: 1px;
+  border-color: black;
 }
 
 .dme-onboarding-modal__button:hover {
-  opacity: 0.8;
+  opacity: 0.7;
 }
 
 .dme-onboarding-modal__overlay {
@@ -32,8 +35,8 @@
 }
 
 .dme-onboarding-modal__modal {
-  background-color: rgb(48, 48, 48);
-  color: white;
+  background-color: white;
+  color: black;
   border-radius: 8px;
   padding: 24px 32px;
   font-family:
@@ -72,12 +75,6 @@
 .dme-onboarding-modal__description {
   text-align: center;
   margin: 0px;
-}
-
-.dme-onboarding-modal__qr-code {
-  padding: 12px;
-  background-color: white;
-  border-radius: 8px;
 }
 
 .dme-onboarding-modal__cta {
