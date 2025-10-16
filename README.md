@@ -42,7 +42,7 @@ To set up a Telegram notification system using the **DMe** framework, follow the
 
 Talk to [@BotFather](https://t.me/BotFather) on Telegram to create a new bot and obtain your **bot token**.
 
-### 2. Fork the Repository
+### 2. Clone the Repository
 
 Clone the **DMe** monorepo to your local machine:
 
