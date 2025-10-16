@@ -21,10 +21,10 @@ export class CleanupJob {
     try {
       this.logger.info("Executing");
 
-      const oneWeekAgo = new Date(Date.now() - ms(this.cutoff as ms.StringValue));
-      const deletedMessages = await this.message.deleteBefore(oneWeekAgo);
+      const cutoffDate = new Date(Date.now() - ms(this.cutoff as ms.StringValue));
+      const deletedMessages = await this.message.deleteBefore(cutoffDate);
 
-      this.logger.info({ count: deletedMessages.count, beforeDate: oneWeekAgo }, "Executed");
+      this.logger.info({ count: deletedMessages.count, beforeDate: cutoffDate }, "Executed");
     } catch (err) {
       this.logger.error({ err }, "Failed");
     }
