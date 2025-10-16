@@ -12,6 +12,7 @@ It is designed for anyone to clone or fork and use it as a starting point to bui
 - [Project Structure](#project-structure)
 - [Telegram Bot Commands](#telegram-bot-commands)
 - [Queuing Messages](#queuing-messages)
+- [Subscribed Wallets](#subscribed-wallets)
 - [Onboarding Modal Component](#onboarding-modal-component)
 - [Database](#database)
 - [Deployment](#deployment)
@@ -205,6 +206,16 @@ The MessageService is the main component you will be using to queue messages to 
 - maxAttempts: number - Sets the maximum number of attempts to send the message. Default is 5, this is configurable via the `MAX_ATTEMPTS` environment variable.
 
 Messages are formatted to support **MarkdownV2** when queued. See the [Telegram documentation](https://core.telegram.org/bots/api#markdownv2-style) for more details.
+
+## Subscribed Wallets
+
+You probably want to get a list of all subscribed wallets in order to check their activity and send notifications accordingly. You can use the `WalletService` for this purpose.
+
+`WalletService.listAll(options?: { take?: number; skip?: number })` Returns a list of all unique wallet addresses that have been linked by users. You can use the `take` and `skip` options for pagination.
+
+Using pagination is important if you have a large number of subscribed wallets, as it allows you to process them in batches and avoid overwhelming your system.
+
+The message queue is prepared to handle a large number of messages, but if you want to keep your instance running smoothly, it's a good idea to process wallets in chunks.
 
 ## Onboarding Modal Component
 
