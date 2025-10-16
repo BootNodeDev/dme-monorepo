@@ -1,0 +1,124 @@
+.dme-onboarding-modal__button {
+  all: unset;
+  background-color: white;
+  color: black;
+  padding: 8px 16px;
+  border-radius: 999px;
+  font-family:
+    Manrope Variable,
+    sans-serif;
+  cursor: pointer;
+  opacity: 1;
+  transition: opacity 0.2s ease;
+  font-weight: 600;
+}
+
+.dme-onboarding-modal__button:hover {
+  opacity: 0.8;
+}
+
+.dme-onboarding-modal__overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  animation: fadeIn 0.2s ease-out;
+}
+
+.dme-onboarding-modal__modal {
+  background-color: white;
+  color: black;
+  border-radius: 8px;
+  padding: 24px 32px;
+  font-family:
+    Manrope Variable,
+    sans-serif;
+  max-width: 480px;
+  animation: slideUp 0.3s ease-out;
+}
+
+.dme-onboarding-modal__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.dme-onboarding-modal__title {
+  margin: 0;
+}
+
+.dme-onboarding-modal__close-button {
+  all: unset;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 1.25rem;
+}
+
+.dme-onboarding-modal__main {
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  max-width: 300px;
+  margin: 40px auto;
+  gap: 24px;
+}
+
+.dme-onboarding-modal__description {
+  text-align: center;
+  margin: 0px;
+}
+
+.dme-onboarding-modal__cta {
+  all: unset;
+  background-color: black;
+  color: white;
+  padding: 12px 32px;
+  border-radius: 999px;
+  cursor: pointer;
+  opacity: 1;
+  transition: opacity 0.2s ease;
+}
+
+.dme-onboarding-modal__cta:hover {
+  opacity: 0.8;
+}
+
+.dme-onboarding-modal__footer {
+  text-align: center;
+
+  font-size: 0.75rem;
+  opacity: 0.6;
+}
+
+.dme-onboarding-modal__footer-link {
+  all: unset;
+  cursor: pointer;
+  text-decoration: underline;
+  font-weight: 600;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
