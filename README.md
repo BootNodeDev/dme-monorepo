@@ -281,6 +281,8 @@ DATABASE_URL="postgresql://user:password@localhost:5432/mydb"
 
 For more details about supported databases and handling migrations, check the [Prisma documentation](https://www.prisma.io/docs/).
 
+> If you change the database provider, you must also update the `DATABASE_URL` used for integration tests in `packages/server/scripts/test.sh`. This script is designed to help you set up the testing database efficiently (e.g., by running a PostgreSQL Docker container).
+
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](https://github.com/BootNodeDev/dme-monorepo/blob/main/LICENSE) file for details.
