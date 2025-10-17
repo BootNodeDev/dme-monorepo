@@ -279,13 +279,7 @@ And set the `DATABASE_URL` to something like this:
 DATABASE_URL="postgresql://user:password@localhost:5432/mydb"
 ```
 
-Keep in mind that the migration files included with the framework are tailored for SQLite, so you may need to delete them and create new migrations for your chosen database.
-
 For more details about supported databases and handling migrations, check the [Prisma documentation](https://www.prisma.io/docs/).
-
-# Deployment
-
-For production, do not use the `dev` script as it is intended for development purposes only. Instead, run `pnpm prisma migrate deploy` to apply migrations and, the run `pnpm build` followed by `pnpm start` to start the server.
 
 ## License
 
