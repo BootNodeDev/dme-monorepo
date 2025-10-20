@@ -10,6 +10,8 @@ const EnvSchema = z.object({
   DISPATCH_CRON: z.string().default("* * * * * *"),
 });
 
-export function getEnv() {
+export type Env = z.infer<typeof EnvSchema>;
+
+export function getEnv(): Env {
   return EnvSchema.parse(process.env);
 }
