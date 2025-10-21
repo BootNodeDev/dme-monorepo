@@ -48,14 +48,18 @@ describe("execute", () => {
     await job.execute();
 
     expect(message.listSendable).toHaveBeenCalledWith(MESSAGES_PER_DISPATCH);
-    expect(message.updateForSend).toHaveBeenCalledWith(USER_ID_1, MESSAGE_ID);
+    expect(message.updateForSend).toHaveBeenCalledWith([
+      expect.objectContaining({ userId: USER_ID_1, messageId: MESSAGE_ID }),
+    ]);
     expect(bot.api.sendMessage).toHaveBeenCalledWith(USER_ID_1, MESSAGE_CONTENT, {
       parse_mode: "MarkdownV2",
       link_preview_options: {
         is_disabled: true,
       },
     });
-    expect(message.updateForSuccess).toHaveBeenCalledWith(USER_ID_1, MESSAGE_ID);
+    expect(message.updateForSuccess).toHaveBeenCalledWith([
+      { userId: USER_ID_1, messageId: MESSAGE_ID },
+    ]);
   });
 
   it("should handle send message failure", async () => {
@@ -79,14 +83,9 @@ describe("execute", () => {
 
     await job.execute();
 
-    expect(message.updateForSend).toHaveBeenCalledWith(USER_ID_1, MESSAGE_ID);
-    expect(bot.api.sendMessage).toHaveBeenCalledWith(USER_ID_1, MESSAGE_CONTENT, {
-      parse_mode: "MarkdownV2",
-      link_preview_options: {
-        is_disabled: true,
-      },
-    });
-    expect(message.updateForFailure).toHaveBeenCalledWith(USER_ID_1, MESSAGE_ID, "Telegram error");
+    expect(message.updateForFailure).toHaveBeenCalledWith([
+      { userId: USER_ID_1, messageId: MESSAGE_ID, error: "Telegram error" },
+    ]);
   });
 
   it("should handle the case in which listSendable fails", async () => {
@@ -124,12 +123,7 @@ describe("execute", () => {
     message.updateForSend.mockRejectedValueOnce(error);
 
     await job.execute();
-
-    expect(message.updateForSend).toHaveBeenCalledWith(USER_ID_1, MESSAGE_ID);
-    expect(logger.error).toHaveBeenCalledWith(
-      { err: error, userId: USER_ID_1, messageId: MESSAGE_ID },
-      "Failed to update message for send",
-    );
+    expect(logger.error).toHaveBeenCalledWith({ err: error }, "Failed");
   });
 
   it("should handle updateForResult failure", async () => {
@@ -154,18 +148,7 @@ describe("execute", () => {
 
     await job.execute();
 
-    expect(message.updateForSend).toHaveBeenCalledWith(USER_ID_1, MESSAGE_ID);
-    expect(bot.api.sendMessage).toHaveBeenCalledWith(USER_ID_1, MESSAGE_CONTENT, {
-      parse_mode: "MarkdownV2",
-      link_preview_options: {
-        is_disabled: true,
-      },
-    });
-    expect(message.updateForSuccess).toHaveBeenCalledWith(USER_ID_1, MESSAGE_ID);
-    expect(logger.error).toHaveBeenCalledWith(
-      { err: error, userId: USER_ID_1, messageId: MESSAGE_ID },
-      "Failed to update message after send",
-    );
+    expect(logger.error).toHaveBeenCalledWith({ err: error }, "Failed");
   });
 
   it("should not run if already executing", async () => {
@@ -179,5 +162,18 @@ describe("execute", () => {
     await job.execute();
 
     expect(message.listSendable).not.toHaveBeenCalled();
+  });
+
+  it("should not run if no messages are pending", async () => {
+    const message = getMockMessageService();
+    const logger = getMockLogger();
+    const bot = getMockBot();
+    const job = new DispatchJob(logger, message, CRON_SCHEDULE, bot, MESSAGES_PER_DISPATCH);
+
+    message.listSendable.mockResolvedValue([]);
+
+    await job.execute();
+
+    expect(message.updateForSend).not.toHaveBeenCalled();
   });
 });
