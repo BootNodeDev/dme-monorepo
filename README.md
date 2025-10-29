@@ -12,6 +12,7 @@ It is designed for anyone to clone or fork and use it as a starting point to bui
 - [Project Structure](#project-structure)
 - [Telegram Bot Commands](#telegram-bot-commands)
 - [Queuing Messages](#queuing-messages)
+- [Subscribed Wallets](#subscribed-wallets)
 - [Onboarding Modal Component](#onboarding-modal-component)
 - [Database](#database)
 - [Deployment](#deployment)
@@ -41,7 +42,7 @@ To set up a Telegram notification system using the **DMe** framework, follow the
 
 Talk to [@BotFather](https://t.me/BotFather) on Telegram to create a new bot and obtain your **bot token**.
 
-### 2. Fork the Repository
+### 2. Clone the Repository
 
 Clone the **DMe** monorepo to your local machine:
 
@@ -189,6 +190,8 @@ The DMe framework includes a set of predefined commands that users can use to in
 | `/remove <index>`  | Unlinks a wallet address from the user's Telegram account. The index is the number to the left of the address provided in `/list`. |
 | `/list`            | Lists all wallet addresses linked to the user's Telegram account.                                                                  |
 
+Keep in mind that you need to add these commands to your bot through [BotFather](https://t.me/BotFather) manually for them to show up in the Telegram UI. If you don't, users can still use the commands, but they won't see them in the command list when they type `/` in the chat with your bot.
+
 ## Queuing Messages
 
 The MessageService is the main component you will be using to queue messages to users, ensuring reliable delivery with built-in rate limiting and retry logic. All messages should be created using the `MessageService.create` or `MessageService.createForUser` methods.
@@ -203,6 +206,16 @@ The MessageService is the main component you will be using to queue messages to 
 - maxAttempts: number - Sets the maximum number of attempts to send the message. Default is 5, this is configurable via the `MAX_ATTEMPTS` environment variable.
 
 Messages are formatted to support **MarkdownV2** when queued. See the [Telegram documentation](https://core.telegram.org/bots/api#markdownv2-style) for more details.
+
+## Subscribed Wallets
+
+You probably want to get a list of all subscribed wallets in order to check their activity and send notifications accordingly. You can use the `WalletService` for this purpose.
+
+`WalletService.listAll(options?: { take?: number; skip?: number })` Returns a list of all unique wallet addresses that have been linked by users. You can use the `take` and `skip` options for pagination.
+
+Using pagination is important if you have a large number of subscribed wallets, as it allows you to process them in batches and avoid overwhelming your system.
+
+The message queue is prepared to handle a large number of messages, but if you want to keep your instance running smoothly, it's a good idea to process wallets in chunks.
 
 ## Onboarding Modal Component
 
@@ -266,13 +279,9 @@ And set the `DATABASE_URL` to something like this:
 DATABASE_URL="postgresql://user:password@localhost:5432/mydb"
 ```
 
-Keep in mind that the migration files included with the framework are tailored for SQLite, so you may need to delete them and create new migrations for your chosen database.
-
 For more details about supported databases and handling migrations, check the [Prisma documentation](https://www.prisma.io/docs/).
 
-# Deployment
-
-For production, do not use the `dev` script as it is intended for development purposes only. Instead, run `pnpm prisma migrate deploy` to apply migrations and, the run `pnpm build` followed by `pnpm start` to start the server.
+> If you change the database provider, you must also update the `DATABASE_URL` used for integration tests in `packages/server/scripts/test.sh`. This script is designed to help you set up the testing database efficiently (e.g., by running a PostgreSQL Docker container).
 
 ## License
 

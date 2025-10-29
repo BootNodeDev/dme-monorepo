@@ -10,88 +10,157 @@ import { UserService } from "./services/user";
 import { WalletService } from "./services/wallet";
 import { DispatchJob } from "./jobs/dispatch";
 import { MessageService } from "./services/message";
-import { getEnv } from "./env";
 import { PositionService } from "./services/position";
 import { OutOfRangeJob } from "./jobs/outOfRange";
 import { UncollectedFeesJob } from "./jobs/uncolletedFees";
+import { Env, getEnv } from "./env";
 import { CleanupJob } from "./jobs/cleanup";
 import { SummaryJob } from "./jobs/summary";
 
-const env = getEnv();
-const prisma = new PrismaClient({ datasourceUrl: env.DATABASE_URL });
 const logger = pino();
-const bot = new Bot<Context & SessionFlavor<unknown>>(env.BOT_TOKEN);
 
-/* Services */
+/**
+ * Main function to instantiate and run all components of the application
+ */
+async function main() {
+  const env = getEnv();
+  const prisma = await getPrismaClient(env);
+  const services = getServices(prisma, env);
+  const bot = getBot(env, services);
+  const jobs = getJobs(env, services, bot);
 
-const user = new UserService(prisma);
-const wallet = new WalletService(prisma);
-const message = new MessageService(prisma, env.MAX_ATTEMPTS);
-const position = new PositionService();
+  run(bot);
 
-/* Handlers */
+  jobs.forEach((job) => job.start());
+}
 
-const start = getStartHandler(logger.child({ handler: "start" }), message, user, wallet, position);
-const add = getAddHandler(logger.child({ handler: "add" }), message, user, wallet);
-const list = getListHandler(logger.child({ handler: "list" }), message, user);
-const remove = getRemoveHandler(logger.child({ handler: "remove" }), message, user);
+/**
+ * Instantiate and configure the Prisma Client for database interactions
+ */
+async function getPrismaClient(env: Env): Promise<PrismaClient> {
+  const prisma = new PrismaClient({ datasourceUrl: env.DATABASE_URL });
 
-/* Telegram Bot */
+  // SQlite Database optimizations.
+  // Remove or change for other databases
+  await prisma.$queryRawUnsafe(`PRAGMA journal_mode=WAL;`);
+  await prisma.$queryRawUnsafe(`PRAGMA synchronous=NORMAL;`);
 
-const getSessionKey = (ctx: Context) => ctx.chat?.id.toString();
-bot.use(sequentialize(getSessionKey));
-bot.use(session({ getSessionKey }));
+  return prisma;
+}
 
-bot.command("start", start);
-bot.command("add", add);
-bot.command("list", list);
-bot.command("remove", remove);
+/**
+ * Instantiate all services used across the application
+ */
+function getServices(prisma: PrismaClient, env: Env) {
+  // Service responsible for managing messages
+  const message = new MessageService(prisma, env.MAX_ATTEMPTS);
 
-bot.catch((err) =>
-  logger.error({ err, userId: err.ctx.from?.id, message: err.ctx.message?.text }, "Failure"),
-);
+  // Service responsible for managing users
+  const user = new UserService(prisma);
 
-run(bot);
+  // Service responsible for managing wallets
+  const wallet = new WalletService(prisma);
 
-logger.info("Started");
+  // Service responsible for requesting positions from revert.finance
+  const position = new PositionService();
 
-/* Jobs */
+  return {
+    message,
+    user,
+    wallet,
+    position,
+  };
+}
 
-new DispatchJob(
-  logger.child({ job: "dispatch" }),
-  message,
-  env.DISPATCH_CRON,
-  bot,
-  env.MESSAGES_PER_DISPATCH,
-).start();
+/**
+ * Instantiate and configure the Telegram Bot with all commands and middleware
+ */
+function getBot(env: Env, services: ReturnType<typeof getServices>) {
+  const bot = new Bot<Context & SessionFlavor<unknown>>(env.BOT_TOKEN);
 
-new CleanupJob(
-  logger.child({ job: "cleanup" }),
-  message,
-  env.CLEANUP_CRON,
-  env.CLEANUP_CUTOFF,
-).start();
+  // Middleware that ensures order of message processing per user
+  const getSessionKey = (ctx: Context) => ctx.chat?.id.toString();
+  bot.use(sequentialize(getSessionKey));
+  bot.use(session({ getSessionKey }));
 
-new OutOfRangeJob(
-  logger.child({ job: "outOfRange" }),
-  message,
-  env.OUT_OF_RANGE_CRON,
-  wallet,
-  position,
-).start();
+  const { message, user, wallet, position } = services;
 
-new UncollectedFeesJob(
-  logger.child({ job: "uncollectedFees" }),
-  message,
-  env.UNCOLLECTED_FEES_CRON,
-  wallet,
-  position,
-).start();
+  // Command used to onboard a new user and optionally subscribe a wallet
+  bot.command("start", getStartHandler(logger.child({ command: "start" }), message, user, wallet, position));
 
-new SummaryJob(
-  logger.child({ job: "summary" }),
-  message,
-  env.SUMMARY_CRON,
-  wallet,
-  position,
-).start();
+  // Command used to subscribe a new wallet
+  bot.command("add", getAddHandler(logger.child({ command: "add" }), message, user, wallet));
+
+  // Command used to list all subscribed wallets
+  bot.command("list", getListHandler(logger.child({ command: "list" }), message, user));
+
+  // Command used to unsubscribe a wallet
+  bot.command("remove", getRemoveHandler(logger.child({ command: "remove" }), message, user));
+
+  // Global error handler for the bot
+  bot.catch((err) =>
+    logger.error({ err, userId: err.ctx.from?.id, message: err.ctx.message?.text }, "Failure"),
+  );
+
+  return bot;
+}
+
+/**
+ * Instantiate all jobs for scheduled background processing
+ */
+function getJobs(
+  env: Env,
+  services: ReturnType<typeof getServices>,
+  bot: ReturnType<typeof getBot>,
+) {
+  // Job that dispatches queued messages to users
+  const dispatchJob = new DispatchJob(
+    logger.child({ job: "dispatch" }),
+    services.message,
+    env.DISPATCH_CRON,
+    bot,
+    env.MESSAGES_PER_DISPATCH,
+  );
+
+  // Job that deletes old messages from the database
+  const cleanupJob = new CleanupJob(
+    logger.child({ job: "cleanup" }),
+    services.message,
+    env.CLEANUP_CRON,
+    env.CLEANUP_CUTOFF,
+  );
+
+  // Job that sends notifications when a position is out of range
+  const outOfRangeJob = new OutOfRangeJob(
+    logger.child({ job: "outOfRange" }),
+    services.message,
+    env.OUT_OF_RANGE_CRON,
+    services.wallet,
+    services.position,
+  );
+
+  // Job that sends notifications when a position has uncollected fees
+  const uncollectedFeesJob = new UncollectedFeesJob(
+    logger.child({ job: "uncollectedFees" }),
+    services.message,
+    env.UNCOLLECTED_FEES_CRON,
+    services.wallet,
+    services.position,
+  );
+
+  // Job that sends a summary of the user's positions
+  const summaryJob = new SummaryJob(
+    logger.child({ job: "summary" }),
+    services.message,
+    env.SUMMARY_CRON,
+    services.wallet,
+    services.position,
+  );
+
+  return [dispatchJob, cleanupJob, outOfRangeJob, uncollectedFeesJob, summaryJob];
+}
+
+main().catch((err) => {
+  logger.error({ err }, "Main function failed");
+  process.exit(1);
+});

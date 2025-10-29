@@ -18,10 +18,14 @@ export class WalletService {
     });
   }
 
-  async listAll() {
-    return (await this.prisma.userWallet.findMany({ distinct: "walletId" })).map(
-      (uw) => uw.walletId,
-    );
+  async listAll(options: { take?: number; skip?: number } = {}) {
+    return (
+      await this.prisma.userWallet.findMany({
+        distinct: "walletId",
+        skip: options.skip,
+        take: options.take,
+      })
+    ).map((uw) => uw.walletId);
   }
 }
 

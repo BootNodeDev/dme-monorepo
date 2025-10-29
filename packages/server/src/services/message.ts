@@ -8,12 +8,13 @@ export const TOP_PRIORITY = 1000;
 
 export class UsersForAddressNotFoundError extends Error {}
 
-export type MessageOptions = {
-  priority?: number;
-  maxAttempts?: number;
-};
+export type MessageOptions = { priority?: number; maxAttempts?: number };
 
 export type UserMessage = PrismaUserMessage & { message: Message };
+
+export type UserMessageId = { userId: number; messageId: string };
+
+export type UserMessageIdWithError = UserMessageId & { error: string };
 
 export class MessageService {
   constructor(
@@ -85,11 +86,23 @@ export class MessageService {
           lte: now,
         },
       },
-      orderBy: [{ message: { priority: "desc" } }, { message: { createdAt: "asc" } }],
+      orderBy: [
+        {
+          message: {
+            priority: "desc",
+          },
+        },
+        {
+          message: {
+            createdAt: "asc",
+          },
+        },
+      ],
       include: {
         message: true,
       },
       take,
+      distinct: "userId",
     });
   }
 
@@ -103,59 +116,42 @@ export class MessageService {
     });
   }
 
-  async updateForSend(userId: number, messageId: string) {
-    const userMessage = await this.prisma.userMessage.findUniqueOrThrow({
+  async updateForSend(ids: UserMessageId[]) {
+    const cleanIds = ids.map(({ userId, messageId }) => ({ userId, messageId }));
+
+    const dbUserMessages = await this.prisma.userMessage.findMany({
       where: {
-        userId_messageId: {
-          userId,
-          messageId,
-        },
+        OR: cleanIds,
       },
     });
 
-    if (userMessage.status !== "PENDING") {
-      throw new Error("Message is not pending");
-    }
-
-    if (userMessage.attempts >= userMessage.maxAttempts) {
-      throw new Error("Max attempts reached");
-    }
-
-    await this.prisma.userMessage.update({
-      where: {
-        userId_messageId: {
-          userId,
-          messageId,
-        },
-      },
-      data: {
-        sentAt: userMessage.sentAt ?? new Date(),
-        attempts: { increment: 1 },
-        status: "SENT",
-      },
-    });
+    await this.prisma.$transaction(
+      dbUserMessages.map(({ userId, messageId, sentAt }) =>
+        this.prisma.userMessage.update({
+          where: {
+            userId_messageId: {
+              userId,
+              messageId,
+            },
+          },
+          data: {
+            sentAt: sentAt ?? new Date(),
+            status: "SENT",
+            attempts: {
+              increment: 1,
+            },
+          },
+        }),
+      ),
+    );
   }
 
-  async updateForSuccess(userId: number, messageId: string) {
-    const userMessage = await this.prisma.userMessage.findUniqueOrThrow({
-      where: {
-        userId_messageId: {
-          userId,
-          messageId,
-        },
-      },
-    });
+  async updateForSuccess(ids: UserMessageId[]) {
+    const cleanIds = ids.map(({ userId, messageId }) => ({ userId, messageId }));
 
-    if (userMessage.status !== "SENT") {
-      throw new Error("Message is not sent");
-    }
-
-    await this.prisma.userMessage.update({
+    await this.prisma.userMessage.updateMany({
       where: {
-        userId_messageId: {
-          userId,
-          messageId,
-        },
+        OR: cleanIds,
       },
       data: {
         status: "DELIVERED",
@@ -164,40 +160,41 @@ export class MessageService {
     });
   }
 
-  async updateForFailure(userId: number, messageId: string, error: string) {
-    const userMessage = await this.prisma.userMessage.findUniqueOrThrow({
-      where: {
-        userId_messageId: {
-          userId,
-          messageId,
-        },
-      },
-    });
+  async updateForFailure(ids: UserMessageIdWithError[]) {
+    const cleanIds = ids.map(({ userId, messageId }) => ({ userId, messageId }));
 
-    if (userMessage.status !== "SENT") {
-      throw new Error("Message is not sent");
-    }
+    const dbUserMessages = await this.prisma.userMessage.findMany({ where: { OR: cleanIds } });
 
-    const backoff = Math.min(Math.pow(2, userMessage.attempts) * ms("5s"), ms("160s"));
-    const backofWithJitter = backoff + Math.trunc(Math.random() * backoff * 0.1);
+    const errorsById = new Map<string, string>(
+      ids.map(({ userId, messageId, error }) => [`${userId}:${messageId}`, error]),
+    );
 
-    await this.prisma.userMessage.update({
-      where: {
-        userId_messageId: {
-          userId,
-          messageId,
-        },
-      },
-      data:
-        userMessage.attempts < userMessage.maxAttempts
-          ? {
-              status: "PENDING",
-              nextAttemptAt: new Date(Date.now() + backofWithJitter),
-            }
-          : {
-              status: "FAILED",
-              error,
+    await this.prisma.$transaction(
+      dbUserMessages.map(({ userId, messageId, maxAttempts, attempts }) => {
+        const error = errorsById.get(`${userId}:${messageId}`)!;
+        const backoff = Math.min(Math.pow(2, attempts) * ms("5s"), ms("160s"));
+        const backoffWithJitter = backoff + Math.trunc(Math.random() * backoff * 0.1);
+
+        return this.prisma.userMessage.update({
+          where: {
+            userId_messageId: {
+              userId,
+              messageId,
             },
-    });
+          },
+          data:
+            attempts < maxAttempts
+              ? {
+                  status: "PENDING",
+                  error,
+                  nextAttemptAt: new Date(Date.now() + backoffWithJitter),
+                }
+              : {
+                  status: "FAILED",
+                  error,
+                },
+        });
+      }),
+    );
   }
 }

@@ -13,6 +13,8 @@ const EnvSchema = z.object({
   SUMMARY_CRON: z.string().default("0 */3 * * *"),
 });
 
-export function getEnv() {
+export type Env = z.infer<typeof EnvSchema>;
+
+export function getEnv(): Env {
   return EnvSchema.parse(process.env);
 }

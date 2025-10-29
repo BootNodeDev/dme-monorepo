@@ -1,5 +1,12 @@
 import { InvalidEthereumAddressError, WalletService, sanitizeEthereumAddress } from "./wallet";
-import { ETHEREUM_ADDRESS_1, USER_ID_1, USER_ID_2 } from "../tests/constants";
+import {
+  ETHEREUM_ADDRESS_1,
+  ETHEREUM_ADDRESS_2,
+  ETHEREUM_ADDRESS_3,
+  USER_ID_1,
+  USER_ID_2,
+  USER_ID_3,
+} from "../tests/constants";
 import { prisma } from "../tests/setup";
 
 let wallet: WalletService;
@@ -69,6 +76,39 @@ describe("listAll", () => {
     const result = await wallet.listAll();
 
     expect(result).toHaveLength(0);
+  });
+});
+
+describe("listAll with pagination", () => {
+  it("should return paginated results based on take and skip", async () => {
+    await prisma.user.createMany({
+      data: [{ id: USER_ID_1 }, { id: USER_ID_2 }, { id: USER_ID_3 }],
+    });
+
+    await prisma.wallet.createMany({
+      data: [
+        { id: ETHEREUM_ADDRESS_1.toLowerCase() },
+        { id: ETHEREUM_ADDRESS_2.toLowerCase() },
+        { id: ETHEREUM_ADDRESS_3.toLowerCase() },
+      ],
+    });
+
+    await prisma.userWallet.createMany({
+      data: [
+        { userId: USER_ID_1, walletId: ETHEREUM_ADDRESS_1.toLowerCase() },
+        { userId: USER_ID_2, walletId: ETHEREUM_ADDRESS_2.toLowerCase() },
+        { userId: USER_ID_3, walletId: ETHEREUM_ADDRESS_3.toLowerCase() },
+      ],
+    });
+
+    expect(await wallet.listAll({ take: 2 })).toEqual([
+      ETHEREUM_ADDRESS_1.toLowerCase(),
+      ETHEREUM_ADDRESS_2.toLowerCase(),
+    ]);
+
+    expect(await wallet.listAll({ skip: 2 })).toEqual([ETHEREUM_ADDRESS_3.toLowerCase()]);
+
+    expect(await wallet.listAll({ take: 1, skip: 1 })).toEqual([ETHEREUM_ADDRESS_2.toLowerCase()]);
   });
 });
 

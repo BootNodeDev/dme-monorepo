@@ -5,7 +5,7 @@
   "description": "",
   "main": "dist/index.js",
   "scripts": {
-    "dev": "prisma migrate dev && tsc && node --env-file .env .",
+    "dev": "prisma db push && tsc && node --env-file .env .",
     "build": "prisma generate && tsc",
     "start": "node .",
     "test": "scripts/test.sh",
