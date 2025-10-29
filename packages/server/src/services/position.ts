@@ -56,7 +56,6 @@ export class PositionService {
         poolPrice: p.pool_price,
         priceLower: p.price_lower,
         priceUpper: p.price_upper,
-        tokens: [{ symbol: p.tokens.token9 }],
         nftId: p.nft_id,
         token0Address: p.token0,
         token1Address: p.token1,
