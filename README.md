@@ -16,6 +16,7 @@ It is designed for anyone to clone or fork and use it as a starting point to bui
 - [Onboarding Modal Component](#onboarding-modal-component)
 - [Database](#database)
 - [Deployment](#deployment)
+- [Need Help?](#contact-us)
 
 ## Features
 
@@ -282,6 +283,11 @@ DATABASE_URL="postgresql://user:password@localhost:5432/mydb"
 For more details about supported databases and handling migrations, check the [Prisma documentation](https://www.prisma.io/docs/).
 
 > If you change the database provider, you must also update the `DATABASE_URL` used for integration tests in `packages/server/scripts/test.sh`. This script is designed to help you set up the testing database efficiently (e.g., by running a PostgreSQL Docker container).
+
+## Contact us
+What to go to production NOW? BootNode can help with everything, from analyzing and converting off/on-chain data into actionable notifications all the way down to prepping or even running the infra.
+Reach out: [Email](mailto:contact@bootnode.dev) / [Telegram](https://t.me/mgarciap) / [BootNode.dev](https://bootnode.dev/)
+
 
 ## License
 
